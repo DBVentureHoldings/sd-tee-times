@@ -37,6 +37,12 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-purple-500", dot: "bg-purple-500", label: "purple" };
     case "steele-canyon":
       return { bar: "bg-yellow-500", dot: "bg-yellow-500", label: "yellow" };
+    case "riverwalk":
+      return { bar: "bg-teal-500", dot: "bg-teal-500", label: "teal" };
+    case "national-city":
+      return { bar: "bg-fuchsia-500", dot: "bg-fuchsia-500", label: "fuchsia" };
+    case "colina-park":
+      return { bar: "bg-orange-400", dot: "bg-orange-400", label: "orange" };
     default:
       return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
   }

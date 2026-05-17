@@ -98,11 +98,14 @@
   },
   {
     "slug": "riverwalk",
-    "name": "Riverwalk GC",
-    "bookingUrl": "https://www.riverwalkgc.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "name": "Riverwalk Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/171-riverwalk-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 171,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/171-riverwalk-golf-club/search"
+    },
+    "active": true
   },
   {
     "slug": "mission-trails",
@@ -208,6 +211,28 @@
     "scraperConfig": {
       "courseUuid": "c08cd930-d4ee-47d1-92f4-f41c714cd85a",
       "clubUrl": "https://www.chronogolf.com/club/19596"
+    },
+    "active": true
+  },
+  {
+    "slug": "national-city",
+    "name": "National City Golf Course",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/3056-national-city-golf-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 3056,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/3056-national-city-golf-course/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "colina-park",
+    "name": "Colina Park Golf Course",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/10641-colina-park-golf-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 10641,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/10641-colina-park-golf-course/search"
     },
     "active": true
   },
