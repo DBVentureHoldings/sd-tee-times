@@ -145,7 +145,7 @@ export const foreUpScraper: Scraper = {
     const results: ScrapedTeeTime[] = [];
 
     for (const holes of holesList) {
-      for (const bookingClass of classes) {
+      classLoop: for (const bookingClass of classes) {
         for (let i = 0; i < ctx.daysAhead; i++) {
           const date = addDays(new Date(), i);
           const mdy = formatMDY(date);
@@ -173,6 +173,16 @@ export const foreUpScraper: Scraper = {
               cfg.loginUrl ?? ctx.course.bookingUrl,
             );
             const retry = await fetch(url, { headers });
+            if (retry.status === 401) {
+              // Persistent 401 after re-login means this booking class is
+              // gated behind something we lack (e.g., an active resident
+              // pass). Skip this class entirely and try the next one —
+              // courses commonly have a non-resident class that does work.
+              console.warn(
+                `  (skipping ${ctx.course.slug} class ${bookingClass}: 401 after re-login)`,
+              );
+              continue classLoop;
+            }
             if (!retry.ok) {
               throw new Error(
                 `ForeUp ${ctx.course.slug} day ${i} (class ${bookingClass}, ${holes}h): HTTP ${retry.status} after re-login`,
