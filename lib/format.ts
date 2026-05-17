@@ -17,8 +17,10 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-rose-400", dot: "bg-rose-400", label: "rose" };
     case "mission-bay":
       return { bar: "bg-sky-500", dot: "bg-sky-500", label: "sky" };
+    case "cottonwood":
+      return { bar: "bg-amber-600", dot: "bg-amber-600", label: "amber" };
     case "tecolote-canyon":
-      return { bar: "bg-amber-500", dot: "bg-amber-500", label: "amber" };
+      return { bar: "bg-orange-500", dot: "bg-orange-500", label: "orange" };
     case "coronado-muni":
       return { bar: "bg-indigo-500", dot: "bg-indigo-500", label: "indigo" };
     default:

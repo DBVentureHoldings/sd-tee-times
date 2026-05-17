@@ -145,11 +145,14 @@
   },
   {
     "slug": "cottonwood",
-    "name": "Cottonwood at Rancho San Diego",
-    "bookingUrl": "https://www.cottonwoodgolf.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "name": "Cottonwood Golf Club",
+    "bookingUrl": "https://www.chronogolf.com/club/19596",
+    "scraperId": "chronogolf",
+    "scraperConfig": {
+      "courseUuid": "c08cd930-d4ee-47d1-92f4-f41c714cd85a",
+      "clubUrl": "https://www.chronogolf.com/club/19596"
+    },
+    "active": true
   },
   {
     "slug": "admiral-baker",
