@@ -142,7 +142,7 @@ function DayPicker({
               className={
                 "relative shrink-0 rounded-sm border-2 border-black px-3 py-2 text-center transition-all " +
                 (isSelected
-                  ? "bg-black text-cream shadow-[3px_3px_0_0_rgba(14,91,61,1)]"
+                  ? "bg-brand text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
                   : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
               }
             >
@@ -153,7 +153,7 @@ function DayPicker({
                 <span
                   className={
                     "font-display text-xl leading-none tabular-nums " +
-                    (isSelected ? "text-cream" : "text-brand")
+                    (isSelected ? "text-white" : "text-brand")
                   }
                 >
                   {viable}
@@ -161,7 +161,7 @@ function DayPicker({
                 <span
                   className={
                     "text-[10px] tabular-nums " +
-                    (isSelected ? "text-cream/60" : "text-neutral-400")
+                    (isSelected ? "text-cream/80" : "text-neutral-400")
                   }
                 >
                   /{total}
