@@ -96,28 +96,60 @@
     "active": false
   },
   {
-    "slug": "carmel-mountain-ranch",
-    "name": "Carmel Mountain Ranch",
-    "bookingUrl": "https://www.jcgolf.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "slug": "rancho-bernardo-inn",
+    "name": "Rancho Bernardo Inn",
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 2,
+      "siteId": 2,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
+  },
+  {
+    "slug": "twin-oaks",
+    "name": "Twin Oaks Golf Course",
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 4,
+      "siteId": 4,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
   },
   {
     "slug": "encinitas-ranch",
     "name": "Encinitas Ranch GC",
-    "bookingUrl": "https://www.jcgolf.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 6,
+      "siteId": 6,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
   },
   {
     "slug": "crossings-carlsbad",
     "name": "The Crossings at Carlsbad",
-    "bookingUrl": "https://www.thecrossingsatcarlsbad.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 22,
+      "siteId": 14,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
   },
   {
     "slug": "singing-hills-willow-glen",

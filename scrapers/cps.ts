@@ -1,0 +1,287 @@
+import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
+import { newContext } from "./_shared/browser.js";
+import type { BrowserContext } from "playwright";
+
+/**
+ * CPS.golf scraper (e.g. JC Resorts: Encinitas Ranch, Carmel Mountain Ranch,
+ * Crossings at Carlsbad).
+ *
+ * Each CPS tenant runs at <tenant>.cps.golf, hosts an Angular SPA at
+ * /onlineresweb/search-teetime, and serves data from /onlineres/onlineapi.
+ * Requests need a short-lived JWT (from /identityapi/myconnect/token/short)
+ * plus a thick set of x-* headers that the SPA injects.
+ *
+ * Strategy: warm a Playwright context once per scraper-instance lifetime,
+ * read the JWT from localStorage, then issue plain HTTP requests through
+ * the context (so cookies + UA match what produced the token).
+ *
+ * scraperConfig:
+ *   - tenant       (string)   — e.g. "jcgpub29"
+ *   - courseId     (number)   — CPS-internal course id
+ *   - siteId       (number)   — CPS-internal site id (often differs from courseId)
+ *   - websiteId    (string)   — tenant-wide GUID
+ *   - moduleId     (number)   — defaults to 7
+ *   - classCodes   (string[]) — defaults to ["R"]; CPS uses Resident (R) for default
+ *   - clubUrl      (string)   — landing page for "Book" links
+ */
+export const cpsScraper: Scraper = {
+  id: "cps",
+
+  async scrape(ctx: ScrapeContext): Promise<ScrapedTeeTime[]> {
+    const cfg = (ctx.course.scraperConfig ?? {}) as {
+      tenant?: string;
+      courseId?: number;
+      siteId?: number;
+      websiteId?: string;
+      moduleId?: number;
+      componentId?: number;
+      classCodes?: string[];
+      clubUrl?: string;
+    };
+
+    if (!cfg.tenant || cfg.courseId == null || cfg.siteId == null || !cfg.websiteId) {
+      throw new Error(
+        `cps scraper requires scraperConfig.tenant, .courseId, .siteId, .websiteId for ${ctx.course.slug}`,
+      );
+    }
+
+    const landingUrl = `https://${cfg.tenant}.cps.golf/onlineresweb/search-teetime`;
+    const apiBase = `https://${cfg.tenant}.cps.golf/onlineres/onlineapi/api/v1/onlinereservation`;
+
+    const browserCtx = await getWarmedContext(cfg.tenant, landingUrl);
+    const token = await getToken(browserCtx, cfg.tenant);
+
+    const headers = {
+      accept: "application/json, text/plain, */*",
+      authorization: `Bearer ${token}`,
+      "x-ismobile": "false",
+      "x-timezoneid": "America/Los_Angeles",
+      "x-timezone-offset": "420",
+      "x-terminalid": "3",
+      "x-productid": "1",
+      "x-websiteid": cfg.websiteId,
+      "x-moduleid": String(cfg.moduleId ?? 7),
+      "x-siteid": String(cfg.siteId),
+      "x-componentid": String(cfg.componentId ?? 1),
+      "client-id": "onlineresweb",
+      "if-modified-since": "0",
+      "cache-control": "no-cache, no-store, must-revalidate",
+      pragma: "no-cache",
+      referer: landingUrl,
+    };
+
+    // Generate a transactionId client-side and "register" it. The CPS
+    // backend just records that this ID is in use; the actual value comes
+    // from us.
+    const transactionId = crypto.randomUUID();
+    await registerTransaction(browserCtx, apiBase, headers, transactionId).catch(
+      () => {
+        /* non-fatal: the TeeTimes call has been observed to work without it */
+      },
+    );
+
+    const classCodes = cfg.classCodes ?? ["R"];
+    const results: ScrapedTeeTime[] = [];
+
+    for (const classCode of classCodes) {
+      for (let i = 0; i < ctx.daysAhead; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() + i);
+        const searchDate = encodeURIComponent(date.toDateString());
+
+        const url = `${apiBase}/TeeTimes?searchDate=${searchDate}&holes=18&numberOfPlayer=0&courseIds=${cfg.courseId}&searchTimeType=0&transactionId=${transactionId}&teeOffTimeMin=0&teeOffTimeMax=23&isChangeTeeOffTime=true&teeSheetSearchView=5&classCode=${classCode}&defaultOnlineRate=N&isUseCapacityPricing=false&memberStoreId=1&searchType=1`;
+
+        const headersForReq = {
+          ...headers,
+          "x-requestid": crypto.randomUUID(),
+        };
+
+        const res = await browserCtx.request.get(url, { headers: headersForReq });
+        if (!res.ok()) {
+          if (res.status() === 401) {
+            const fresh = await getToken(browserCtx, cfg.tenant, true);
+            headersForReq.authorization = `Bearer ${fresh}`;
+            const retry = await browserCtx.request.get(url, { headers: headersForReq });
+            if (!retry.ok()) {
+              throw new Error(
+                `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${retry.status()} after token refresh`,
+              );
+            }
+            const json = (await retry.json()) as CpsResponse;
+            results.push(
+              ...extractSlots(json).map((s) =>
+                toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
+              ),
+            );
+            continue;
+          }
+          const body = await res.text().catch(() => "");
+          // CPS returns 400 with this message when we query past the
+          // membership's booking window — treat as end-of-data, not error.
+          if (
+            res.status() === 400 &&
+            /days in advance|not able to book this tee time currently/i.test(body)
+          ) {
+            break;
+          }
+          throw new Error(
+            `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${res.status()} — ${body.slice(0, 160)}`,
+          );
+        }
+        const json = (await res.json()) as CpsResponse;
+        results.push(
+          ...extractSlots(json).map((s) =>
+            toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
+          ),
+        );
+      }
+    }
+
+    return results;
+  },
+};
+
+async function registerTransaction(
+  ctx: BrowserContext,
+  apiBase: string,
+  baseHeaders: Record<string, string>,
+  transactionId: string,
+): Promise<void> {
+  const url = `${apiBase}/RegisterTransactionId`;
+  await ctx.request.post(url, {
+    headers: {
+      ...baseHeaders,
+      "content-type": "application/json",
+      "x-requestid": crypto.randomUUID(),
+    },
+    data: { transactionId },
+  });
+}
+
+interface CpsSlot {
+  startTime?: string;
+  holes?: number;
+  minPlayer?: number;
+  maxPlayer?: number;
+  availableParticipantNo?: number[];
+  shItemPrices?: Array<{
+    shItemCode?: string;
+    price?: number;
+    displayPrice?: number;
+  }>;
+}
+
+interface CpsResponse {
+  content?: CpsSlot[] | { messageKey?: string };
+  isSuccess?: boolean;
+}
+
+function extractSlots(json: CpsResponse): CpsSlot[] {
+  if (Array.isArray(json.content)) return json.content;
+  return [];
+}
+
+function toScraped(slot: CpsSlot, bookingUrl: string): ScrapedTeeTime {
+  // CPS times come without an explicit timezone but represent local (PT).
+  // Add a "PT offset" by treating the wall-clock as Pacific.
+  const teeTimeAt = parsePacific(slot.startTime ?? "");
+  // availableParticipantNo is the list of group sizes that can still book —
+  // max value = maximum players that can be added = open spots.
+  const avail =
+    Array.isArray(slot.availableParticipantNo) &&
+    slot.availableParticipantNo.length > 0
+      ? Math.max(...slot.availableParticipantNo)
+      : (slot.maxPlayer ?? 4);
+  // Pull the green-fee price; cart fee comes through as a separate item.
+  const greenFee = slot.shItemPrices?.find(
+    (p) => (p.shItemCode ?? "").toLowerCase().includes("greenfee"),
+  );
+  const price = greenFee?.displayPrice ?? greenFee?.price;
+  return {
+    teeTimeAt: teeTimeAt ?? new Date(0),
+    playersMax: slot.maxPlayer ?? 4,
+    playersAvail: avail,
+    priceCents: typeof price === "number" ? Math.round(price * 100) : undefined,
+    bookingUrl,
+    holes: slot.holes ?? 18,
+  };
+}
+
+/**
+ * Parse "2026-05-18T14:42:00" as wall-clock Pacific time and return a UTC Date.
+ */
+function parsePacific(s: string): Date | null {
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
+  if (!m) {
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  const [, y, mo, d, h, mi] = m;
+  const utcGuess = Date.UTC(+y, +mo - 1, +d, +h, +mi, 0);
+  const fmt = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(new Date(utcGuess));
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  const laMs = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour") % 24,
+    get("minute"),
+  );
+  const offset = laMs - utcGuess;
+  return new Date(utcGuess - offset);
+}
+
+// --- shared per-tenant context + token cache ---
+
+const warmedContexts = new Map<string, BrowserContext>();
+const cachedTokens = new Map<string, { token: string; cachedAt: number }>();
+const TOKEN_TTL_MS = 8 * 60 * 1000;
+
+async function getWarmedContext(tenant: string, landingUrl: string): Promise<BrowserContext> {
+  const existing = warmedContexts.get(tenant);
+  if (existing) return existing;
+  const c = await newContext();
+  const page = await c.newPage();
+  await page.goto(landingUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.waitForTimeout(3000);
+  await page.close();
+  warmedContexts.set(tenant, c);
+  return c;
+}
+
+async function getToken(
+  ctx: BrowserContext,
+  tenant: string,
+  force = false,
+): Promise<string> {
+  const now = Date.now();
+  const cached = cachedTokens.get(tenant);
+  if (!force && cached && now - cached.cachedAt < TOKEN_TTL_MS) return cached.token;
+
+  // Re-warm: open the page again, read the token out of localStorage.
+  const page = await ctx.newPage();
+  try {
+    await page.goto(`https://${tenant}.cps.golf/onlineresweb/search-teetime`, {
+      waitUntil: "domcontentloaded",
+      timeout: 30_000,
+    });
+    await page.waitForTimeout(3000);
+    const token = (await page.evaluate(() =>
+      localStorage.getItem("online-reservation-v5-short_lived_token"),
+    )) as string | null;
+    if (!token) throw new Error("CPS token not found in localStorage");
+    cachedTokens.set(tenant, { token, cachedAt: now });
+    return token;
+  } finally {
+    await page.close();
+  }
+}

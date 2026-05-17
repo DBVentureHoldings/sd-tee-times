@@ -19,6 +19,14 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-sky-500", dot: "bg-sky-500", label: "sky" };
     case "cottonwood":
       return { bar: "bg-amber-600", dot: "bg-amber-600", label: "amber" };
+    case "encinitas-ranch":
+      return { bar: "bg-violet-500", dot: "bg-violet-500", label: "violet" };
+    case "crossings-carlsbad":
+      return { bar: "bg-cyan-500", dot: "bg-cyan-500", label: "cyan" };
+    case "rancho-bernardo-inn":
+      return { bar: "bg-lime-500", dot: "bg-lime-500", label: "lime" };
+    case "twin-oaks":
+      return { bar: "bg-pink-500", dot: "bg-pink-500", label: "pink" };
     case "tecolote-canyon":
       return { bar: "bg-orange-500", dot: "bg-orange-500", label: "orange" };
     case "coronado-muni":
