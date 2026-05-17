@@ -107,10 +107,14 @@
   {
     "slug": "mission-trails",
     "name": "Mission Trails GC",
-    "bookingUrl": "https://www.missiontrailsgc.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://mission-trails-golf-course.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "mission-trails-golf-course",
+      "facilityId": 221,
+      "clubUrl": "https://mission-trails-golf-course.book.teeitup.com/"
+    },
+    "active": true
   },
   {
     "slug": "rancho-bernardo-inn",
@@ -179,10 +183,14 @@
   {
     "slug": "steele-canyon",
     "name": "Steele Canyon",
-    "bookingUrl": "https://www.steelecanyon.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://steele-canyon-golf-course.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "steele-canyon-golf-course",
+      "facilityId": 176,
+      "clubUrl": "https://steele-canyon-golf-course.book.teeitup.com/"
+    },
+    "active": true
   },
   {
     "slug": "salt-creek",
