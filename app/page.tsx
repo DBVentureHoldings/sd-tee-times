@@ -5,7 +5,9 @@ import {
   type TeeTimeRow,
 } from "@/lib/supabase-server";
 import {
+  chargesBookingFee,
   dayKey,
+  dayKeyChargesBookingFee,
   formatDayChip,
   formatDayHeader,
   formatPrice,
@@ -76,11 +78,16 @@ export default async function Page({
       <DayPicker days={days} byDay={byDay} selected={selectedDay} />
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          {formatDayHeader(selectedDate)} ·{" "}
+        <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          <span>{formatDayHeader(selectedDate)}</span>
           <span className="font-normal normal-case text-neutral-400">
-            {dayRows.length} tee times
+            · {dayRows.length} tee times
           </span>
+          {dayKeyChargesBookingFee(selectedDay) && (
+            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 normal-case tracking-normal">
+              +booking fee
+            </span>
+          )}
         </h2>
         <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
           {dayRows.map((r) => (
@@ -116,6 +123,7 @@ function DayPicker({
             (r) => r.players_avail >= 2,
           ).length;
           const isSelected = d === selected;
+          const fee = dayKeyChargesBookingFee(d);
           return (
             <Link
               key={d}
@@ -129,7 +137,20 @@ function DayPicker({
                   : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50")
               }
             >
-              <div className="whitespace-nowrap">{formatDayChip(d)}</div>
+              <div className="flex items-center justify-center gap-1 whitespace-nowrap">
+                <span>{formatDayChip(d)}</span>
+                {fee && (
+                  <span
+                    title="Booking fee applies (8+ days out)"
+                    className={
+                      "text-[10px] font-semibold " +
+                      (isSelected ? "text-amber-200" : "text-amber-600")
+                    }
+                  >
+                    +fee
+                  </span>
+                )}
+              </div>
               <div
                 className={
                   "mt-0.5 text-[10px] " +

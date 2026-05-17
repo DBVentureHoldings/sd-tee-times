@@ -58,6 +58,27 @@ export function formatDayChip(key: string, today: Date = new Date()): string {
   }).format(dt);
 }
 
+/**
+ * City of SD booking fee applies for tee times 8+ days out (the "advance"
+ * booking window). 0-7 days = free.
+ */
+export function chargesBookingFee(teeTimeAt: Date, today: Date = new Date()): boolean {
+  const teeKey = dayKey(teeTimeAt);
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() + 7);
+  const cutoffKey = dayKey(cutoff);
+  return teeKey > cutoffKey;
+}
+
+/**
+ * Same as above but operates on a dayKey string (cheap for many chips).
+ */
+export function dayKeyChargesBookingFee(key: string, today: Date = new Date()): boolean {
+  const cutoff = new Date(today);
+  cutoff.setDate(cutoff.getDate() + 7);
+  return key > dayKey(cutoff);
+}
+
 export function relativeMinutes(from: Date, to: Date = new Date()): string {
   const mins = Math.round((to.getTime() - from.getTime()) / 60000);
   if (mins < 1) return "just now";
