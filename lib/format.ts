@@ -31,6 +31,8 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-orange-500", dot: "bg-orange-500", label: "orange" };
     case "coronado-muni":
       return { bar: "bg-indigo-500", dot: "bg-indigo-500", label: "indigo" };
+    case "rams-hill":
+      return { bar: "bg-red-600", dot: "bg-red-600", label: "red" };
     default:
       return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
   }

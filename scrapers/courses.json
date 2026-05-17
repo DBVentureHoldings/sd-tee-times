@@ -74,10 +74,26 @@
   {
     "slug": "coronado-muni",
     "name": "Coronado Municipal GC",
-    "bookingUrl": "https://www.golfcoronado.com",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://coronado-resident.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "coronado-res",
+      "facilityId": 10985,
+      "clubUrl": "https://coronado-resident.book.teeitup.com/"
+    },
+    "active": true
+  },
+  {
+    "slug": "rams-hill",
+    "name": "Rams Hill Golf Club",
+    "bookingUrl": "https://rams-hill-golf-club.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "rams-hill-golf-club",
+      "facilityId": 12380,
+      "clubUrl": "https://rams-hill-golf-club.book.teeitup.com/"
+    },
+    "active": true
   },
   {
     "slug": "riverwalk",
