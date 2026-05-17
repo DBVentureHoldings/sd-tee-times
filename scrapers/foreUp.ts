@@ -135,15 +135,22 @@ export const foreUpScraper: Scraper = {
 
     for (let i = 0; i < ctx.daysAhead; i++) {
       const date = addDays(new Date(), i);
+      const mdy = formatMDY(date);
       const params = new URLSearchParams({
         time: "all",
-        date: formatMDY(date),
+        date: mdy,
         holes: String(holes),
         players: "0",
         schedule_id: String(cfg.scheduleId),
         booking_class: String(cfg.bookingClass),
       });
       const url = `${apiBase}/index.php/api/booking/times?${params.toString()}`;
+
+      // Per-day deep link: the date + booking class go in the hash so the
+      // ForeUp SPA pre-selects them on page load.
+      const dayLink =
+        `${deepLinkBase}?date=${mdy}&booking_class=${cfg.bookingClass}`;
+
       const res = await fetch(url, { headers });
 
       if (res.status === 401 && cfg.requiresAuth) {
@@ -157,7 +164,7 @@ export const foreUpScraper: Scraper = {
           );
         }
         const json = (await retry.json()) as ForeUpSlot[];
-        results.push(...parseSlots(json, deepLinkBase));
+        results.push(...parseSlots(json, dayLink));
         continue;
       }
 
@@ -169,7 +176,7 @@ export const foreUpScraper: Scraper = {
       }
 
       const json = (await res.json()) as ForeUpSlot[];
-      results.push(...parseSlots(json, deepLinkBase));
+      results.push(...parseSlots(json, dayLink));
     }
 
     return results;
