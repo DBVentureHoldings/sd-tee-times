@@ -258,22 +258,28 @@
   {
     "slug": "admiral-baker-north",
     "name": "Admiral Baker — North",
-    "bookingUrl": "https://www.golfnow.com/tee-times/facility/13495-admiral-baker-golf-course-north-course/search",
-    "scraperId": "golfnow",
+    "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=28&begintime=07%3A00+am",
+    "scraperId": "webtrac",
     "scraperConfig": {
-      "facilityId": 13495,
-      "clubUrl": "https://www.golfnow.com/tee-times/facility/13495-admiral-baker-golf-course-north-course/search"
+      "baseUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html",
+      "interfaceParameter": "webtrac_southwest",
+      "module": "GR",
+      "secondaryCode": "28",
+      "courseNameFilter": "Admiral Baker North"
     },
     "active": true
   },
   {
     "slug": "admiral-baker-south",
     "name": "Admiral Baker — South",
-    "bookingUrl": "https://www.golfnow.com/tee-times/facility/13496-admiral-baker-golf-course-south-course/search",
-    "scraperId": "golfnow",
+    "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=29&begintime=07%3A00+am",
+    "scraperId": "webtrac",
     "scraperConfig": {
-      "facilityId": 13496,
-      "clubUrl": "https://www.golfnow.com/tee-times/facility/13496-admiral-baker-golf-course-south-course/search"
+      "baseUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html",
+      "interfaceParameter": "webtrac_southwest",
+      "module": "GR",
+      "secondaryCode": "29",
+      "courseNameFilter": "Admiral Baker South"
     },
     "active": true
   },

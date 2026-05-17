@@ -4,6 +4,7 @@ import { chronogolfScraper } from "./chronogolf.js";
 import { cpsScraper } from "./cps.js";
 import { teeItUpScraper } from "./teeitup.js";
 import { golfNowScraper } from "./golfnow.js";
+import { webTracScraper } from "./webtrac.js";
 import { sandiegoCityScraper } from "./sandiegoCity.js";
 
 export const SCRAPERS: Record<string, Scraper> = {
@@ -12,5 +13,6 @@ export const SCRAPERS: Record<string, Scraper> = {
   [cpsScraper.id]: cpsScraper,
   [teeItUpScraper.id]: teeItUpScraper,
   [golfNowScraper.id]: golfNowScraper,
+  [webTracScraper.id]: webTracScraper,
   [sandiegoCityScraper.id]: sandiegoCityScraper,
 };
