@@ -3,7 +3,24 @@
  * user's criteria. Sensible defaults: weekend mornings, 2+ players, 18-hole.
  * Override via env vars at the bottom of this file.
  */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
+
 import { supabaseAdmin } from "./supabase.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const COURSES_PATH = join(__dirname, "..", "courses.json");
+
+function readCourseSlugsExcludedFromAlerts(): Set<string> {
+  try {
+    const raw = readFileSync(COURSES_PATH, "utf8");
+    const courses = JSON.parse(raw) as Array<{ slug: string; alertExclude?: boolean }>;
+    return new Set(courses.filter((c) => c.alertExclude).map((c) => c.slug));
+  } catch {
+    return new Set();
+  }
+}
 
 interface MatchingRow {
   id: string;
@@ -23,6 +40,8 @@ interface Criteria {
   weekdays: number[]; // 0=Sun .. 6=Sat (Pacific)
   holes: number[];
   cooldownMinutes: number;
+  maxPriceCents: number | null;
+  excludedSlugs: Set<string>;
 }
 
 const DEFAULT_CRITERIA: Criteria = {
@@ -38,6 +57,16 @@ const DEFAULT_CRITERIA: Criteria = {
     .map((s) => parseInt(s.trim(), 10))
     .filter((n) => Number.isInteger(n)),
   cooldownMinutes: parseInt(process.env.ALERT_COOLDOWN_MIN ?? "240", 10),
+  maxPriceCents: process.env.ALERT_MAX_PRICE_CENTS
+    ? parseInt(process.env.ALERT_MAX_PRICE_CENTS, 10)
+    : null,
+  excludedSlugs: new Set([
+    ...readCourseSlugsExcludedFromAlerts(),
+    ...(process.env.ALERT_EXCLUDE_SLUGS ?? "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+  ]),
 };
 
 function pacificParts(iso: string): { weekday: number; hour: number } {
@@ -72,6 +101,13 @@ function matchesCriteria(row: MatchingRow, c: Criteria): boolean {
   const { weekday, hour } = pacificParts(row.tee_time_at);
   if (!c.weekdays.includes(weekday)) return false;
   if (hour < c.afterHourPT || hour >= c.beforeHourPT) return false;
+  // Per-course opt-out (e.g. expensive / far-away "treat" courses).
+  const slug = row.courses?.slug;
+  if (slug && c.excludedSlugs.has(slug)) return false;
+  // Optional global price ceiling.
+  if (c.maxPriceCents != null && row.price_cents != null && row.price_cents > c.maxPriceCents) {
+    return false;
+  }
   return true;
 }
 

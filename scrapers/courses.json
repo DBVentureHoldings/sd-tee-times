@@ -93,7 +93,8 @@
       "facilityId": 12380,
       "clubUrl": "https://rams-hill-golf-club.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "alertExclude": true
   },
   {
     "slug": "riverwalk",

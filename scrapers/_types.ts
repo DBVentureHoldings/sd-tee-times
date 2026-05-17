@@ -14,6 +14,8 @@ export interface CourseConfig {
   scraperId: string;
   scraperConfig?: Record<string, unknown>;
   active?: boolean;
+  /** When true, exclude this course from email alerts (still appears in the app). */
+  alertExclude?: boolean;
 }
 
 export interface ScrapeContext {
