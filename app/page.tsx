@@ -27,7 +27,15 @@ const MUNI_SLUGS = new Set([
   "coronado-muni",
 ]);
 
-type View = "all" | "muni";
+// North County: Carlsbad / Encinitas / Vista / Rancho Bernardo area.
+const NC_SLUGS = new Set([
+  "encinitas-ranch",
+  "crossings-carlsbad",
+  "twin-oaks",
+  "rancho-bernardo-inn",
+]);
+
+type View = "all" | "muni" | "nc";
 
 export default async function Page({
   searchParams,
@@ -36,7 +44,8 @@ export default async function Page({
 }) {
   const sp = await searchParams;
   const requestedDay = sp.day;
-  const view: View = sp.view === "muni" ? "muni" : "all";
+  const view: View =
+    sp.view === "muni" ? "muni" : sp.view === "nc" ? "nc" : "all";
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
@@ -77,10 +86,11 @@ export default async function Page({
 
   // Apply the view filter (e.g., munis-only) before computing day chips so
   // the counts and the visible chip set reflect what the user is browsing.
-  const visibleRows =
-    view === "muni"
-      ? rows.filter((r) => r.courses?.slug && MUNI_SLUGS.has(r.courses.slug))
-      : rows;
+  const filterSlugs =
+    view === "muni" ? MUNI_SLUGS : view === "nc" ? NC_SLUGS : null;
+  const visibleRows = filterSlugs
+    ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
+    : rows;
 
   const byDay = new Map<string, TeeTimeRow[]>();
   for (const r of visibleRows) {
@@ -93,6 +103,9 @@ export default async function Page({
   const muniTotal = rows.filter(
     (r) => r.courses?.slug && MUNI_SLUGS.has(r.courses.slug),
   ).length;
+  const ncTotal = rows.filter(
+    (r) => r.courses?.slug && NC_SLUGS.has(r.courses.slug),
+  ).length;
 
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
@@ -102,15 +115,22 @@ export default async function Page({
   const viableToday = dayRows.filter((r) => r.players_avail >= 2).length;
 
   if (days.length === 0 || !selectedDate) {
+    const label =
+      view === "muni" ? "munis" : view === "nc" ? "North County" : "tee times";
     return (
       <div className="space-y-5">
-        <ViewTabs view={view} totalAll={rows.length} totalMuni={muniTotal} />
+        <ViewTabs
+          view={view}
+          totalAll={rows.length}
+          totalMuni={muniTotal}
+          totalNc={ncTotal}
+        />
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
-            No munis open
+            No {label} open
           </p>
           <p className="mt-1 text-xs text-neutral-500">
-            No San Diego muni tee times match right now. Try the All tab.
+            Nothing matches in this filter right now. Try the All tab.
           </p>
         </div>
       </div>
@@ -119,7 +139,12 @@ export default async function Page({
 
   return (
     <div className="space-y-5">
-      <ViewTabs view={view} totalAll={rows.length} totalMuni={muniTotal} />
+      <ViewTabs
+        view={view}
+        totalAll={rows.length}
+        totalMuni={muniTotal}
+        totalNc={ncTotal}
+      />
       <DayPicker days={days} byDay={byDay} selected={selectedDay} view={view} />
 
       <section>
@@ -160,13 +185,16 @@ function ViewTabs({
   view,
   totalAll,
   totalMuni,
+  totalNc,
 }: {
   view: View;
   totalAll: number;
   totalMuni: number;
+  totalNc: number;
 }) {
   const tabs: Array<{ key: View; label: string; count: number }> = [
     { key: "muni", label: "SD munis", count: totalMuni },
+    { key: "nc", label: "North County", count: totalNc },
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (
@@ -213,7 +241,7 @@ function DayPicker({
   selected: string;
   view: View;
 }) {
-  const viewParam = view === "muni" ? "&view=muni" : "";
+  const viewParam = view === "all" ? "" : `&view=${view}`;
   return (
     <div className="-mx-4 overflow-x-auto px-4">
       <div className="flex gap-2 pb-1">
