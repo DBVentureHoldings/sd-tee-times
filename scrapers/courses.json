@@ -74,12 +74,12 @@
   {
     "slug": "coronado-muni",
     "name": "Coronado Municipal GC",
-    "bookingUrl": "https://coronado-resident.book.teeitup.com/",
+    "bookingUrl": "https://coronado-gc-0-1-be.book.teeitup.com/",
     "scraperId": "teeitup",
     "scraperConfig": {
-      "alias": "coronado-res",
+      "alias": "coronado-gc-0-1-be",
       "facilityId": 10985,
-      "clubUrl": "https://coronado-resident.book.teeitup.com/"
+      "clubUrl": "https://coronado-gc-0-1-be.book.teeitup.com/"
     },
     "active": true
   },
