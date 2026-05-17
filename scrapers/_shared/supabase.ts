@@ -69,27 +69,29 @@ export async function writeTeeTimes(args: {
 
   if (args.times.length === 0) return;
 
-  // Dedupe by tee_time_at within this batch — the 0-7 and 8-90 day booking
-  // classes return overlapping data on the boundary day, and Postgres
-  // rejects an upsert that touches the same row twice. Later entries win,
-  // which (given our scrape order) means the 0-7 / no-fee window data is
-  // preferred for overlapping times.
-  const byTime = new Map<string, ScrapedTeeTime>();
-  for (const t of args.times) byTime.set(t.teeTimeAt.toISOString(), t);
+  // Dedupe by (tee_time_at, holes) within this batch — overlapping booking
+  // classes return the same slot, and Postgres rejects an upsert that
+  // touches the same row twice. Later entries win.
+  const byKey = new Map<string, ScrapedTeeTime>();
+  for (const t of args.times) {
+    const key = `${t.teeTimeAt.toISOString()}|${t.holes}`;
+    byKey.set(key, t);
+  }
 
-  const rows = Array.from(byTime.entries()).map(([tee_time_at, t]) => ({
+  const rows = Array.from(byKey.values()).map((t) => ({
     course_id: args.courseId,
-    tee_time_at,
+    tee_time_at: t.teeTimeAt.toISOString(),
     players_max: t.playersMax,
     players_avail: t.playersAvail,
     price_cents: t.priceCents ?? null,
     booking_url: t.bookingUrl,
+    holes: t.holes,
     scraped_at: nowIso,
   }));
 
   const { error } = await sb
     .from("tee_times")
-    .upsert(rows, { onConflict: "course_id,tee_time_at" });
+    .upsert(rows, { onConflict: "course_id,tee_time_at,holes" });
   if (error) throw error;
 }
 

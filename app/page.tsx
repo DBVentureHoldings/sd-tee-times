@@ -183,7 +183,14 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
         {formatTime(time)}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate font-medium">{courseName}</div>
+        <div className="flex items-baseline gap-2 truncate font-medium">
+          <span className="truncate">{courseName}</span>
+          {row.holes === 9 && (
+            <span className="shrink-0 rounded bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+              9-hole
+            </span>
+          )}
+        </div>
         <div className="text-xs text-neutral-500">
           {formatPrice(row.price_cents)} · {row.players_avail}{" "}
           {row.players_avail === 1 ? "spot" : "spots"}

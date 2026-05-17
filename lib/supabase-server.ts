@@ -24,6 +24,7 @@ export interface TeeTimeRow {
   players_avail: number;
   price_cents: number | null;
   booking_url: string;
+  holes: number;
   scraped_at: string;
   courses: { slug: string; name: string } | null;
 }
@@ -34,7 +35,7 @@ export async function fetchUpcomingTeeTimes(limit = 200): Promise<TeeTimeRow[]> 
   const { data, error } = await sb
     .from("tee_times")
     .select(
-      "id, course_id, tee_time_at, players_max, players_avail, price_cents, booking_url, scraped_at, courses(slug, name)",
+      "id, course_id, tee_time_at, players_max, players_avail, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
     )
     .gt("tee_time_at", nowIso)
     .order("tee_time_at", { ascending: true })

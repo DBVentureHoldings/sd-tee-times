@@ -10,7 +10,8 @@
       "bookingClasses": [
         "3201",
         "1135"
-      ]
+      ],
+      "holes": [18, 9]
     },
     "active": true
   },
@@ -25,7 +26,8 @@
       "bookingClasses": [
         "3195",
         "888"
-      ]
+      ],
+      "holes": [18, 9]
     },
     "active": true
   },

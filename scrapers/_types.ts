@@ -4,6 +4,7 @@ export interface ScrapedTeeTime {
   playersAvail: number;
   priceCents?: number;
   bookingUrl: string;
+  holes: number;
 }
 
 export interface CourseConfig {
