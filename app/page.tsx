@@ -17,13 +17,26 @@ import {
 
 export const revalidate = 60;
 
+// Courses that count as "San Diego munis" for the filter tab.
+// City of San Diego + City of Coronado run-by-city courses.
+const MUNI_SLUGS = new Set([
+  "torrey-pines-north",
+  "torrey-pines-south",
+  "balboa-park",
+  "mission-bay",
+  "coronado-muni",
+]);
+
+type View = "all" | "muni";
+
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ day?: string }>;
+  searchParams: Promise<{ day?: string; view?: string }>;
 }) {
   const sp = await searchParams;
   const requestedDay = sp.day;
+  const view: View = sp.view === "muni" ? "muni" : "all";
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
@@ -62,24 +75,52 @@ export default async function Page({
     );
   }
 
+  // Apply the view filter (e.g., munis-only) before computing day chips so
+  // the counts and the visible chip set reflect what the user is browsing.
+  const visibleRows =
+    view === "muni"
+      ? rows.filter((r) => r.courses?.slug && MUNI_SLUGS.has(r.courses.slug))
+      : rows;
+
   const byDay = new Map<string, TeeTimeRow[]>();
-  for (const r of rows) {
+  for (const r of visibleRows) {
     const k = dayKey(new Date(r.tee_time_at));
     const arr = byDay.get(k);
     if (arr) arr.push(r);
     else byDay.set(k, [r]);
   }
   const days = Array.from(byDay.keys());
+  const muniTotal = rows.filter(
+    (r) => r.courses?.slug && MUNI_SLUGS.has(r.courses.slug),
+  ).length;
 
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
-  const dayRows = byDay.get(selectedDay) ?? [];
-  const selectedDate = new Date(dayRows[0].tee_time_at);
+  const dayRows = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
+  const selectedDate =
+    dayRows.length > 0 ? new Date(dayRows[0].tee_time_at) : null;
   const viableToday = dayRows.filter((r) => r.players_avail >= 2).length;
+
+  if (days.length === 0 || !selectedDate) {
+    return (
+      <div className="space-y-5">
+        <ViewTabs view={view} totalAll={rows.length} totalMuni={muniTotal} />
+        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
+          <p className="font-display text-2xl uppercase tracking-wider">
+            No munis open
+          </p>
+          <p className="mt-1 text-xs text-neutral-500">
+            No San Diego muni tee times match right now. Try the All tab.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
-      <DayPicker days={days} byDay={byDay} selected={selectedDay} />
+      <ViewTabs view={view} totalAll={rows.length} totalMuni={muniTotal} />
+      <DayPicker days={days} byDay={byDay} selected={selectedDay} view={view} />
 
       <section>
         <header className="mb-3 border-b-2 border-black pb-2">
@@ -115,15 +156,64 @@ export default async function Page({
   );
 }
 
+function ViewTabs({
+  view,
+  totalAll,
+  totalMuni,
+}: {
+  view: View;
+  totalAll: number;
+  totalMuni: number;
+}) {
+  const tabs: Array<{ key: View; label: string; count: number }> = [
+    { key: "all", label: "All courses", count: totalAll },
+    { key: "muni", label: "SD munis", count: totalMuni },
+  ];
+  return (
+    <div className="flex gap-2">
+      {tabs.map((t) => {
+        const active = view === t.key;
+        return (
+          <Link
+            key={t.key}
+            href={t.key === "all" ? "/" : `/?view=${t.key}`}
+            prefetch={false}
+            scroll={false}
+            className={
+              "flex items-center gap-1.5 rounded-sm border-2 border-black px-3 py-1.5 font-display text-sm uppercase tracking-wider transition-all " +
+              (active
+                ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
+            }
+          >
+            <span>{t.label}</span>
+            <span
+              className={
+                "text-[10px] tabular-nums " +
+                (active ? "text-cream/70" : "text-neutral-500")
+              }
+            >
+              {t.count}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 function DayPicker({
   days,
   byDay,
   selected,
+  view,
 }: {
   days: string[];
   byDay: Map<string, TeeTimeRow[]>;
   selected: string;
+  view: View;
 }) {
+  const viewParam = view === "muni" ? "&view=muni" : "";
   return (
     <div className="-mx-4 overflow-x-auto px-4">
       <div className="flex gap-2 pb-1">
@@ -136,7 +226,7 @@ function DayPicker({
           return (
             <Link
               key={d}
-              href={`/?day=${d}`}
+              href={`/?day=${d}${viewParam}`}
               prefetch={false}
               scroll={false}
               className={
