@@ -35,7 +35,14 @@ const NC_SLUGS = new Set([
   "rancho-bernardo-inn",
 ]);
 
-type View = "all" | "muni" | "nc";
+// South County: National City / Chula Vista / Bonita area.
+const SC_SLUGS = new Set([
+  "national-city",
+  "enagic-chula-vista",
+  "bonita",
+]);
+
+type View = "all" | "muni" | "nc" | "sc";
 
 export default async function Page({
   searchParams,
@@ -45,7 +52,13 @@ export default async function Page({
   const sp = await searchParams;
   const requestedDay = sp.day;
   const view: View =
-    sp.view === "muni" ? "muni" : sp.view === "nc" ? "nc" : "all";
+    sp.view === "muni"
+      ? "muni"
+      : sp.view === "nc"
+        ? "nc"
+        : sp.view === "sc"
+          ? "sc"
+          : "all";
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
@@ -87,7 +100,13 @@ export default async function Page({
   // Apply the view filter (e.g., munis-only) before computing day chips so
   // the counts and the visible chip set reflect what the user is browsing.
   const filterSlugs =
-    view === "muni" ? MUNI_SLUGS : view === "nc" ? NC_SLUGS : null;
+    view === "muni"
+      ? MUNI_SLUGS
+      : view === "nc"
+        ? NC_SLUGS
+        : view === "sc"
+          ? SC_SLUGS
+          : null;
   const visibleRows = filterSlugs
     ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
     : rows;
@@ -106,6 +125,9 @@ export default async function Page({
   const ncTotal = rows.filter(
     (r) => r.courses?.slug && NC_SLUGS.has(r.courses.slug),
   ).length;
+  const scTotal = rows.filter(
+    (r) => r.courses?.slug && SC_SLUGS.has(r.courses.slug),
+  ).length;
 
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
@@ -116,7 +138,13 @@ export default async function Page({
 
   if (days.length === 0 || !selectedDate) {
     const label =
-      view === "muni" ? "munis" : view === "nc" ? "North County" : "tee times";
+      view === "muni"
+        ? "munis"
+        : view === "nc"
+          ? "North County"
+          : view === "sc"
+            ? "South County"
+            : "tee times";
     return (
       <div className="space-y-5">
         <ViewTabs
@@ -124,6 +152,7 @@ export default async function Page({
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
+          totalSc={scTotal}
         />
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
@@ -144,6 +173,7 @@ export default async function Page({
         totalAll={rows.length}
         totalMuni={muniTotal}
         totalNc={ncTotal}
+        totalSc={scTotal}
       />
       <DayPicker days={days} byDay={byDay} selected={selectedDay} view={view} />
 
@@ -186,15 +216,18 @@ function ViewTabs({
   totalAll,
   totalMuni,
   totalNc,
+  totalSc,
 }: {
   view: View;
   totalAll: number;
   totalMuni: number;
   totalNc: number;
+  totalSc: number;
 }) {
   const tabs: Array<{ key: View; label: string; count: number }> = [
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
+    { key: "sc", label: "South County", count: totalSc },
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (

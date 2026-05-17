@@ -245,6 +245,17 @@
     "active": true
   },
   {
+    "slug": "bonita",
+    "name": "Bonita Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/2084-bonita-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 2084,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/2084-bonita-golf-club/search"
+    },
+    "active": true
+  },
+  {
     "slug": "admiral-baker",
     "name": "Admiral Baker (Navy MWR)",
     "bookingUrl": "https://navylifesw.com/sandiego/golf/admiral-baker",
@@ -254,10 +265,13 @@
   },
   {
     "slug": "enagic-chula-vista",
-    "name": "Enagic Golf Club (Chula Vista)",
-    "bookingUrl": "https://www.enagicgolfclub.com/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "name": "Enagic Golf Club at EastLake",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/245-enagic-golf-club-at-eastlake/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 245,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/245-enagic-golf-club-at-eastlake/search"
+    },
+    "active": true
   }
 ]
