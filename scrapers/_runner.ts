@@ -117,9 +117,11 @@ async function main() {
     `Done. ${totalTimes} total tee times across ${courses.length - failures}/${courses.length} courses.`,
   );
 
-  if (failures > 0 && failures === courses.length) {
-    process.exit(1);
-  }
+  // Hard-exit so any lingering Playwright contexts (chronogolf/cps keep their
+  // warmed browser contexts in module-level maps) don't keep Node alive or
+  // leak a non-zero exit code. Treat a partial scrape as success — only exit
+  // 1 if every course failed.
+  process.exit(failures > 0 && failures === courses.length ? 1 : 0);
 }
 
 main().catch(async (err) => {
