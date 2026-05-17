@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   fetchLastScrapeAt,
   fetchUpcomingTeeTimes,
@@ -5,6 +6,7 @@ import {
 } from "@/lib/supabase-server";
 import {
   dayKey,
+  formatDayChip,
   formatDayHeader,
   formatPrice,
   formatTime,
@@ -13,14 +15,21 @@ import {
 
 export const revalidate = 60;
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<{ day?: string }>;
+}) {
+  const sp = await searchParams;
+  const requestedDay = sp.day;
+
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
   let loadError: string | null = null;
 
   try {
     [rows, lastScrape] = await Promise.all([
-      fetchUpcomingTeeTimes(),
+      fetchUpcomingTeeTimes(1000),
       fetchLastScrapeAt(),
     ]);
   } catch (err) {
@@ -32,11 +41,6 @@ export default async function Page() {
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
         <p className="font-medium">Couldn&apos;t load tee times.</p>
         <p className="mt-1 text-red-700">{loadError}</p>
-        <p className="mt-2 text-red-600">
-          Check that <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-          <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> are set, and that the
-          scraper has populated <code>tee_times</code>.
-        </p>
       </div>
     );
   }
@@ -44,43 +48,100 @@ export default async function Page() {
   if (rows.length === 0) {
     return (
       <p className="text-sm text-neutral-500">
-        No upcoming tee times found. If you just deployed, run the scraper:{" "}
-        <code>npm run scrape</code>.
+        No upcoming tee times. Run <code>npm run scrape</code> locally to seed.
       </p>
     );
   }
 
-  const grouped = new Map<string, TeeTimeRow[]>();
+  // Group rows by day. Map preserves insertion order; rows arrived sorted, so
+  // the keys come out in chronological order.
+  const byDay = new Map<string, TeeTimeRow[]>();
   for (const r of rows) {
-    const d = new Date(r.tee_time_at);
-    const key = dayKey(d);
-    const arr = grouped.get(key);
+    const k = dayKey(new Date(r.tee_time_at));
+    const arr = byDay.get(k);
     if (arr) arr.push(r);
-    else grouped.set(key, [r]);
+    else byDay.set(k, [r]);
   }
+  const days = Array.from(byDay.keys());
+
+  // Pick the day to display: requested if valid, otherwise the first day
+  // with availability.
+  const selectedDay =
+    requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
+  const dayRows = byDay.get(selectedDay) ?? [];
+  const selectedDate = new Date(dayRows[0].tee_time_at);
 
   return (
-    <div className="space-y-6">
-      {Array.from(grouped.entries()).map(([key, dayRows]) => {
-        const headerDate = new Date(dayRows[0].tee_time_at);
-        return (
-          <section key={key}>
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-              {formatDayHeader(headerDate)}
-            </h2>
-            <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
-              {dayRows.map((r) => (
-                <TeeTimeRow key={r.id} row={r} />
-              ))}
-            </ul>
-          </section>
-        );
-      })}
+    <div className="space-y-4">
+      <DayPicker days={days} byDay={byDay} selected={selectedDay} />
+
+      <section>
+        <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
+          {formatDayHeader(selectedDate)} ·{" "}
+          <span className="font-normal normal-case text-neutral-400">
+            {dayRows.length} tee times
+          </span>
+        </h2>
+        <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+          {dayRows.map((r) => (
+            <TeeTimeRow key={r.id} row={r} />
+          ))}
+        </ul>
+      </section>
+
       <footer className="pt-2 text-xs text-neutral-400">
         {lastScrape
           ? `Last updated ${relativeMinutes(lastScrape)}.`
           : "No scrape data yet."}
       </footer>
+    </div>
+  );
+}
+
+function DayPicker({
+  days,
+  byDay,
+  selected,
+}: {
+  days: string[];
+  byDay: Map<string, TeeTimeRow[]>;
+  selected: string;
+}) {
+  return (
+    <div className="-mx-4 overflow-x-auto px-4">
+      <div className="flex gap-2 pb-1">
+        {days.map((d) => {
+          const count = byDay.get(d)?.length ?? 0;
+          const viable = (byDay.get(d) ?? []).filter(
+            (r) => r.players_avail >= 2,
+          ).length;
+          const isSelected = d === selected;
+          return (
+            <Link
+              key={d}
+              href={`/?day=${d}`}
+              prefetch={false}
+              scroll={false}
+              className={
+                "shrink-0 rounded-lg border px-3 py-2 text-center text-xs font-medium transition-colors " +
+                (isSelected
+                  ? "border-brand bg-brand text-white"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50")
+              }
+            >
+              <div className="whitespace-nowrap">{formatDayChip(d)}</div>
+              <div
+                className={
+                  "mt-0.5 text-[10px] " +
+                  (isSelected ? "text-white/80" : "text-neutral-400")
+                }
+              >
+                {viable} viable · {count} total
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -103,8 +164,8 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
       <div className="min-w-0 flex-1">
         <div className="truncate font-medium">{courseName}</div>
         <div className="text-xs text-neutral-500">
-          {formatPrice(row.price_cents)} ·{" "}
-          {row.players_avail} {row.players_avail === 1 ? "spot" : "spots"}
+          {formatPrice(row.price_cents)} · {row.players_avail}{" "}
+          {row.players_avail === 1 ? "spot" : "spots"}
           {viable && (
             <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
               2+ open
