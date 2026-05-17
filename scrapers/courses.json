@@ -6,8 +6,11 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "1468",
-      "bookingClass": "3201",
-      "requiresAuth": true
+      "requiresAuth": true,
+      "bookingClasses": [
+        "3201",
+        "1135"
+      ]
     },
     "active": true
   },
@@ -18,8 +21,11 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "1487",
-      "bookingClass": "3195",
-      "requiresAuth": true
+      "requiresAuth": true,
+      "bookingClasses": [
+        "3195",
+        "888"
+      ]
     },
     "active": true
   },
@@ -30,9 +36,12 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "1470",
-      "bookingClass": "51735",
       "requiresAuth": true,
-      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347"
+      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347",
+      "bookingClasses": [
+        "51735",
+        "929"
+      ]
     },
     "active": true
   },
@@ -43,9 +52,12 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "1469",
-      "bookingClass": "1043",
       "requiresAuth": true,
-      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347"
+      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347",
+      "bookingClasses": [
+        "1043",
+        "925"
+      ]
     },
     "active": true
   },

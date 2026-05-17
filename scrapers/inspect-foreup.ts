@@ -104,23 +104,41 @@ context.on("request", (req) => {
     const idx = courses.findIndex((c) => c.slug === slug);
     queueIdx++;
 
+    // Build the new bookingClasses array, migrating from any legacy
+    // bookingClass singleton and appending the just-captured class.
+    const existingCfg = (courses[idx].scraperConfig ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const existingClasses: Array<string> = Array.isArray(
+      existingCfg.bookingClasses,
+    )
+      ? (existingCfg.bookingClasses as Array<string | number>).map(String)
+      : existingCfg.bookingClass != null
+        ? [String(existingCfg.bookingClass)]
+        : [];
+    if (!existingClasses.includes(bookingClass)) {
+      existingClasses.push(bookingClass);
+    }
+    const newCfg: Record<string, unknown> = {
+      ...existingCfg,
+      scheduleId,
+      bookingClasses: existingClasses,
+    };
+    // Strip the legacy single field and any TODO placeholders
+    delete newCfg.bookingClass;
+    for (const k of Object.keys(newCfg)) if (newCfg[k] === "TODO") delete newCfg[k];
+
     courses[idx] = {
       ...courses[idx],
-      scraperConfig: {
-        ...(courses[idx].scraperConfig ?? {}),
-        scheduleId,
-        bookingClass,
-      },
+      scraperConfig: newCfg,
       active: true,
     };
-    // Strip any remaining "TODO" placeholders
-    const cfg = courses[idx].scraperConfig as Record<string, unknown>;
-    for (const k of Object.keys(cfg)) if (cfg[k] === "TODO") delete cfg[k];
 
     writeFileSync(COURSES_PATH, JSON.stringify(courses, null, 2) + "\n");
 
     console.log(
-      `✓ [${queueIdx}/${slugQueue.length}] ${slug}: schedule_id=${scheduleId}, booking_class=${bookingClass}`,
+      `✓ [${queueIdx}/${slugQueue.length}] ${slug}: schedule_id=${scheduleId}, booking_class=${bookingClass} (now has ${existingClasses.length} class${existingClasses.length === 1 ? "" : "es"})`,
     );
     if (queueIdx === slugQueue.length) {
       console.log("\nAll slugs captured. You can close the browser window.");

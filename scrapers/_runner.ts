@@ -91,7 +91,12 @@ async function main() {
       totalTimes += times.length;
       console.log(`✓ ${course.slug}: ${times.length} times (${Date.now() - t0}ms)`);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg =
+        err instanceof Error
+          ? err.message
+          : typeof err === "object" && err !== null
+            ? JSON.stringify(err)
+            : String(err);
       await finishScrapeRun({
         runId,
         status: "error",
@@ -99,6 +104,9 @@ async function main() {
         errorMessage: msg,
       }).catch(() => {});
       console.error(`✗ ${course.slug}: ${msg}`);
+      if (err instanceof Error && err.stack) {
+        console.error(err.stack.split("\n").slice(0, 5).join("\n"));
+      }
       failures++;
     }
   }

@@ -69,9 +69,17 @@ export async function writeTeeTimes(args: {
 
   if (args.times.length === 0) return;
 
-  const rows = args.times.map((t) => ({
+  // Dedupe by tee_time_at within this batch — the 0-7 and 8-90 day booking
+  // classes return overlapping data on the boundary day, and Postgres
+  // rejects an upsert that touches the same row twice. Later entries win,
+  // which (given our scrape order) means the 0-7 / no-fee window data is
+  // preferred for overlapping times.
+  const byTime = new Map<string, ScrapedTeeTime>();
+  for (const t of args.times) byTime.set(t.teeTimeAt.toISOString(), t);
+
+  const rows = Array.from(byTime.entries()).map(([tee_time_at, t]) => ({
     course_id: args.courseId,
-    tee_time_at: t.teeTimeAt.toISOString(),
+    tee_time_at,
     players_max: t.playersMax,
     players_avail: t.playersAvail,
     price_cents: t.priceCents ?? null,

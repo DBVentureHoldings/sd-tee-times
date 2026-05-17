@@ -93,15 +93,22 @@ export const foreUpScraper: Scraper = {
     const cfg = (ctx.course.scraperConfig ?? {}) as {
       scheduleId?: string | number;
       bookingClass?: string | number;
+      bookingClasses?: Array<string | number>;
       holes?: number;
       apiBase?: string;
       requiresAuth?: boolean;
       loginUrl?: string;
     };
 
-    if (cfg.scheduleId == null || cfg.bookingClass == null) {
+    const classes: Array<string | number> = Array.isArray(cfg.bookingClasses)
+      ? cfg.bookingClasses
+      : cfg.bookingClass != null
+        ? [cfg.bookingClass]
+        : [];
+
+    if (cfg.scheduleId == null || classes.length === 0) {
       throw new Error(
-        `foreUp scraper requires scraperConfig.scheduleId and .bookingClass for ${ctx.course.slug}`,
+        `foreUp scraper requires scraperConfig.scheduleId and a non-empty bookingClasses for ${ctx.course.slug}`,
       );
     }
 
@@ -133,50 +140,54 @@ export const foreUpScraper: Scraper = {
 
     const results: ScrapedTeeTime[] = [];
 
-    for (let i = 0; i < ctx.daysAhead; i++) {
-      const date = addDays(new Date(), i);
-      const mdy = formatMDY(date);
-      const params = new URLSearchParams({
-        time: "all",
-        date: mdy,
-        holes: String(holes),
-        players: "0",
-        schedule_id: String(cfg.scheduleId),
-        booking_class: String(cfg.bookingClass),
-      });
-      const url = `${apiBase}/index.php/api/booking/times?${params.toString()}`;
+    for (const bookingClass of classes) {
+      for (let i = 0; i < ctx.daysAhead; i++) {
+        const date = addDays(new Date(), i);
+        const mdy = formatMDY(date);
+        const params = new URLSearchParams({
+          time: "all",
+          date: mdy,
+          holes: String(holes),
+          players: "0",
+          schedule_id: String(cfg.scheduleId),
+          booking_class: String(bookingClass),
+        });
+        const url = `${apiBase}/index.php/api/booking/times?${params.toString()}`;
 
-      // ForeUp's SPA stores date/booking-class state in JS memory, not in
-      // the URL — so we can't pre-select them via deep link. The best we
-      // can do is land the user on the right facility's Reservations page.
-      const dayLink = deepLinkBase;
+        // ForeUp's SPA stores date/booking-class state in JS memory, not in
+        // the URL — so we can't pre-select them via deep link. The best we
+        // can do is land the user on the right facility's Reservations page.
+        const dayLink = deepLinkBase;
 
-      const res = await fetch(url, { headers });
+        const res = await fetch(url, { headers });
 
-      if (res.status === 401 && cfg.requiresAuth) {
-        // Stale cookie. Force a re-login and retry once.
-        cachedCookie = null;
-        headers.cookie = await getCookie(cfg.loginUrl ?? ctx.course.bookingUrl);
-        const retry = await fetch(url, { headers });
-        if (!retry.ok) {
+        if (res.status === 401 && cfg.requiresAuth) {
+          // Stale cookie. Force a re-login and retry once.
+          cachedCookie = null;
+          headers.cookie = await getCookie(
+            cfg.loginUrl ?? ctx.course.bookingUrl,
+          );
+          const retry = await fetch(url, { headers });
+          if (!retry.ok) {
+            throw new Error(
+              `ForeUp ${ctx.course.slug} day ${i} (class ${bookingClass}): HTTP ${retry.status} after re-login`,
+            );
+          }
+          const json = (await retry.json()) as ForeUpSlot[];
+          results.push(...parseSlots(json, dayLink));
+          continue;
+        }
+
+        if (!res.ok) {
+          if (res.status === 404) continue;
           throw new Error(
-            `ForeUp ${ctx.course.slug} day ${i}: HTTP ${retry.status} after re-login`,
+            `ForeUp ${ctx.course.slug} day ${i} (class ${bookingClass}): HTTP ${res.status}`,
           );
         }
-        const json = (await retry.json()) as ForeUpSlot[];
+
+        const json = (await res.json()) as ForeUpSlot[];
         results.push(...parseSlots(json, dayLink));
-        continue;
       }
-
-      if (!res.ok) {
-        if (res.status === 404) continue;
-        throw new Error(
-          `ForeUp ${ctx.course.slug} day ${i}: HTTP ${res.status}`,
-        );
-      }
-
-      const json = (await res.json()) as ForeUpSlot[];
-      results.push(...parseSlots(json, dayLink));
     }
 
     return results;
