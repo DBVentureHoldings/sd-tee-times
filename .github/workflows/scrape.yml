@@ -19,6 +19,8 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      FOREUP_USERNAME: ${{ secrets.FOREUP_USERNAME }}
+      FOREUP_PASSWORD: ${{ secrets.FOREUP_PASSWORD }}
 
     steps:
       - uses: actions/checkout@v4
