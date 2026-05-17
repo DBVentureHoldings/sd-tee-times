@@ -1,0 +1,156 @@
+[
+  {
+    "slug": "torrey-pines-north",
+    "name": "Torrey Pines — North",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1468",
+      "bookingClass": "3201",
+      "requiresAuth": true
+    },
+    "active": true
+  },
+  {
+    "slug": "torrey-pines-south",
+    "name": "Torrey Pines — South",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1487",
+      "bookingClass": "3195",
+      "requiresAuth": true
+    },
+    "active": true
+  },
+  {
+    "slug": "balboa-park",
+    "name": "Balboa Park GC",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19348",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1470",
+      "bookingClass": "51735",
+      "requiresAuth": true,
+      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347"
+    },
+    "active": true
+  },
+  {
+    "slug": "mission-bay",
+    "name": "Mission Bay GC",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19346",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1469",
+      "bookingClass": "1043",
+      "requiresAuth": true,
+      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347"
+    },
+    "active": true
+  },
+  {
+    "slug": "tecolote-canyon",
+    "name": "Tecolote Canyon",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "coronado-muni",
+    "name": "Coronado Municipal GC",
+    "bookingUrl": "https://www.golfcoronado.com",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "riverwalk",
+    "name": "Riverwalk GC",
+    "bookingUrl": "https://www.riverwalkgc.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "mission-trails",
+    "name": "Mission Trails GC",
+    "bookingUrl": "https://www.missiontrailsgc.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "carmel-mountain-ranch",
+    "name": "Carmel Mountain Ranch",
+    "bookingUrl": "https://www.jcgolf.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "encinitas-ranch",
+    "name": "Encinitas Ranch GC",
+    "bookingUrl": "https://www.jcgolf.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "crossings-carlsbad",
+    "name": "The Crossings at Carlsbad",
+    "bookingUrl": "https://www.thecrossingsatcarlsbad.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "singing-hills-willow-glen",
+    "name": "Singing Hills — Willow Glen (Sycuan)",
+    "bookingUrl": "https://www.sycuan.com/golf/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "steele-canyon",
+    "name": "Steele Canyon",
+    "bookingUrl": "https://www.steelecanyon.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "salt-creek",
+    "name": "Salt Creek GC",
+    "bookingUrl": "https://www.saltcreekgc.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "cottonwood",
+    "name": "Cottonwood at Rancho San Diego",
+    "bookingUrl": "https://www.cottonwoodgolf.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "admiral-baker",
+    "name": "Admiral Baker (Navy MWR)",
+    "bookingUrl": "https://navylifesw.com/sandiego/golf/admiral-baker",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
+    "slug": "enagic-chula-vista",
+    "name": "Enagic Golf Club (Chula Vista)",
+    "bookingUrl": "https://www.enagicgolfclub.com/tee-times",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
+  }
+]
