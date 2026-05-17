@@ -23,6 +23,7 @@ jobs:
       FOREUP_PASSWORD: ${{ secrets.FOREUP_PASSWORD }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+      ALERT_MAX_PRICE_CENTS: ${{ secrets.ALERT_MAX_PRICE_CENTS }}
 
     steps:
       - uses: actions/checkout@v4
