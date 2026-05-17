@@ -9,9 +9,13 @@
       "requiresAuth": true,
       "bookingClasses": [
         "3201",
-        "1135"
+        "1135",
+        "3181"
       ],
-      "holes": [18, 9]
+      "holes": [
+        18,
+        9
+      ]
     },
     "active": true
   },
@@ -25,9 +29,13 @@
       "requiresAuth": true,
       "bookingClasses": [
         "3195",
-        "888"
+        "888",
+        "3088"
       ],
-      "holes": [18, 9]
+      "holes": [
+        18,
+        9
+      ]
     },
     "active": true
   },
