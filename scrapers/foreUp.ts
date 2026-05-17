@@ -146,10 +146,10 @@ export const foreUpScraper: Scraper = {
       });
       const url = `${apiBase}/index.php/api/booking/times?${params.toString()}`;
 
-      // Per-day deep link: the date + booking class go in the hash so the
-      // ForeUp SPA pre-selects them on page load.
-      const dayLink =
-        `${deepLinkBase}?date=${mdy}&booking_class=${cfg.bookingClass}`;
+      // ForeUp's SPA stores date/booking-class state in JS memory, not in
+      // the URL — so we can't pre-select them via deep link. The best we
+      // can do is land the user on the right facility's Reservations page.
+      const dayLink = deepLinkBase;
 
       const res = await fetch(url, { headers });
 
