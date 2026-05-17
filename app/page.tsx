@@ -31,7 +31,7 @@ export default async function Page({
 
   try {
     [rows, lastScrape] = await Promise.all([
-      fetchUpcomingTeeTimes(1000),
+      fetchUpcomingTeeTimes(),
       fetchLastScrapeAt(),
     ]);
   } catch (err) {
