@@ -5,10 +5,26 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Masters-green primary — the iconic green jacket / Augusta tournament
         brand: {
-          DEFAULT: "#517AA4",
-          tint: "#D1DCE8",
+          DEFAULT: "#0E5B3D",
+          dark: "#0A4530",
+          light: "#1F7A53",
         },
+        // Vintage magazine palette
+        cream: {
+          DEFAULT: "#F5EFE0",
+          dark: "#EBE3CF",
+        },
+        // Classic golf magazine red accent
+        magred: {
+          DEFAULT: "#C8102E",
+          dark: "#9E0D24",
+        },
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "Impact", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
     },
   },

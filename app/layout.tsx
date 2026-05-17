@@ -1,5 +1,19 @@
 import type { Metadata, Viewport } from "next";
+import { Bebas_Neue, Inter } from "next/font/google";
 import "./globals.css";
+
+const displayFont = Bebas_Neue({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+
+const sansFont = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "SD Tee Times",
@@ -7,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#517AA4",
+  themeColor: "#0E5B3D",
   width: "device-width",
   initialScale: 1,
 };
@@ -18,21 +32,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-neutral-50 text-neutral-900 antialiased">
-        <header className="bg-gradient-to-br from-brand to-[#3D5F84] text-white shadow-sm">
+    <html lang="en" className={`${displayFont.variable} ${sansFont.variable}`}>
+      <body className="min-h-screen bg-cream font-sans text-neutral-900 antialiased">
+        <header className="border-b-4 border-black bg-brand text-cream">
           <div className="mx-auto max-w-2xl px-4 py-5">
-            <div className="flex items-baseline gap-2">
-              <h1 className="text-2xl font-bold tracking-tight">
-                SD Tee Times
-              </h1>
-              <span className="text-xs font-medium uppercase tracking-wider text-white/60">
-                v1
+            <div className="flex items-end justify-between gap-3">
+              <div>
+                <h1 className="font-display text-5xl leading-none tracking-tight">
+                  SD <span className="text-magred">TEE</span> TIMES
+                </h1>
+                <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-cream/70">
+                  San Diego&apos;s open tee sheet
+                </p>
+              </div>
+              <span className="rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
+                Vol. I
               </span>
             </div>
-            <p className="text-xs text-white/70">
-              Live availability across San Diego City munis.
-            </p>
           </div>
         </header>
         <main className="mx-auto max-w-2xl px-4 py-5">{children}</main>
