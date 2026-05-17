@@ -108,6 +108,16 @@ export const foreUpScraper: Scraper = {
     const apiBase = cfg.apiBase ?? "https://foreupsoftware.com";
     const holes = cfg.holes ?? 18;
 
+    // Build a per-tee-time deep link that pre-selects the facility (schedule_id)
+    // on the booking widget. Pattern: /booking/<bookingId>/<scheduleId>#/teetimes
+    // The user lands directly on the Reservations view with the right course
+    // selected — they just pick the date + players + tee time.
+    const bookingIdMatch = ctx.course.bookingUrl.match(/\/booking\/(\d+)/);
+    const bookingId = bookingIdMatch?.[1];
+    const deepLinkBase = bookingId
+      ? `${apiBase}/index.php/booking/${bookingId}/${cfg.scheduleId}#/teetimes`
+      : ctx.course.bookingUrl;
+
     const headers: Record<string, string> = {
       accept: "application/json",
       "user-agent":
@@ -147,7 +157,7 @@ export const foreUpScraper: Scraper = {
           );
         }
         const json = (await retry.json()) as ForeUpSlot[];
-        results.push(...parseSlots(json, ctx.course.bookingUrl));
+        results.push(...parseSlots(json, deepLinkBase));
         continue;
       }
 
@@ -159,7 +169,7 @@ export const foreUpScraper: Scraper = {
       }
 
       const json = (await res.json()) as ForeUpSlot[];
-      results.push(...parseSlots(json, ctx.course.bookingUrl));
+      results.push(...parseSlots(json, deepLinkBase));
     }
 
     return results;
