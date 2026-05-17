@@ -10,6 +10,7 @@ import {
   writeTeeTimes,
 } from "./_shared/supabase.js";
 import { closeBrowser } from "./_shared/browser.js";
+import { checkAndSendAlerts } from "./_shared/alerts.js";
 import type { CourseConfig } from "./_types.js";
 
 // Env loading: locally, run with `node --env-file=.env`. In GH Actions, env
@@ -116,6 +117,16 @@ async function main() {
   console.log(
     `Done. ${totalTimes} total tee times across ${courses.length - failures}/${courses.length} courses.`,
   );
+
+  // Send digest email for any new tee times that match the user's criteria.
+  // No-op if RESEND_API_KEY or ALERT_EMAIL is unset.
+  try {
+    const { matched, sent } = await checkAndSendAlerts();
+    if (sent > 0)
+      console.log(`Alerts: emailed ${sent} new slot${sent === 1 ? "" : "s"} (${matched} matched total)`);
+  } catch (err) {
+    console.error("Alerts step failed:", err instanceof Error ? err.message : err);
+  }
 
   // Hard-exit so any lingering Playwright contexts (chronogolf/cps keep their
   // warmed browser contexts in module-level maps) don't keep Node alive or

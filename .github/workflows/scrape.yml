@@ -21,6 +21,8 @@ jobs:
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
       FOREUP_USERNAME: ${{ secrets.FOREUP_USERNAME }}
       FOREUP_PASSWORD: ${{ secrets.FOREUP_PASSWORD }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
 
     steps:
       - uses: actions/checkout@v4
