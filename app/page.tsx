@@ -166,8 +166,8 @@ function ViewTabs({
   totalMuni: number;
 }) {
   const tabs: Array<{ key: View; label: string; count: number }> = [
-    { key: "all", label: "All courses", count: totalAll },
     { key: "muni", label: "SD munis", count: totalMuni },
+    { key: "all", label: "All courses", count: totalAll },
   ];
   return (
     <div className="flex gap-2">
