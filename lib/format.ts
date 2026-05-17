@@ -1,5 +1,31 @@
 const TZ = "America/Los_Angeles";
 
+/**
+ * Per-course accent color. Returns Tailwind class fragments.
+ * `bar` is a vertical stripe (full opacity), `dot` is a small swatch.
+ */
+export function courseAccent(slug: string | undefined): {
+  bar: string;
+  dot: string;
+  label: string;
+} {
+  switch (slug) {
+    case "torrey-pines-north":
+    case "torrey-pines-south":
+      return { bar: "bg-emerald-500", dot: "bg-emerald-500", label: "emerald" };
+    case "balboa-park":
+      return { bar: "bg-rose-400", dot: "bg-rose-400", label: "rose" };
+    case "mission-bay":
+      return { bar: "bg-sky-500", dot: "bg-sky-500", label: "sky" };
+    case "tecolote-canyon":
+      return { bar: "bg-amber-500", dot: "bg-amber-500", label: "amber" };
+    case "coronado-muni":
+      return { bar: "bg-indigo-500", dot: "bg-indigo-500", label: "indigo" };
+    default:
+      return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
+  }
+}
+
 export function formatDayHeader(d: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,

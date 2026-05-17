@@ -5,7 +5,7 @@ import {
   type TeeTimeRow,
 } from "@/lib/supabase-server";
 import {
-  chargesBookingFee,
+  courseAccent,
   dayKey,
   dayKeyChargesBookingFee,
   formatDayChip,
@@ -40,7 +40,7 @@ export default async function Page({
 
   if (loadError) {
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+      <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
         <p className="font-medium">Couldn&apos;t load tee times.</p>
         <p className="mt-1 text-red-700">{loadError}</p>
       </div>
@@ -49,14 +49,17 @@ export default async function Page({
 
   if (rows.length === 0) {
     return (
-      <p className="text-sm text-neutral-500">
-        No upcoming tee times. Run <code>npm run scrape</code> locally to seed.
-      </p>
+      <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center text-sm text-neutral-500">
+        <div className="mb-2 text-2xl">🏌️</div>
+        <p>No upcoming tee times yet.</p>
+        <p className="mt-1 text-xs text-neutral-400">
+          Run <code className="rounded bg-neutral-100 px-1">npm run scrape</code>{" "}
+          locally to seed.
+        </p>
+      </div>
     );
   }
 
-  // Group rows by day. Map preserves insertion order; rows arrived sorted, so
-  // the keys come out in chronological order.
   const byDay = new Map<string, TeeTimeRow[]>();
   for (const r of rows) {
     const k = dayKey(new Date(r.tee_time_at));
@@ -66,40 +69,50 @@ export default async function Page({
   }
   const days = Array.from(byDay.keys());
 
-  // Pick the day to display: requested if valid, otherwise the first day
-  // with availability.
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
   const dayRows = byDay.get(selectedDay) ?? [];
   const selectedDate = new Date(dayRows[0].tee_time_at);
+  const viableToday = dayRows.filter((r) => r.players_avail >= 2).length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <DayPicker days={days} byDay={byDay} selected={selectedDay} />
 
       <section>
-        <h2 className="mb-2 flex flex-wrap items-baseline gap-x-2 text-sm font-semibold uppercase tracking-wide text-neutral-500">
-          <span>{formatDayHeader(selectedDate)}</span>
-          <span className="font-normal normal-case text-neutral-400">
-            · {dayRows.length} tee times
-          </span>
-          {dayKeyChargesBookingFee(selectedDay) && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 normal-case tracking-normal">
-              +booking fee
-            </span>
-          )}
-        </h2>
-        <ul className="divide-y divide-neutral-200 rounded-lg border border-neutral-200 bg-white">
+        <header className="mb-3 flex items-baseline justify-between gap-2">
+          <div>
+            <h2 className="text-base font-semibold text-neutral-900">
+              {formatDayHeader(selectedDate)}
+            </h2>
+            <p className="text-xs text-neutral-500">
+              <span className="font-medium text-emerald-700">
+                {viableToday}
+              </span>{" "}
+              viable · {dayRows.length} total
+              {dayKeyChargesBookingFee(selectedDay) && (
+                <>
+                  {" · "}
+                  <span className="font-medium text-amber-700">
+                    +booking fee
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+        </header>
+
+        <ul className="overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-sm divide-y divide-neutral-100">
           {dayRows.map((r) => (
             <TeeTimeRow key={r.id} row={r} />
           ))}
         </ul>
       </section>
 
-      <footer className="pt-2 text-xs text-neutral-400">
+      <footer className="pt-2 text-center text-[11px] text-neutral-400">
         {lastScrape
-          ? `Last updated ${relativeMinutes(lastScrape)}.`
-          : "No scrape data yet."}
+          ? `Last updated ${relativeMinutes(lastScrape)}`
+          : "No scrape data yet"}
       </footer>
     </div>
   );
@@ -118,10 +131,9 @@ function DayPicker({
     <div className="-mx-4 overflow-x-auto px-4">
       <div className="flex gap-2 pb-1">
         {days.map((d) => {
-          const count = byDay.get(d)?.length ?? 0;
-          const viable = (byDay.get(d) ?? []).filter(
-            (r) => r.players_avail >= 2,
-          ).length;
+          const rowsForDay = byDay.get(d) ?? [];
+          const viable = rowsForDay.filter((r) => r.players_avail >= 2).length;
+          const total = rowsForDay.length;
           const isSelected = d === selected;
           const fee = dayKeyChargesBookingFee(d);
           return (
@@ -131,34 +143,41 @@ function DayPicker({
               prefetch={false}
               scroll={false}
               className={
-                "shrink-0 rounded-lg border px-3 py-2 text-center text-xs font-medium transition-colors " +
+                "relative shrink-0 rounded-xl border px-3.5 py-2.5 text-center text-xs font-medium transition-all " +
                 (isSelected
-                  ? "border-brand bg-brand text-white"
-                  : "border-neutral-200 bg-white text-neutral-700 hover:bg-neutral-50")
+                  ? "border-brand bg-brand text-white shadow-md scale-[1.02]"
+                  : "border-neutral-200 bg-white text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50")
               }
             >
-              <div className="flex items-center justify-center gap-1 whitespace-nowrap">
-                <span>{formatDayChip(d)}</span>
-                {fee && (
-                  <span
-                    title="Booking fee applies (8+ days out)"
-                    className={
-                      "text-[10px] font-semibold " +
-                      (isSelected ? "text-amber-200" : "text-amber-600")
-                    }
-                  >
-                    +fee
-                  </span>
-                )}
+              <div className="whitespace-nowrap text-[11px] uppercase tracking-wider opacity-80">
+                {formatDayChip(d)}
               </div>
-              <div
-                className={
-                  "mt-0.5 text-[10px] " +
-                  (isSelected ? "text-white/80" : "text-neutral-400")
-                }
-              >
-                {viable} viable · {count} total
+              <div className="mt-0.5 flex items-baseline justify-center gap-1">
+                <span className="text-base font-bold tabular-nums">
+                  {viable}
+                </span>
+                <span
+                  className={
+                    "text-[10px] tabular-nums " +
+                    (isSelected ? "text-white/70" : "text-neutral-400")
+                  }
+                >
+                  / {total}
+                </span>
               </div>
+              {fee && (
+                <span
+                  className={
+                    "absolute -right-1 -top-1 rounded-full px-1.5 py-0.5 text-[9px] font-semibold leading-none " +
+                    (isSelected
+                      ? "bg-amber-300 text-amber-900"
+                      : "bg-amber-100 text-amber-700")
+                  }
+                  title="Booking fee applies"
+                >
+                  $
+                </span>
+              )}
             </Link>
           );
         })}
@@ -171,32 +190,42 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
   const time = new Date(row.tee_time_at);
   const viable = row.players_avail >= 2;
   const courseName = row.courses?.name ?? "Unknown course";
+  const accent = courseAccent(row.courses?.slug);
 
   return (
     <li
       className={
-        "flex items-center gap-3 px-4 py-3 text-sm " +
-        (viable ? "" : "opacity-50")
+        "relative flex items-center gap-3 px-3 py-3 text-sm transition-colors " +
+        (viable ? "hover:bg-neutral-50" : "opacity-50")
       }
     >
-      <div className="w-20 shrink-0 font-medium tabular-nums">
+      <div className={"absolute left-0 top-0 h-full w-1 " + accent.bar} />
+      <div className="ml-1 w-16 shrink-0 text-base font-semibold tabular-nums leading-tight">
         {formatTime(time)}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-2 truncate font-medium">
-          <span className="truncate">{courseName}</span>
+        <div className="flex items-baseline gap-1.5">
+          <span className="truncate font-medium text-neutral-900">
+            {courseName}
+          </span>
           {row.holes === 9 && (
-            <span className="shrink-0 rounded bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
-              9-hole
+            <span className="shrink-0 rounded bg-neutral-200 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-neutral-700">
+              9
             </span>
           )}
         </div>
-        <div className="text-xs text-neutral-500">
-          {formatPrice(row.price_cents)} · {row.players_avail}{" "}
-          {row.players_avail === 1 ? "spot" : "spots"}
+        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-500">
+          <span className="font-medium text-neutral-700 tabular-nums">
+            {formatPrice(row.price_cents)}
+          </span>
+          <span>·</span>
+          <span className="tabular-nums">
+            {row.players_avail}{" "}
+            {row.players_avail === 1 ? "spot" : "spots"}
+          </span>
           {viable && (
-            <span className="ml-2 rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
-              2+ open
+            <span className="rounded-full bg-emerald-50 px-1.5 py-0.5 text-[10px] font-medium text-emerald-700">
+              ✓ 2+
             </span>
           )}
         </div>
@@ -205,9 +234,9 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
         href={row.booking_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-md bg-brand px-3 py-1.5 text-xs font-medium text-white hover:opacity-90"
+        className="shrink-0 rounded-lg bg-brand px-3 py-2 text-xs font-semibold text-white shadow-sm transition-opacity hover:opacity-90 active:opacity-80"
       >
-        Book
+        Book →
       </a>
     </li>
   );
