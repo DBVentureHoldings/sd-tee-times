@@ -18,21 +18,25 @@ import {
 export const revalidate = 60;
 
 // Courses that count as "San Diego munis" for the filter tab.
-// City of San Diego + City of Coronado run-by-city courses.
+// City of San Diego + City of Coronado + Navy MWR (Admiral Baker — civilians OK).
 const MUNI_SLUGS = new Set([
   "torrey-pines-north",
   "torrey-pines-south",
   "balboa-park",
   "mission-bay",
   "coronado-muni",
+  "admiral-baker-north",
+  "admiral-baker-south",
 ]);
 
-// North County: Carlsbad / Encinitas / Vista / Rancho Bernardo area.
+// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway area.
 const NC_SLUGS = new Set([
   "encinitas-ranch",
   "crossings-carlsbad",
   "twin-oaks",
   "rancho-bernardo-inn",
+  "maderas",
+  "links-at-lakehouse",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.

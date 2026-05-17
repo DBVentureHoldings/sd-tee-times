@@ -256,12 +256,48 @@
     "active": true
   },
   {
-    "slug": "admiral-baker",
-    "name": "Admiral Baker (Navy MWR)",
-    "bookingUrl": "https://navylifesw.com/sandiego/golf/admiral-baker",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "slug": "admiral-baker-north",
+    "name": "Admiral Baker — North",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/13495-admiral-baker-golf-course-north-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 13495,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/13495-admiral-baker-golf-course-north-course/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "admiral-baker-south",
+    "name": "Admiral Baker — South",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/13496-admiral-baker-golf-course-south-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 13496,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/13496-admiral-baker-golf-course-south-course/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "maderas",
+    "name": "Maderas Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/3069-maderas-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 3069,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/3069-maderas-golf-club/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "links-at-lakehouse",
+    "name": "The Links at Lakehouse",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/4958-the-links-at-lakehouse/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 4958,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/4958-the-links-at-lakehouse/search"
+    },
+    "active": true
   },
   {
     "slug": "enagic-chula-vista",

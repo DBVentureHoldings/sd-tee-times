@@ -47,6 +47,13 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-stone-500", dot: "bg-stone-500", label: "stone" };
     case "bonita":
       return { bar: "bg-blue-500", dot: "bg-blue-500", label: "blue" };
+    case "admiral-baker-north":
+    case "admiral-baker-south":
+      return { bar: "bg-slate-600", dot: "bg-slate-600", label: "slate" };
+    case "maderas":
+      return { bar: "bg-emerald-700", dot: "bg-emerald-700", label: "emerald" };
+    case "links-at-lakehouse":
+      return { bar: "bg-sky-700", dot: "bg-sky-700", label: "sky" };
     default:
       return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
   }
