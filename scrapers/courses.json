@@ -15,7 +15,8 @@
       "holes": [
         18,
         9
-      ]
+      ],
+      "maxPriceCents": 15000
     },
     "active": true
   },
@@ -35,7 +36,8 @@
       "holes": [
         18,
         9
-      ]
+      ],
+      "maxPriceCents": 15000
     },
     "active": true
   },
@@ -51,7 +53,8 @@
       "bookingClasses": [
         "51735",
         "929"
-      ]
+      ],
+      "maxPriceCents": 10000
     },
     "active": true
   },
@@ -67,7 +70,8 @@
       "bookingClasses": [
         "1043",
         "925"
-      ]
+      ],
+      "maxPriceCents": 10000
     },
     "active": true
   },

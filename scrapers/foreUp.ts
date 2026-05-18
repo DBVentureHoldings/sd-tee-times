@@ -14,10 +14,15 @@ import { newContext } from "./_shared/browser.js";
  *   - bookingClass (string | number)
  *
  * Optional:
- *   - requiresAuth (boolean) — login via Playwright before API calls
- *   - holes        (number, default 18)
- *   - apiBase      (string, default "https://foreupsoftware.com")
- *   - loginUrl     (string, default uses bookingUrl)
+ *   - requiresAuth  (boolean) — login via Playwright before API calls
+ *   - holes         (number,  default 18)
+ *   - apiBase       (string,  default "https://foreupsoftware.com")
+ *   - loginUrl      (string,  default uses bookingUrl)
+ *   - maxPriceCents (number)  — drop any slot priced above this. Used for
+ *       City of SD munis where we hit both resident + non-resident booking
+ *       classes and want to keep only the resident (subsidized) tier. e.g.,
+ *       Torrey resident maxes ~$110; cap at 15000 to drop $300+ non-resident
+ *       inventory that the user can't actually book at the resident rate.
  */
 
 let cachedCookie: string | null = null;
@@ -98,6 +103,7 @@ export const foreUpScraper: Scraper = {
       apiBase?: string;
       requiresAuth?: boolean;
       loginUrl?: string;
+      maxPriceCents?: number;
     };
 
     const classes: Array<string | number> = Array.isArray(cfg.bookingClasses)
@@ -206,6 +212,17 @@ export const foreUpScraper: Scraper = {
       }
     }
 
+    // Drop slots above the per-course max price. This is the resident-only
+    // filter for City of SD munis: we hit all booking classes (resident +
+    // non-resident + advance), so a single tee time can show up at multiple
+    // price points. Anything above the cap is non-resident inventory we
+    // can't book at the resident rate.
+    const cap = cfg.maxPriceCents;
+    if (typeof cap === "number") {
+      return results.filter((r) =>
+        r.priceCents == null ? true : r.priceCents <= cap,
+      );
+    }
     return results;
   },
 };
