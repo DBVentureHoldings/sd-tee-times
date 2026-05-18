@@ -284,6 +284,15 @@
     "active": true
   },
   {
+    "_note": "Arrowood books on GolfDistrict (arrowood.golfdistrict.com). GolfNow lists the facility but no inventory is published there. Needs a GolfDistrict scraper to scrape — leaving inactive for now.",
+    "slug": "arrowood",
+    "name": "Arrowood Golf Course",
+    "bookingUrl": "https://arrowood.golfdistrict.com/F0B",
+    "scraperId": "golfdistrict",
+    "scraperConfig": {},
+    "active": false
+  },
+  {
     "slug": "mt-woodson",
     "name": "Mt. Woodson Golf Club",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/4078-mt-woodson-golf-club/search",

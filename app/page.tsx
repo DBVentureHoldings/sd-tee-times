@@ -32,7 +32,7 @@ const MUNI_SLUGS = new Set([
   "mission-trails",
 ]);
 
-// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido.
+// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido / Oceanside.
 const NC_SLUGS = new Set([
   "encinitas-ranch",
   "crossings-carlsbad",
@@ -43,6 +43,7 @@ const NC_SLUGS = new Set([
   "mt-woodson",
   "san-vicente",
   "vineyard-escondido",
+  "arrowood",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.

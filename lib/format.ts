@@ -60,6 +60,8 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-rose-700", dot: "bg-rose-700", label: "rose" };
     case "vineyard-escondido":
       return { bar: "bg-purple-700", dot: "bg-purple-700", label: "purple" };
+    case "arrowood":
+      return { bar: "bg-teal-700", dot: "bg-teal-700", label: "teal" };
     default:
       return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
   }
