@@ -45,6 +45,8 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-orange-400", dot: "bg-orange-400", label: "orange" };
     case "enagic-chula-vista":
       return { bar: "bg-stone-500", dot: "bg-stone-500", label: "stone" };
+    case "chula-vista-muni":
+      return { bar: "bg-green-700", dot: "bg-green-700", label: "green" };
     case "bonita":
       return { bar: "bg-blue-500", dot: "bg-blue-500", label: "blue" };
     case "admiral-baker-north":

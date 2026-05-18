@@ -52,6 +52,7 @@ const NC_SLUGS = new Set([
 const SC_SLUGS = new Set([
   "national-city",
   "enagic-chula-vista",
+  "chula-vista-muni",
   "bonita",
 ]);
 

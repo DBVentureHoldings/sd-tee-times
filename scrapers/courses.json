@@ -362,5 +362,15 @@
       "clubUrl": "https://www.golfnow.com/tee-times/facility/245-enagic-golf-club-at-eastlake/search"
     },
     "active": true
+  },
+  {
+    "slug": "chula-vista-muni",
+    "name": "Chula Vista Golf Course",
+    "bookingUrl": "https://apimanager-cc11.clubcaddie.com/webapi/view/jbfdabab/slots?player=1&ratetype=any",
+    "scraperId": "clubcaddie",
+    "scraperConfig": {
+      "bookingViewSlug": "jbfdabab"
+    },
+    "active": true
   }
 ]
