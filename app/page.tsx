@@ -248,27 +248,35 @@ export default async function Page({
 
   return (
     <div className="space-y-5">
-      <ViewTabs
-        view={view}
-        selectedDay={requestedDay ?? selectedDay}
-        totalAll={rows.length}
-        totalMuni={muniTotal}
-        totalNc={ncTotal}
-        totalSc={scTotal}
-        dimmed={Boolean(course)}
-      />
-      <CoursePicker
-        groups={courseGroups}
-        selected={course}
-        preserveQuery={preserveQuery}
-      />
-      <DayPicker
-        days={days}
-        byDay={byDay}
-        selected={selectedDay}
-        view={view}
-        course={course}
-      />
+      {/*
+        Sticky filter bar: tabs + course picker + day chips stay pinned to the
+        viewport top as the user scrolls through tee times. `top-0` sticks to
+        the very top of <main>; layout's `<header>` scrolls away first so we
+        don't double-stack with the brand header.
+      */}
+      <div className="sticky top-0 z-20 -mx-4 space-y-3 border-b-2 border-black bg-cream px-4 pb-3 pt-4 shadow-[0_3px_0_0_rgba(0,0,0,0.04)]">
+        <ViewTabs
+          view={view}
+          selectedDay={requestedDay ?? selectedDay}
+          totalAll={rows.length}
+          totalMuni={muniTotal}
+          totalNc={ncTotal}
+          totalSc={scTotal}
+          dimmed={Boolean(course)}
+        />
+        <CoursePicker
+          groups={courseGroups}
+          selected={course}
+          preserveQuery={preserveQuery}
+        />
+        <DayPicker
+          days={days}
+          byDay={byDay}
+          selected={selectedDay}
+          view={view}
+          course={course}
+        />
+      </div>
 
       <section>
         <header className="mb-3 border-b-2 border-black pb-2">
