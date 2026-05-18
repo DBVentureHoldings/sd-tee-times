@@ -60,19 +60,22 @@ function codeToKind(code: number | undefined): WeatherKind {
   return "rain";
 }
 
-async function fetchForecastUncached(): Promise<Map<string, DayWeather>> {
+/**
+ * Internal: returns plain JSON-serializable entries (NOT a Map). This is
+ * what `unstable_cache` wraps. Returning a Map directly causes Next to
+ * serialize it to `{}` (losing the prototype) — at render time we'd then
+ * call `.get()` on a plain object and crash with "f.get is not a function."
+ */
+async function fetchForecastEntries(): Promise<Array<[string, DayWeather]>> {
   const url =
     `https://api.open-meteo.com/v1/forecast` +
     `?latitude=${SD_LAT}&longitude=${SD_LON}` +
     `&daily=weather_code,temperature_2m_max,precipitation_sum` +
     `&temperature_unit=fahrenheit&precipitation_unit=inch` +
     `&timezone=America/Los_Angeles&forecast_days=16`;
-  const out = new Map<string, DayWeather>();
+  const out: Array<[string, DayWeather]> = [];
   try {
-    const res = await fetch(url, {
-      // Server-side fetch. Next's fetch cache would otherwise key forever.
-      next: { revalidate: 1800 },
-    });
+    const res = await fetch(url, { next: { revalidate: 1800 } });
     if (!res.ok) return out;
     const json = (await res.json()) as OpenMeteoResponse;
     const days = json.daily?.time ?? [];
@@ -80,26 +83,33 @@ async function fetchForecastUncached(): Promise<Map<string, DayWeather>> {
     const highs = json.daily?.temperature_2m_max ?? [];
     const precs = json.daily?.precipitation_sum ?? [];
     for (let i = 0; i < days.length; i++) {
-      out.set(days[i], {
-        kind: codeToKind(codes[i]),
-        highF: typeof highs[i] === "number" ? Math.round(highs[i]) : undefined,
-        precipIn: typeof precs[i] === "number" ? precs[i] : undefined,
-      });
+      out.push([
+        days[i],
+        {
+          kind: codeToKind(codes[i]),
+          highF:
+            typeof highs[i] === "number" ? Math.round(highs[i]) : undefined,
+          precipIn: typeof precs[i] === "number" ? precs[i] : undefined,
+        },
+      ]);
     }
   } catch {
-    // Network blip or API down: just return empty. Day chips render fine
-    // without weather icons.
+    // Network blip or API down: empty array. Day chips render fine without.
   }
   return out;
 }
 
-/**
- * Cached 30 min. Keyed by an empty tag so all calls within a 30-min window
- * share the same forecast — Open-Meteo's daily forecast doesn't change that
- * often, and we'd rather under-call than rate-limit.
- */
-export const fetchSDForecast = unstable_cache(
-  fetchForecastUncached,
-  ["sd-forecast-v1"],
+const cachedEntries = unstable_cache(
+  fetchForecastEntries,
+  ["sd-forecast-v2"],
   { revalidate: 1800, tags: ["weather"] },
 );
+
+/**
+ * Cached 30 min. Returns a Map (rehydrated outside the cache layer so we
+ * don't hit the serialization issue described above).
+ */
+export async function fetchSDForecast(): Promise<Map<string, DayWeather>> {
+  const entries = await cachedEntries();
+  return new Map(entries);
+}
