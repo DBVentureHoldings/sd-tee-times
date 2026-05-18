@@ -18,7 +18,7 @@ import {
 export const revalidate = 60;
 
 // Courses that count as "San Diego munis" for the filter tab.
-// City of San Diego + City of Coronado + Navy MWR (Admiral Baker — civilians OK).
+// City-of-SD-style courses in SD proper + Coronado + Navy MWR.
 const MUNI_SLUGS = new Set([
   "torrey-pines-north",
   "torrey-pines-south",
@@ -27,6 +27,8 @@ const MUNI_SLUGS = new Set([
   "coronado-muni",
   "admiral-baker-north",
   "admiral-baker-south",
+  "riverwalk",
+  "mission-trails",
 ]);
 
 // North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido.
