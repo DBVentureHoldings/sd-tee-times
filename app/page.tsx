@@ -461,7 +461,7 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
             </span>
           )}
         </div>
-        <div className="mt-0.5 flex items-center gap-1.5 text-xs text-neutral-600">
+        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
           <span className="font-bold text-black tabular-nums">
             {formatPrice(row.price_cents)}
           </span>
@@ -473,6 +473,14 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
           {viable && (
             <span className="rounded-sm border border-brand bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">
               ✓ 2+
+            </span>
+          )}
+          {row.players_min > 1 && (
+            <span
+              className="rounded-sm border border-magred bg-magred/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-magred"
+              title={`This course requires at least ${row.players_min} players to book this slot — solo bookings are blocked.`}
+            >
+              min {row.players_min}
             </span>
           )}
         </div>

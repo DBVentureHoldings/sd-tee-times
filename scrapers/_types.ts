@@ -2,6 +2,12 @@ export interface ScrapedTeeTime {
   teeTimeAt: Date;
   playersMax: number;
   playersAvail: number;
+  /**
+   * Minimum players the course requires to book this slot. Most courses
+   * default to 1 (solo bookings allowed). Some operators — notably JC
+   * Resorts via CPS — require 2+ even when spots are open.
+   */
+  playersMin?: number;
   priceCents?: number;
   bookingUrl: string;
   holes: number;

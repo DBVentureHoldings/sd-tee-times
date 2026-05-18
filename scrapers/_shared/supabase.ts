@@ -83,6 +83,7 @@ export async function writeTeeTimes(args: {
     tee_time_at: t.teeTimeAt.toISOString(),
     players_max: t.playersMax,
     players_avail: t.playersAvail,
+    players_min: t.playersMin ?? 1,
     price_cents: t.priceCents ?? null,
     booking_url: t.bookingUrl,
     holes: t.holes,

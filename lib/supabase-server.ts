@@ -22,6 +22,7 @@ export interface TeeTimeRow {
   tee_time_at: string;
   players_max: number;
   players_avail: number;
+  players_min: number;
   price_cents: number | null;
   booking_url: string;
   holes: number;
@@ -43,7 +44,7 @@ export async function fetchUpcomingTeeTimes(
     const { data, error } = await sb
       .from("tee_times")
       .select(
-        "id, course_id, tee_time_at, players_max, players_avail, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
+        "id, course_id, tee_time_at, players_max, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
       )
       .gt("tee_time_at", nowIso)
       .order("tee_time_at", { ascending: true })

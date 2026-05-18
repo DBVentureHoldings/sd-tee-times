@@ -164,6 +164,7 @@ interface CpsSlot {
   minPlayer?: number;
   maxPlayer?: number;
   availableParticipantNo?: number[];
+  isNotAllowSingleBooking?: boolean;
   shItemPrices?: Array<{
     shItemCode?: string;
     price?: number;
@@ -185,22 +186,29 @@ function toScraped(slot: CpsSlot, bookingUrl: string): ScrapedTeeTime {
   // CPS times come without an explicit timezone but represent local (PT).
   // Add a "PT offset" by treating the wall-clock as Pacific.
   const teeTimeAt = parsePacific(slot.startTime ?? "");
-  // availableParticipantNo is the list of group sizes that can still book —
-  // max value = maximum players that can be added = open spots.
+  // availableParticipantNo is the list of OPEN POSITIONS in the foursome
+  // (e.g., [3,4] means 2 spots remain — positions 3 and 4). The COUNT of
+  // entries is the open-spot count, NOT the max value.
   const avail =
     Array.isArray(slot.availableParticipantNo) &&
     slot.availableParticipantNo.length > 0
-      ? Math.max(...slot.availableParticipantNo)
+      ? slot.availableParticipantNo.length
       : (slot.maxPlayer ?? 4);
   // Pull the green-fee price; cart fee comes through as a separate item.
   const greenFee = slot.shItemPrices?.find(
     (p) => (p.shItemCode ?? "").toLowerCase().includes("greenfee"),
   );
   const price = greenFee?.displayPrice ?? greenFee?.price;
+  // Surface the course's group-size floor so the UI can warn about courses
+  // that don't allow solo bookings (JC Resorts, etc.).
+  const playersMin = slot.isNotAllowSingleBooking
+    ? Math.max(slot.minPlayer ?? 2, 2)
+    : (slot.minPlayer ?? 1);
   return {
     teeTimeAt: teeTimeAt ?? new Date(0),
     playersMax: slot.maxPlayer ?? 4,
     playersAvail: avail,
+    playersMin,
     priceCents: typeof price === "number" ? Math.round(price * 100) : undefined,
     bookingUrl,
     holes: slot.holes ?? 18,
