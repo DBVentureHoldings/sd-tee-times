@@ -209,6 +209,7 @@ export default async function Page({
       <div className="space-y-5">
         <ViewTabs
           view={view}
+          selectedDay={requestedDay}
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
@@ -248,6 +249,7 @@ export default async function Page({
     <div className="space-y-5">
       <ViewTabs
         view={view}
+        selectedDay={requestedDay ?? selectedDay}
         totalAll={rows.length}
         totalMuni={muniTotal}
         totalNc={ncTotal}
@@ -303,6 +305,7 @@ export default async function Page({
 
 function ViewTabs({
   view,
+  selectedDay,
   totalAll,
   totalMuni,
   totalNc,
@@ -310,6 +313,14 @@ function ViewTabs({
   dimmed = false,
 }: {
   view: View;
+  /**
+   * Day to preserve in tab hrefs. Keeps the user's selected day "sticky" when
+   * they switch region tabs — without this, tapping a tab drops `?day=` and
+   * the page silently resets to the first available day (which is today).
+   * Page-level fallback handles the case where the new region has no times on
+   * this day.
+   */
+  selectedDay: string | undefined;
   totalAll: number;
   totalMuni: number;
   totalNc: number;
@@ -327,10 +338,14 @@ function ViewTabs({
     <div className={"flex gap-2 " + (dimmed ? "opacity-60" : "")}>
       {tabs.map((t) => {
         const active = view === t.key && !dimmed;
+        const parts: string[] = [];
+        if (t.key !== "all") parts.push(`view=${t.key}`);
+        if (selectedDay) parts.push(`day=${selectedDay}`);
+        const href = parts.length > 0 ? `/?${parts.join("&")}` : "/";
         return (
           <Link
             key={t.key}
-            href={t.key === "all" ? "/" : `/?view=${t.key}`}
+            href={href}
             prefetch={false}
             scroll={false}
             className={
