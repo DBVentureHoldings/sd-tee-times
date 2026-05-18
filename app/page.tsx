@@ -15,6 +15,7 @@ import {
   relativeMinutes,
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
+import { DayPickerScroll } from "./DayPickerScroll";
 
 export const revalidate = 60;
 
@@ -389,9 +390,8 @@ function DayPicker({
   if (course) extraParts.push(`course=${course}`);
   const extraParams = extraParts.length ? `&${extraParts.join("&")}` : "";
   return (
-    <div className="-mx-4 overflow-x-auto px-4">
-      <div className="flex gap-2 pb-1">
-        {days.map((d) => {
+    <DayPickerScroll>
+      {days.map((d) => {
           const rowsForDay = byDay.get(d) ?? [];
           const viable = rowsForDay.filter((r) => r.players_avail >= 2).length;
           const total = rowsForDay.length;
@@ -403,6 +403,7 @@ function DayPicker({
               href={`/?day=${d}${extraParams}`}
               prefetch={false}
               scroll={false}
+              data-selected={isSelected || undefined}
               className={
                 "relative shrink-0 rounded-sm border-2 border-black px-3 py-2 text-center transition-all " +
                 (isSelected
@@ -442,8 +443,7 @@ function DayPicker({
             </Link>
           );
         })}
-      </div>
-    </div>
+    </DayPickerScroll>
   );
 }
 
