@@ -46,9 +46,17 @@ export default function RootLayout({
                   San Diego&apos;s open tee sheet
                 </p>
               </div>
-              <span className="rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
-                Vol. I
-              </span>
+              <div className="flex flex-col items-end gap-1.5">
+                <a
+                  href="mailto:Daniel@globaldronehq.com?subject=SD%20Tee%20Times%20feedback&body=What%20did%20you%20like%20or%20what%20sucks%3F%20%28brutal%20honesty%20welcome%29%0A%0A"
+                  className="rounded-sm border border-cream/60 bg-cream/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-cream transition-colors hover:bg-cream hover:text-brand"
+                >
+                  Got feedback?
+                </a>
+                <span className="rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
+                  Vol. I
+                </span>
+              </div>
             </div>
           </div>
         </header>
