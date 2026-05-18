@@ -1,9 +1,10 @@
 name: Scrape tee times
 
 on:
-  schedule:
-    # Every 30 minutes. Adjust if you hit Actions minutes limits.
-    - cron: "*/30 * * * *"
+  # GH Actions' own cron is unreliable on the free tier (can be delayed by
+  # hours under platform load). Vercel Cron triggers this workflow via the
+  # /api/cron/scrape route on every-30-min schedule. We keep workflow_dispatch
+  # for manual + Vercel-triggered runs.
   workflow_dispatch: {}
 
 concurrency:
