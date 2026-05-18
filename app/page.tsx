@@ -311,10 +311,20 @@ export default async function Page({
         </ul>
       </section>
 
-      <footer className="pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
-        {lastScrape
-          ? `Updated ${relativeMinutes(lastScrape)}`
-          : "No data yet"}
+      <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+        <div>
+          {lastScrape
+            ? `Updated ${relativeMinutes(lastScrape)}`
+            : "No data yet"}
+        </div>
+        <div>
+          <a
+            href="mailto:Daniel@globaldronehq.com?subject=SD%20Tee%20Times%20feedback&body=What%20did%20you%20like%20or%20what%20sucks%3F%20%28brutal%20honesty%20welcome%29%0A%0A"
+            className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand"
+          >
+            Got feedback? Hit me up
+          </a>
+        </div>
       </footer>
     </div>
   );
