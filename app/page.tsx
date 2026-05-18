@@ -16,6 +16,7 @@ import {
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
+import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 
 export const revalidate = 60;
 
@@ -76,12 +77,17 @@ export default async function Page({
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
+  let weather = new Map<string, DayWeather>();
   let loadError: string | null = null;
 
   try {
-    [rows, lastScrape] = await Promise.all([
+    // Fetch tee times, last-scrape timestamp, and weather forecast in parallel.
+    // Weather is cached 30 min and Supabase is the long pole, so this adds
+    // ~no measurable latency on warm requests and ~200ms on cold.
+    [rows, lastScrape, weather] = await Promise.all([
       fetchUpcomingTeeTimes(),
       fetchLastScrapeAt(),
+      fetchSDForecast(),
     ]);
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Failed to load tee times";
@@ -275,6 +281,7 @@ export default async function Page({
           selected={selectedDay}
           view={view}
           course={course}
+          weather={weather}
         />
       </div>
 
@@ -386,12 +393,14 @@ function DayPicker({
   selected,
   view,
   course,
+  weather,
 }: {
   days: string[];
   byDay: Map<string, TeeTimeRow[]>;
   selected: string;
   view: View;
   course: string | undefined;
+  weather: Map<string, DayWeather>;
 }) {
   const extraParts: string[] = [];
   if (view !== "all") extraParts.push(`view=${view}`);
@@ -405,6 +414,7 @@ function DayPicker({
           const total = rowsForDay.length;
           const isSelected = d === selected;
           const fee = dayKeyChargesBookingFee(d);
+          const wx = weather.get(d);
           return (
             <Link
               key={d}
@@ -419,8 +429,9 @@ function DayPicker({
                   : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
               }
             >
-              <div className="font-display text-base uppercase leading-none tracking-wider whitespace-nowrap">
-                {formatDayChip(d)}
+              <div className="flex items-center justify-center gap-1.5 font-display text-base uppercase leading-none tracking-wider whitespace-nowrap">
+                <span>{formatDayChip(d)}</span>
+                {wx && <WeatherGlyph wx={wx} />}
               </div>
               <div className="mt-1 flex items-baseline justify-center gap-1">
                 <span
@@ -452,6 +463,44 @@ function DayPicker({
           );
         })}
     </DayPickerScroll>
+  );
+}
+
+/**
+ * Tiny weather glyph for a day chip. Renders an emoji with a tooltip that
+ * shows the forecast high + precip. Rain/storm get a soft pulse so the user's
+ * eye catches them at a glance.
+ */
+function WeatherGlyph({ wx }: { wx: DayWeather }) {
+  const icon =
+    wx.kind === "clear"
+      ? "☀️"
+      : wx.kind === "partly"
+        ? "🌤️"
+        : wx.kind === "fog"
+          ? "🌫️"
+          : wx.kind === "rain"
+            ? "🌧️"
+            : wx.kind === "storm"
+              ? "⛈️"
+              : "☁️";
+  const wet = wx.kind === "rain" || wx.kind === "storm";
+  const titleParts: string[] = [];
+  if (typeof wx.highF === "number") titleParts.push(`High ${wx.highF}°F`);
+  if (typeof wx.precipIn === "number" && wx.precipIn > 0)
+    titleParts.push(`${wx.precipIn.toFixed(2)}″ precip`);
+  const title = titleParts.join(" · ") || wx.kind;
+  return (
+    <span
+      title={title}
+      aria-label={title}
+      className={
+        "inline-block text-xs leading-none " +
+        (wet ? "animate-pulse" : "")
+      }
+    >
+      {icon}
+    </span>
   );
 }
 

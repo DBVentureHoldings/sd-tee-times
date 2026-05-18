@@ -1,0 +1,105 @@
+/**
+ * Tiny weather helper for the day chips.
+ *
+ * Hits Open-Meteo's free forecast API (no key, no rate limit on the free
+ * tier for low-volume use). One call returns daily forecasts for up to 16
+ * days ahead, which we cache for 30 min. Beyond 16 days the chip just
+ * shows no icon.
+ *
+ * Coordinates target central San Diego (Mission Bay / La Jolla area) —
+ * all our scraped courses are within ~40 mi of this point, so a single
+ * forecast is plenty for "is it going to rain at the golf course."
+ */
+
+import { unstable_cache } from "next/cache";
+
+// Roughly Mission Bay — pulls forecasts that apply to Torrey, Balboa,
+// Mission Bay, Coronado. North County (Encinitas/Carlsbad) and South
+// County (Bonita/Chula Vista) are close enough for daily forecast use.
+const SD_LAT = 32.85;
+const SD_LON = -117.2;
+
+/** Coarse weather state for icon mapping. Order matches visual severity. */
+export type WeatherKind =
+  | "clear"
+  | "partly"
+  | "cloudy"
+  | "fog"
+  | "rain"
+  | "storm";
+
+export interface DayWeather {
+  kind: WeatherKind;
+  /** High temp in °F, rounded. May be undefined if API omitted it. */
+  highF?: number;
+  /** Total precip for the day in inches. */
+  precipIn?: number;
+}
+
+interface OpenMeteoResponse {
+  daily?: {
+    time: string[];
+    weather_code?: number[];
+    temperature_2m_max?: number[];
+    precipitation_sum?: number[];
+  };
+}
+
+/**
+ * Map WMO weather codes (used by Open-Meteo) to our coarse kinds.
+ * See https://open-meteo.com/en/docs (weather_code section).
+ */
+function codeToKind(code: number | undefined): WeatherKind {
+  if (code == null) return "cloudy";
+  if (code === 0) return "clear";
+  if (code === 1 || code === 2) return "partly";
+  if (code === 3) return "cloudy";
+  if (code === 45 || code === 48) return "fog";
+  if (code >= 95) return "storm";
+  // 51-67 drizzle/rain, 71-77 snow (treat as rain for SD), 80-86 showers.
+  return "rain";
+}
+
+async function fetchForecastUncached(): Promise<Map<string, DayWeather>> {
+  const url =
+    `https://api.open-meteo.com/v1/forecast` +
+    `?latitude=${SD_LAT}&longitude=${SD_LON}` +
+    `&daily=weather_code,temperature_2m_max,precipitation_sum` +
+    `&temperature_unit=fahrenheit&precipitation_unit=inch` +
+    `&timezone=America/Los_Angeles&forecast_days=16`;
+  const out = new Map<string, DayWeather>();
+  try {
+    const res = await fetch(url, {
+      // Server-side fetch. Next's fetch cache would otherwise key forever.
+      next: { revalidate: 1800 },
+    });
+    if (!res.ok) return out;
+    const json = (await res.json()) as OpenMeteoResponse;
+    const days = json.daily?.time ?? [];
+    const codes = json.daily?.weather_code ?? [];
+    const highs = json.daily?.temperature_2m_max ?? [];
+    const precs = json.daily?.precipitation_sum ?? [];
+    for (let i = 0; i < days.length; i++) {
+      out.set(days[i], {
+        kind: codeToKind(codes[i]),
+        highF: typeof highs[i] === "number" ? Math.round(highs[i]) : undefined,
+        precipIn: typeof precs[i] === "number" ? precs[i] : undefined,
+      });
+    }
+  } catch {
+    // Network blip or API down: just return empty. Day chips render fine
+    // without weather icons.
+  }
+  return out;
+}
+
+/**
+ * Cached 30 min. Keyed by an empty tag so all calls within a 30-min window
+ * share the same forecast — Open-Meteo's daily forecast doesn't change that
+ * often, and we'd rather under-call than rate-limit.
+ */
+export const fetchSDForecast = unstable_cache(
+  fetchForecastUncached,
+  ["sd-forecast-v1"],
+  { revalidate: 1800, tags: ["weather"] },
+);
