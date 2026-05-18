@@ -14,6 +14,7 @@ import {
   formatTime,
   relativeMinutes,
 } from "@/lib/format";
+import { CoursePicker, type CourseGroup } from "./CoursePicker";
 
 export const revalidate = 60;
 
@@ -56,7 +57,7 @@ type View = "all" | "muni" | "nc" | "sc";
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ day?: string; view?: string }>;
+  searchParams: Promise<{ day?: string; view?: string; course?: string }>;
 }) {
   const sp = await searchParams;
   const requestedDay = sp.day;
@@ -68,6 +69,8 @@ export default async function Page({
         : sp.view === "sc"
           ? "sc"
           : "all";
+  const course =
+    sp.course && sp.course.trim().length > 0 ? sp.course.trim() : undefined;
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
@@ -106,8 +109,8 @@ export default async function Page({
     );
   }
 
-  // Apply the view filter (e.g., munis-only) before computing day chips so
-  // the counts and the visible chip set reflect what the user is browsing.
+  // Apply the view (tab) filter, then the course (dropdown) filter, before
+  // computing day chips so counts + chips reflect what the user is browsing.
   const filterSlugs =
     view === "muni"
       ? MUNI_SLUGS
@@ -116,9 +119,42 @@ export default async function Page({
         : view === "sc"
           ? SC_SLUGS
           : null;
-  const visibleRows = filterSlugs
+  const viewFilteredRows = filterSlugs
     ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
     : rows;
+  const visibleRows = course
+    ? viewFilteredRows.filter((r) => r.courses?.slug === course)
+    : viewFilteredRows;
+
+  // Build the course catalog for the picker, grouped by the same regions
+  // used by the tabs. Only include courses that have at least one upcoming
+  // tee time so we don't offer dead-end filters.
+  const courseStats = new Map<string, { name: string; count: number }>();
+  for (const r of rows) {
+    const slug = r.courses?.slug;
+    const name = r.courses?.name;
+    if (!slug || !name) continue;
+    const cur = courseStats.get(slug);
+    if (cur) cur.count++;
+    else courseStats.set(slug, { name, count: 1 });
+  }
+  const entriesFor = (slugs: Set<string>): CourseGroup["courses"] =>
+    Array.from(slugs)
+      .filter((s) => courseStats.has(s))
+      .map((s) => ({ slug: s, name: courseStats.get(s)!.name, count: courseStats.get(s)!.count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  const otherEntries: CourseGroup["courses"] = Array.from(courseStats.entries())
+    .filter(
+      ([s]) => !MUNI_SLUGS.has(s) && !NC_SLUGS.has(s) && !SC_SLUGS.has(s),
+    )
+    .map(([slug, { name, count }]) => ({ slug, name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const courseGroups: CourseGroup[] = [
+    { label: "SD Munis", courses: entriesFor(MUNI_SLUGS) },
+    { label: "North County", courses: entriesFor(NC_SLUGS) },
+    { label: "South County", courses: entriesFor(SC_SLUGS) },
+    { label: "Other", courses: otherEntries },
+  ].filter((g) => g.courses.length > 0);
 
   const byDay = new Map<string, TeeTimeRow[]>();
   for (const r of visibleRows) {
@@ -145,9 +181,23 @@ export default async function Page({
     dayRows.length > 0 ? new Date(dayRows[0].tee_time_at) : null;
   const viableToday = dayRows.filter((r) => r.players_avail >= 2).length;
 
+  // Query string we want to keep alive across navigations (day + view).
+  // When a course chip is tapped it gets appended as `&course=…`; when a tab
+  // is tapped, the page navigates away from the course filter entirely.
+  const preserveParts: string[] = [];
+  if (selectedDay) preserveParts.push(`day=${selectedDay}`);
+  if (view !== "all") preserveParts.push(`view=${view}`);
+  const preserveQuery =
+    preserveParts.length > 0 ? `&${preserveParts.join("&")}` : "";
+
+  const selectedCourseName = course
+    ? (courseStats.get(course)?.name ?? course)
+    : null;
+
   if (days.length === 0 || !selectedDate) {
-    const label =
-      view === "muni"
+    const label = selectedCourseName
+      ? selectedCourseName
+      : view === "muni"
         ? "munis"
         : view === "nc"
           ? "North County"
@@ -162,13 +212,31 @@ export default async function Page({
           totalMuni={muniTotal}
           totalNc={ncTotal}
           totalSc={scTotal}
+          dimmed={Boolean(course)}
+        />
+        <CoursePicker
+          groups={courseGroups}
+          selected={course}
+          preserveQuery={preserveQuery}
         />
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
             No {label} open
           </p>
           <p className="mt-1 text-xs text-neutral-500">
-            Nothing matches in this filter right now. Try the All tab.
+            {course
+              ? "No upcoming tee times for this course."
+              : "Nothing matches in this filter right now."}{" "}
+            {course ? (
+              <Link
+                href={`/?${preserveQuery.replace(/^&/, "")}`.replace(/^\/\?$/, "/")}
+                className="font-bold underline"
+              >
+                Clear filter
+              </Link>
+            ) : (
+              <>Try the All tab.</>
+            )}
           </p>
         </div>
       </div>
@@ -183,8 +251,20 @@ export default async function Page({
         totalMuni={muniTotal}
         totalNc={ncTotal}
         totalSc={scTotal}
+        dimmed={Boolean(course)}
       />
-      <DayPicker days={days} byDay={byDay} selected={selectedDay} view={view} />
+      <CoursePicker
+        groups={courseGroups}
+        selected={course}
+        preserveQuery={preserveQuery}
+      />
+      <DayPicker
+        days={days}
+        byDay={byDay}
+        selected={selectedDay}
+        view={view}
+        course={course}
+      />
 
       <section>
         <header className="mb-3 border-b-2 border-black pb-2">
@@ -226,12 +306,15 @@ function ViewTabs({
   totalMuni,
   totalNc,
   totalSc,
+  dimmed = false,
 }: {
   view: View;
   totalAll: number;
   totalMuni: number;
   totalNc: number;
   totalSc: number;
+  /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
+  dimmed?: boolean;
 }) {
   const tabs: Array<{ key: View; label: string; count: number }> = [
     { key: "muni", label: "SD munis", count: totalMuni },
@@ -240,9 +323,9 @@ function ViewTabs({
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (
-    <div className="flex gap-2">
+    <div className={"flex gap-2 " + (dimmed ? "opacity-60" : "")}>
       {tabs.map((t) => {
-        const active = view === t.key;
+        const active = view === t.key && !dimmed;
         return (
           <Link
             key={t.key}
@@ -277,13 +360,18 @@ function DayPicker({
   byDay,
   selected,
   view,
+  course,
 }: {
   days: string[];
   byDay: Map<string, TeeTimeRow[]>;
   selected: string;
   view: View;
+  course: string | undefined;
 }) {
-  const viewParam = view === "all" ? "" : `&view=${view}`;
+  const extraParts: string[] = [];
+  if (view !== "all") extraParts.push(`view=${view}`);
+  if (course) extraParts.push(`course=${course}`);
+  const extraParams = extraParts.length ? `&${extraParts.join("&")}` : "";
   return (
     <div className="-mx-4 overflow-x-auto px-4">
       <div className="flex gap-2 pb-1">
@@ -296,7 +384,7 @@ function DayPicker({
           return (
             <Link
               key={d}
-              href={`/?day=${d}${viewParam}`}
+              href={`/?day=${d}${extraParams}`}
               prefetch={false}
               scroll={false}
               className={
