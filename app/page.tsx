@@ -29,7 +29,7 @@ const MUNI_SLUGS = new Set([
   "admiral-baker-south",
 ]);
 
-// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway area.
+// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido.
 const NC_SLUGS = new Set([
   "encinitas-ranch",
   "crossings-carlsbad",
@@ -37,6 +37,9 @@ const NC_SLUGS = new Set([
   "rancho-bernardo-inn",
   "maderas",
   "links-at-lakehouse",
+  "mt-woodson",
+  "san-vicente",
+  "vineyard-escondido",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.

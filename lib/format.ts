@@ -54,6 +54,12 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-emerald-700", dot: "bg-emerald-700", label: "emerald" };
     case "links-at-lakehouse":
       return { bar: "bg-sky-700", dot: "bg-sky-700", label: "sky" };
+    case "mt-woodson":
+      return { bar: "bg-amber-700", dot: "bg-amber-700", label: "amber" };
+    case "san-vicente":
+      return { bar: "bg-rose-700", dot: "bg-rose-700", label: "rose" };
+    case "vineyard-escondido":
+      return { bar: "bg-purple-700", dot: "bg-purple-700", label: "purple" };
     default:
       return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
   }

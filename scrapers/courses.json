@@ -284,6 +284,40 @@
     "active": true
   },
   {
+    "slug": "mt-woodson",
+    "name": "Mt. Woodson Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/4078-mt-woodson-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 4078,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/4078-mt-woodson-golf-club/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "san-vicente",
+    "name": "San Vicente Golf Resort",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/2135-san-vicente-golf-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 2135,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/2135-san-vicente-golf-course/search"
+    },
+    "active": true
+  },
+  {
+    "slug": "vineyard-escondido",
+    "name": "The Vineyard at Escondido",
+    "bookingUrl": "https://the-vineyard-at-escondido.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "the-vineyard-at-escondido",
+      "facilityId": 242,
+      "clubUrl": "https://the-vineyard-at-escondido.book.teeitup.com/"
+    },
+    "active": true
+  },
+  {
     "slug": "maderas",
     "name": "Maderas Golf Club",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/3069-maderas-golf-club/search",
