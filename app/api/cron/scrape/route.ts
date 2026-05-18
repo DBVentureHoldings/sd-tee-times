@@ -1,20 +1,20 @@
 /**
- * Cron endpoint hit by Vercel every 30 minutes.
+ * Cron endpoint hit by cron-job.org every 30 minutes.
  *
- * Vercel Cron is reliable; GitHub Actions' cron schedule is best-effort and
- * can be delayed by hours under load. So we use Vercel as the trustworthy
- * scheduler, and this route fires `workflow_dispatch` on the GH Actions
+ * GitHub Actions' built-in cron schedule is best-effort on the free tier
+ * (observed delays of 3-4 hours). Vercel's Hobby tier disallows sub-daily
+ * crons. So we use cron-job.org (free, reliable) as the scheduler — it
+ * pings this endpoint, which fires `workflow_dispatch` on the GH Actions
  * scrape workflow so the actual scraping (which needs Playwright) still
  * runs on GitHub.
  *
- * Auth: Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` automatically
- * when the route is listed in vercel.json's `crons` array. We reject anything
- * else so the route can't be triggered by randos.
+ * Auth: caller must send `Authorization: Bearer <CRON_SECRET>`. We reject
+ * anything else so the route can't be triggered by randos.
  *
- * Env vars required:
+ * Env vars required (set in Vercel):
  *   - GITHUB_TOKEN: fine-grained PAT with Actions: read+write on this repo
  *   - GITHUB_REPO:  "DBVentureHoldings/sd-tee-times" (optional override)
- *   - CRON_SECRET:  shared with Vercel cron config
+ *   - CRON_SECRET:  shared with cron-job.org request header
  */
 
 export const dynamic = "force-dynamic";
