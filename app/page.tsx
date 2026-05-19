@@ -62,21 +62,22 @@ const SC_SLUGS = new Set([
   "bonita",
 ]);
 
-// Par-3 / executive / short-course tab. Lives orthogonal to the geographic
-// region tabs — a course can be in both SD munis AND par 3. Includes both
-// strict par-3 layouts (Colina, Loma Club) and shorter executive courses
-// the user wants treated as "quick round" alternatives (Mission Bay, Goat
-// Hill at par-65).
-const PAR3_SLUGS = new Set([
+// "Short courses" tab — lives orthogonal to the geographic region tabs
+// (a course can be in both SD munis AND short). Includes strict par-3
+// layouts (Colina, Loma Club, Oaks North) plus shorter executive courses
+// that play as quick-round alternatives (Mission Bay par-32, Goat Hill
+// par-65). Renamed from "Par 3" → "Short Courses" because not all
+// included courses are strictly par 3.
+const SHORT_SLUGS = new Set([
   "colina-park",           // par-3 9-hole, Hillcrest (City of SD)
   "mission-bay",           // par-32 executive 18, Mission Bay (City of SD)
   "goat-hill-park",        // par-65 short course, Oceanside
   "the-loma-club",         // par-27 9-hole par-3, Point Loma
-  "oaks-north",            // par-3 executive 27, JC Resorts RB (inactive until scraper configured)
-  "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach (inactive)
+  "oaks-north",            // par-3 executive 27, JC Resorts RB
+  "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach
 ]);
 
-type View = "all" | "muni" | "nc" | "sc" | "par3";
+type View = "all" | "muni" | "nc" | "sc" | "short";
 
 export default async function Page({
   searchParams,
@@ -92,8 +93,8 @@ export default async function Page({
         ? "nc"
         : sp.view === "sc"
           ? "sc"
-          : sp.view === "par3"
-            ? "par3"
+          : sp.view === "short" || sp.view === "par3"
+            ? "short" // accept legacy ?view=par3 URLs from before the rename
             : "all";
   const course =
     sp.course && sp.course.trim().length > 0 ? sp.course.trim() : undefined;
@@ -149,8 +150,8 @@ export default async function Page({
         ? NC_SLUGS
         : view === "sc"
           ? SC_SLUGS
-          : view === "par3"
-            ? PAR3_SLUGS
+          : view === "short"
+            ? SHORT_SLUGS
             : null;
   const viewFilteredRows = filterSlugs
     ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
@@ -182,7 +183,7 @@ export default async function Page({
         !MUNI_SLUGS.has(s) &&
         !NC_SLUGS.has(s) &&
         !SC_SLUGS.has(s) &&
-        !PAR3_SLUGS.has(s),
+        !SHORT_SLUGS.has(s),
     )
     .map(([slug, { name, count }]) => ({ slug, name, count }))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -190,7 +191,7 @@ export default async function Page({
     { label: "SD Munis", courses: entriesFor(MUNI_SLUGS) },
     { label: "North County", courses: entriesFor(NC_SLUGS) },
     { label: "South County", courses: entriesFor(SC_SLUGS) },
-    { label: "Par 3", courses: entriesFor(PAR3_SLUGS) },
+    { label: "Short Courses", courses: entriesFor(SHORT_SLUGS) },
     { label: "Other", courses: otherEntries },
   ].filter((g) => g.courses.length > 0);
 
@@ -211,8 +212,8 @@ export default async function Page({
   const scTotal = rows.filter(
     (r) => r.courses?.slug && SC_SLUGS.has(r.courses.slug),
   ).length;
-  const par3Total = rows.filter(
-    (r) => r.courses?.slug && PAR3_SLUGS.has(r.courses.slug),
+  const shortTotal = rows.filter(
+    (r) => r.courses?.slug && SHORT_SLUGS.has(r.courses.slug),
   ).length;
 
   const selectedDay =
@@ -244,8 +245,8 @@ export default async function Page({
           ? "North County"
           : view === "sc"
             ? "South County"
-            : view === "par3"
-              ? "Par 3 courses"
+            : view === "short"
+              ? "short courses"
               : "tee times";
     return (
       <div className="space-y-5">
@@ -256,7 +257,7 @@ export default async function Page({
           totalMuni={muniTotal}
           totalNc={ncTotal}
           totalSc={scTotal}
-          totalPar3={par3Total}
+          totalShort={shortTotal}
           dimmed={Boolean(course)}
         />
         <CoursePicker
@@ -304,7 +305,7 @@ export default async function Page({
           totalMuni={muniTotal}
           totalNc={ncTotal}
           totalSc={scTotal}
-          totalPar3={par3Total}
+          totalShort={shortTotal}
           dimmed={Boolean(course)}
         />
         <CoursePicker
@@ -376,7 +377,7 @@ function ViewTabs({
   totalMuni,
   totalNc,
   totalSc,
-  totalPar3,
+  totalShort,
   dimmed = false,
 }: {
   view: View;
@@ -392,7 +393,7 @@ function ViewTabs({
   totalMuni: number;
   totalNc: number;
   totalSc: number;
-  totalPar3: number;
+  totalShort: number;
   /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
   dimmed?: boolean;
 }) {
@@ -400,7 +401,7 @@ function ViewTabs({
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
     { key: "sc", label: "South County", count: totalSc },
-    { key: "par3", label: "Par 3", count: totalPar3 },
+    { key: "short", label: "Short Courses", count: totalShort },
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (
