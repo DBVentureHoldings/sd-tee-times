@@ -14,7 +14,10 @@ concurrency:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Raised from 10 → 20 min: we added Chula Vista + Goat Hill + Loma Club +
+    # Oaks North + Welk Fountains + Welk Oaks + Lomas Santa Fe (32 courses
+    # total) and the prior 10-min budget started canceling mid-run.
+    timeout-minutes: 20
     env:
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
