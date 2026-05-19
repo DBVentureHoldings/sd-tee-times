@@ -372,5 +372,50 @@
       "bookingViewSlug": "jbfdabab"
     },
     "active": true
+  },
+  {
+    "_note": "Par-65 executive in Oceanside. Booking via foreUp; scheduleId + bookingClass intercepted from the SPA's XHR.",
+    "slug": "goat-hill-park",
+    "name": "Goat Hill Park",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/20906#/teetimes",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "6161",
+      "bookingClasses": ["7870"]
+    },
+    "active": true
+  },
+  {
+    "_note": "Par-27 9-hole par-3 in Point Loma. Booking via foreUp; scheduleId 614 was in the URL path, bookingClass intercepted. 9-hole only (the scraper defaults to 18 and would return 0 otherwise).",
+    "slug": "the-loma-club",
+    "name": "The Loma Club",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/18908/614#teetimes",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "614",
+      "bookingClasses": ["14763"],
+      "holes": [9]
+    },
+    "active": true
+  },
+  {
+    "_note": "JC Resorts par-3 executive in Rancho Bernardo. Uses CPS tenant jcgpub3 (different from Twin Oaks's jcgpub29). courseId/siteId/websiteId need to be intercepted from the SPA — Cloudflare blocks the API from local probes, will need user help or in-production discovery.",
+    "slug": "oaks-north",
+    "name": "Oaks North Golf Course",
+    "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub3"
+    },
+    "active": false
+  },
+  {
+    "_note": "Par-3 executive in Solana Beach. Booking URL TBD — couldn't locate the active booking page. Marked inactive until we have the URL.",
+    "slug": "lomas-santa-fe-executive",
+    "name": "Lomas Santa Fe Executive",
+    "bookingUrl": "https://lomassantafecc.com/",
+    "scraperId": "foreUp",
+    "scraperConfig": {},
+    "active": false
   }
 ]

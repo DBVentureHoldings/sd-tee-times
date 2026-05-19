@@ -47,6 +47,14 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-stone-500", dot: "bg-stone-500", label: "stone" };
     case "chula-vista-muni":
       return { bar: "bg-green-700", dot: "bg-green-700", label: "green" };
+    case "goat-hill-park":
+      return { bar: "bg-orange-700", dot: "bg-orange-700", label: "orange" };
+    case "the-loma-club":
+      return { bar: "bg-cyan-700", dot: "bg-cyan-700", label: "cyan" };
+    case "oaks-north":
+      return { bar: "bg-lime-700", dot: "bg-lime-700", label: "lime" };
+    case "lomas-santa-fe-executive":
+      return { bar: "bg-pink-700", dot: "bg-pink-700", label: "pink" };
     case "bonita":
       return { bar: "bg-blue-500", dot: "bg-blue-500", label: "blue" };
     case "admiral-baker-north":

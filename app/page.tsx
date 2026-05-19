@@ -32,9 +32,10 @@ const MUNI_SLUGS = new Set([
   "admiral-baker-south",
   "riverwalk",
   "mission-trails",
+  "the-loma-club", // Point Loma, City of SD area
 ]);
 
-// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido / Oceanside.
+// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido / Oceanside / Solana Beach.
 const NC_SLUGS = new Set([
   "encinitas-ranch",
   "crossings-carlsbad",
@@ -46,6 +47,9 @@ const NC_SLUGS = new Set([
   "san-vicente",
   "vineyard-escondido",
   "arrowood",
+  "goat-hill-park",
+  "oaks-north",
+  "lomas-santa-fe-executive",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.
@@ -56,16 +60,18 @@ const SC_SLUGS = new Set([
   "bonita",
 ]);
 
-// Par-3 / executive courses across all of SD County. Lives orthogonal to
-// the geographic region tabs — a course can be in both SD munis AND par 3.
-// Added at user request after gym-friend feedback that par-3 courses are a
-// distinct booking mode (quick rounds, walk-ons, beginners, etc.).
+// Par-3 / executive / short-course tab. Lives orthogonal to the geographic
+// region tabs — a course can be in both SD munis AND par 3. Includes both
+// strict par-3 layouts (Colina, Loma Club) and shorter executive courses
+// the user wants treated as "quick round" alternatives (Mission Bay, Goat
+// Hill at par-65).
 const PAR3_SLUGS = new Set([
-  "colina-park", // confirmed par-3 (City of SD, in Hillcrest)
-  // TODO: add when configured:
-  //   - oaks-north (JC Resorts, par-3 executive in Rancho Bernardo)
-  //   - tecolote-canyon (City of SD par-58 executive — courses.json exists, scraper needs config)
-  //   - singing-hills-willow-glen (Sycuan par-54 executive — exists, needs config)
+  "colina-park",           // par-3 9-hole, Hillcrest (City of SD)
+  "mission-bay",           // par-32 executive 18, Mission Bay (City of SD)
+  "goat-hill-park",        // par-65 short course, Oceanside
+  "the-loma-club",         // par-27 9-hole par-3, Point Loma
+  "oaks-north",            // par-3 executive 27, JC Resorts RB (inactive until scraper configured)
+  "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach (inactive)
 ]);
 
 type View = "all" | "muni" | "nc" | "sc" | "par3";
