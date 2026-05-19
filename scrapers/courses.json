@@ -399,23 +399,61 @@
     "active": true
   },
   {
-    "_note": "JC Resorts par-3 executive in Rancho Bernardo. Uses CPS tenant jcgpub3 (different from Twin Oaks's jcgpub29). courseId/siteId/websiteId need to be intercepted from the SPA — Cloudflare blocks the API from local probes, will need user help or in-production discovery.",
+    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS — courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set.",
     "slug": "oaks-north",
     "name": "Oaks North Golf Course",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
     "scraperId": "cps",
     "scraperConfig": {
-      "tenant": "jcgpub3"
+      "tenant": "jcgpub3",
+      "courseIds": [10, 13, 11],
+      "siteId": 3,
+      "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
+      "classCodes": ["PUB"]
     },
-    "active": false
+    "active": true
   },
   {
-    "_note": "Par-3 executive in Solana Beach. Booking URL TBD — couldn't locate the active booking page. Marked inactive until we have the URL.",
+    "_note": "Welk Resort — Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ.",
+    "slug": "welk-fountains",
+    "name": "The Welk — Fountains",
+    "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub3",
+      "courseId": 18,
+      "siteId": 11,
+      "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
+      "classCodes": ["PUB"]
+    },
+    "active": true
+  },
+  {
+    "_note": "Welk Resort — Oaks 9. Same tenant as Welk Fountains.",
+    "slug": "welk-oaks",
+    "name": "The Welk — Oaks",
+    "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub3",
+      "courseId": 17,
+      "siteId": 11,
+      "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
+      "classCodes": ["PUB"]
+    },
+    "active": true
+  },
+  {
+    "_note": "Par-3 executive in Solana Beach. Uses teeitup; facilityId 1241 from the booking URL's ?course=1241 param.",
     "slug": "lomas-santa-fe-executive",
     "name": "Lomas Santa Fe Executive",
-    "bookingUrl": "https://lomassantafecc.com/",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "bookingUrl": "https://lomas-santa-fe-executive-golf-course.book.teeitup.com/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "lomas-santa-fe-executive-golf-course",
+      "facilityId": 1241,
+      "clubUrl": "https://lomas-santa-fe-executive-golf-course.book.teeitup.com/"
+    },
+    "active": true
   }
 ]

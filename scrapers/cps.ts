@@ -31,6 +31,13 @@ export const cpsScraper: Scraper = {
     const cfg = (ctx.course.scraperConfig ?? {}) as {
       tenant?: string;
       courseId?: number;
+      /**
+       * Some CPS facilities split a course into multiple "loops" with their
+       * own courseId each (e.g., Oaks North has 3 separate 9-hole loops you
+       * can book in combination). Setting `courseIds` instead of `courseId`
+       * tells the scraper to query all of them at once and merge.
+       */
+      courseIds?: number[];
       siteId?: number;
       websiteId?: string;
       moduleId?: number;
@@ -39,11 +46,18 @@ export const cpsScraper: Scraper = {
       clubUrl?: string;
     };
 
-    if (!cfg.tenant || cfg.courseId == null || cfg.siteId == null || !cfg.websiteId) {
+    const courseIds: number[] =
+      cfg.courseIds && cfg.courseIds.length > 0
+        ? cfg.courseIds
+        : cfg.courseId != null
+          ? [cfg.courseId]
+          : [];
+    if (!cfg.tenant || courseIds.length === 0 || cfg.siteId == null || !cfg.websiteId) {
       throw new Error(
-        `cps scraper requires scraperConfig.tenant, .courseId, .siteId, .websiteId for ${ctx.course.slug}`,
+        `cps scraper requires scraperConfig.tenant, .courseId (or .courseIds), .siteId, .websiteId for ${ctx.course.slug}`,
       );
     }
+    const courseIdsParam = courseIds.join(",");
 
     const landingUrl = `https://${cfg.tenant}.cps.golf/onlineresweb/search-teetime`;
     const apiBase = `https://${cfg.tenant}.cps.golf/onlineres/onlineapi/api/v1/onlinereservation`;
@@ -89,7 +103,7 @@ export const cpsScraper: Scraper = {
         date.setDate(date.getDate() + i);
         const searchDate = encodeURIComponent(date.toDateString());
 
-        const url = `${apiBase}/TeeTimes?searchDate=${searchDate}&holes=18&numberOfPlayer=0&courseIds=${cfg.courseId}&searchTimeType=0&transactionId=${transactionId}&teeOffTimeMin=0&teeOffTimeMax=23&isChangeTeeOffTime=true&teeSheetSearchView=5&classCode=${classCode}&defaultOnlineRate=N&isUseCapacityPricing=false&memberStoreId=1&searchType=1`;
+        const url = `${apiBase}/TeeTimes?searchDate=${searchDate}&holes=18&numberOfPlayer=0&courseIds=${courseIdsParam}&searchTimeType=0&transactionId=${transactionId}&teeOffTimeMin=0&teeOffTimeMax=23&isChangeTeeOffTime=true&teeSheetSearchView=5&classCode=${classCode}&defaultOnlineRate=N&isUseCapacityPricing=false&memberStoreId=1&searchType=1`;
 
         const headersForReq = {
           ...headers,

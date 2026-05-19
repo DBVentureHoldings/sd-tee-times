@@ -50,6 +50,8 @@ const NC_SLUGS = new Set([
   "goat-hill-park",
   "oaks-north",
   "lomas-santa-fe-executive",
+  "welk-fountains",
+  "welk-oaks",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.
