@@ -306,7 +306,10 @@ export default async function Page({
 
         <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
           {dayRows.map((r) => (
-            <TeeTimeRow key={r.id} row={r} />
+            <TeeTimeRow
+              key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
+              row={r}
+            />
           ))}
         </ul>
       </section>

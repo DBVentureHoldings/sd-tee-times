@@ -17,17 +17,24 @@ export function supabaseServer(): SupabaseClient {
   return cached;
 }
 
+/**
+ * Slimmed row shape. We dropped `id`, `course_id`, `players_max`, and
+ * `scraped_at` from the query+type because:
+ *   - Nothing in the UI reads them
+ *   - With ~9.7k rows, those 4 fields were inflating the cache entry past
+ *     Vercel's 2MB Hobby tier limit, causing unstable_cache to silently
+ *     fail to set every time (visible in logs as "Failed to set Next.js
+ *     data cache for unstable_cache")
+ * scraped_at is still fetched separately via fetchLastScrapeAt for the
+ * "Updated X minutes ago" footer line.
+ */
 export interface TeeTimeRow {
-  id: string;
-  course_id: string;
   tee_time_at: string;
-  players_max: number;
   players_avail: number;
   players_min: number;
   price_cents: number | null;
   booking_url: string;
   holes: number;
-  scraped_at: string;
   courses: { slug: string; name: string } | null;
 }
 
@@ -83,7 +90,7 @@ async function fetchUpcomingTeeTimesUncached(
       const { data, error } = await sb
         .from("tee_times")
         .select(
-          "id, course_id, tee_time_at, players_max, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
+          "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, courses(slug, name)",
         )
         .gt("tee_time_at", nowIso)
         .lt("tee_time_at", cutoffIso)
