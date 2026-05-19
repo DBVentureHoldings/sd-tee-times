@@ -1,5 +1,4 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
-import { unstable_cache } from "next/cache";
 
 let cached: SupabaseClient | null = null;
 
@@ -117,35 +116,61 @@ async function fetchLastScrapeAtUncached(): Promise<Date | null> {
 }
 
 /**
- * Cached for 60s. Scrapers run every 30 min, so fresher-than-60s reads
- * gain us nothing — but at concurrent-traffic time it's the difference
- * between every visitor paying a ~5s DB call and only one visitor per
- * minute doing so.
+ * In-memory memoization for the slow data fetches.
  *
- * Note: unstable_cache JSON-serializes returns. Dates inside TeeTimeRow
- * survive as ISO strings (tee_time_at, scraped_at are already strings),
- * so this is safe.
+ * We previously used Next's `unstable_cache`, but Vercel's Data Cache on
+ * Hobby tier silently refuses entries over 2MB. The serialized form of
+ * ~9700 tee-time rows kept blowing past that threshold (visible in logs
+ * as "Failed to set Next.js data cache… items over 2MB cannot be
+ * cached"), so EVERY visitor was re-paying the full DB roundtrip.
+ *
+ * Module-level vars live for the lifetime of the serverless instance
+ * (typically minutes to hours, depending on traffic). They don't share
+ * across instances — so the first request to a given instance is still
+ * slow — but every subsequent request on that instance gets the cached
+ * value until TTL expires. For a single-region low-traffic app this is
+ * the right trade-off.
  */
-export const fetchUpcomingTeeTimes = unstable_cache(
-  async () => fetchUpcomingTeeTimesUncached(),
-  ["upcoming-tee-times-v1"],
-  { revalidate: 60, tags: ["tee-times"] },
-);
+const TTL_MS = 60_000;
 
-/**
- * Cached 60s. Returned as ISO string then re-hydrated to Date in the page
- * (Date doesn't survive JSON serialization inside unstable_cache).
- */
-const fetchLastScrapeIso = unstable_cache(
-  async () => {
-    const d = await fetchLastScrapeAtUncached();
-    return d ? d.toISOString() : null;
-  },
-  ["last-scrape-at-v1"],
-  { revalidate: 60, tags: ["tee-times"] },
-);
+let teeCache: { at: number; rows: TeeTimeRow[] } | null = null;
+let teePromise: Promise<TeeTimeRow[]> | null = null;
+
+export async function fetchUpcomingTeeTimes(): Promise<TeeTimeRow[]> {
+  const now = Date.now();
+  if (teeCache && now - teeCache.at < TTL_MS) return teeCache.rows;
+  // De-dupe concurrent in-flight requests: if a fetch is already running,
+  // every concurrent caller awaits the same promise instead of stampeding
+  // the DB.
+  if (!teePromise) {
+    teePromise = fetchUpcomingTeeTimesUncached()
+      .then((rows) => {
+        teeCache = { at: Date.now(), rows };
+        return rows;
+      })
+      .finally(() => {
+        teePromise = null;
+      });
+  }
+  return teePromise;
+}
+
+let lastScrapeCache: { at: number; value: Date | null } | null = null;
+let lastScrapePromise: Promise<Date | null> | null = null;
 
 export async function fetchLastScrapeAt(): Promise<Date | null> {
-  const iso = await fetchLastScrapeIso();
-  return iso ? new Date(iso) : null;
+  const now = Date.now();
+  if (lastScrapeCache && now - lastScrapeCache.at < TTL_MS)
+    return lastScrapeCache.value;
+  if (!lastScrapePromise) {
+    lastScrapePromise = fetchLastScrapeAtUncached()
+      .then((value) => {
+        lastScrapeCache = { at: Date.now(), value };
+        return value;
+      })
+      .finally(() => {
+        lastScrapePromise = null;
+      });
+  }
+  return lastScrapePromise;
 }
