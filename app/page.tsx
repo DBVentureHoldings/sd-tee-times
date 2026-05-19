@@ -56,7 +56,19 @@ const SC_SLUGS = new Set([
   "bonita",
 ]);
 
-type View = "all" | "muni" | "nc" | "sc";
+// Par-3 / executive courses across all of SD County. Lives orthogonal to
+// the geographic region tabs — a course can be in both SD munis AND par 3.
+// Added at user request after gym-friend feedback that par-3 courses are a
+// distinct booking mode (quick rounds, walk-ons, beginners, etc.).
+const PAR3_SLUGS = new Set([
+  "colina-park", // confirmed par-3 (City of SD, in Hillcrest)
+  // TODO: add when configured:
+  //   - oaks-north (JC Resorts, par-3 executive in Rancho Bernardo)
+  //   - tecolote-canyon (City of SD par-58 executive — courses.json exists, scraper needs config)
+  //   - singing-hills-willow-glen (Sycuan par-54 executive — exists, needs config)
+]);
+
+type View = "all" | "muni" | "nc" | "sc" | "par3";
 
 export default async function Page({
   searchParams,
@@ -72,7 +84,9 @@ export default async function Page({
         ? "nc"
         : sp.view === "sc"
           ? "sc"
-          : "all";
+          : sp.view === "par3"
+            ? "par3"
+            : "all";
   const course =
     sp.course && sp.course.trim().length > 0 ? sp.course.trim() : undefined;
 
@@ -127,7 +141,9 @@ export default async function Page({
         ? NC_SLUGS
         : view === "sc"
           ? SC_SLUGS
-          : null;
+          : view === "par3"
+            ? PAR3_SLUGS
+            : null;
   const viewFilteredRows = filterSlugs
     ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
     : rows;
@@ -154,7 +170,11 @@ export default async function Page({
       .sort((a, b) => a.name.localeCompare(b.name));
   const otherEntries: CourseGroup["courses"] = Array.from(courseStats.entries())
     .filter(
-      ([s]) => !MUNI_SLUGS.has(s) && !NC_SLUGS.has(s) && !SC_SLUGS.has(s),
+      ([s]) =>
+        !MUNI_SLUGS.has(s) &&
+        !NC_SLUGS.has(s) &&
+        !SC_SLUGS.has(s) &&
+        !PAR3_SLUGS.has(s),
     )
     .map(([slug, { name, count }]) => ({ slug, name, count }))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -162,6 +182,7 @@ export default async function Page({
     { label: "SD Munis", courses: entriesFor(MUNI_SLUGS) },
     { label: "North County", courses: entriesFor(NC_SLUGS) },
     { label: "South County", courses: entriesFor(SC_SLUGS) },
+    { label: "Par 3", courses: entriesFor(PAR3_SLUGS) },
     { label: "Other", courses: otherEntries },
   ].filter((g) => g.courses.length > 0);
 
@@ -181,6 +202,9 @@ export default async function Page({
   ).length;
   const scTotal = rows.filter(
     (r) => r.courses?.slug && SC_SLUGS.has(r.courses.slug),
+  ).length;
+  const par3Total = rows.filter(
+    (r) => r.courses?.slug && PAR3_SLUGS.has(r.courses.slug),
   ).length;
 
   const selectedDay =
@@ -212,7 +236,9 @@ export default async function Page({
           ? "North County"
           : view === "sc"
             ? "South County"
-            : "tee times";
+            : view === "par3"
+              ? "Par 3 courses"
+              : "tee times";
     return (
       <div className="space-y-5">
         <ViewTabs
@@ -222,6 +248,7 @@ export default async function Page({
           totalMuni={muniTotal}
           totalNc={ncTotal}
           totalSc={scTotal}
+          totalPar3={par3Total}
           dimmed={Boolean(course)}
         />
         <CoursePicker
@@ -269,6 +296,7 @@ export default async function Page({
           totalMuni={muniTotal}
           totalNc={ncTotal}
           totalSc={scTotal}
+          totalPar3={par3Total}
           dimmed={Boolean(course)}
         />
         <CoursePicker
@@ -340,6 +368,7 @@ function ViewTabs({
   totalMuni,
   totalNc,
   totalSc,
+  totalPar3,
   dimmed = false,
 }: {
   view: View;
@@ -355,6 +384,7 @@ function ViewTabs({
   totalMuni: number;
   totalNc: number;
   totalSc: number;
+  totalPar3: number;
   /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
   dimmed?: boolean;
 }) {
@@ -362,6 +392,7 @@ function ViewTabs({
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
     { key: "sc", label: "South County", count: totalSc },
+    { key: "par3", label: "Par 3", count: totalPar3 },
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (
