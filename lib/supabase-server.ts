@@ -50,32 +50,51 @@ async function fetchUpcomingTeeTimesUncached(
   const sb = supabaseServer();
   const now = new Date();
   const nowIso = now.toISOString();
-  // Cap the window at WINDOW_DAYS days out. We had ~11.6k rows when looking
-  // 21 days ahead; trimming to 14 days drops that ~30% and brings the
-  // paginated DB roundtrip from ~5s to ~3s on cold runs.
   const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const cutoffIso = cutoff.toISOString();
-  // Supabase caps each response at 1000 rows by default. Paginate through
-  // all upcoming rows so the day picker reflects the full window.
+
+  // Supabase caps each response at 1000 rows. We have ~9700 upcoming rows
+  // in a 14-day window, so we need ~10 round-trips. The previous version
+  // did them sequentially in a for-loop — each ~500ms → ~5s total render
+  // time. This version first asks for an exact count, then fires all
+  // page requests concurrently. Each page still takes ~500ms but they
+  // overlap, so wall-clock time is bounded by one page (~600ms total).
   const pageSize = 1000;
-  const out: TeeTimeRow[] = [];
-  for (let offset = 0; offset < maxRows; offset += pageSize) {
-    const { data, error } = await sb
-      .from("tee_times")
-      .select(
-        "id, course_id, tee_time_at, players_max, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
-      )
-      .gt("tee_time_at", nowIso)
-      .lt("tee_time_at", cutoffIso)
-      .order("tee_time_at", { ascending: true })
-      .range(offset, offset + pageSize - 1);
-    if (error) throw error;
-    const rows = (data ?? []) as unknown as TeeTimeRow[];
-    if (rows.length === 0) break;
-    out.push(...rows);
-    if (rows.length < pageSize) break;
+
+  // Step 1: count. Lets us know exactly how many pages to request without
+  // a probing loop, and the count itself is cheap (~80ms).
+  const { count: total, error: cntErr } = await sb
+    .from("tee_times")
+    .select("id", { count: "exact", head: true })
+    .gt("tee_time_at", nowIso)
+    .lt("tee_time_at", cutoffIso);
+  if (cntErr) throw cntErr;
+  const rowCount = Math.min(total ?? 0, maxRows);
+  if (rowCount === 0) return [];
+
+  const pageStarts: number[] = [];
+  for (let offset = 0; offset < rowCount; offset += pageSize) {
+    pageStarts.push(offset);
   }
-  return out;
+
+  // Step 2: fire all page fetches in parallel.
+  const pages = await Promise.all(
+    pageStarts.map(async (offset) => {
+      const { data, error } = await sb
+        .from("tee_times")
+        .select(
+          "id, course_id, tee_time_at, players_max, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
+        )
+        .gt("tee_time_at", nowIso)
+        .lt("tee_time_at", cutoffIso)
+        .order("tee_time_at", { ascending: true })
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      return (data ?? []) as unknown as TeeTimeRow[];
+    }),
+  );
+
+  return pages.flat();
 }
 
 async function fetchLastScrapeAtUncached(): Promise<Date | null> {
