@@ -268,13 +268,34 @@ const warmedContexts = new Map<string, BrowserContext>();
 const cachedTokens = new Map<string, { token: string; cachedAt: number }>();
 const TOKEN_TTL_MS = 8 * 60 * 1000;
 
+/**
+ * Wait long enough for Cloudflare's JS challenge to fully resolve. Different
+ * CPS tenants are configured with different Cloudflare WAF rules:
+ *   - jcgpub29 (Twin Oaks)       : light protection, ~3s and we're through
+ *   - jcgpub3  (Oaks North/Welk) : heavier protection, needs networkidle +
+ *                                  several seconds for cf_clearance cookie
+ *
+ * Original implementation used `domcontentloaded` + 3s, which worked for
+ * the light tenants but left subsequent API calls 403'd on the heavier
+ * ones (logs: "✗ oaks-north: HTTP 403 — Just a moment...").
+ *
+ * Switching to `networkidle` waits until in-flight Cloudflare challenge
+ * scripts settle, after which cf_clearance is issued and inherited by
+ * subsequent `browserCtx.request.get` calls.
+ */
+async function warmPage(page: import("playwright").Page, url: string) {
+  await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
+  // Extra slack for the SPA to fully bootstrap and write the token into
+  // localStorage on tenants that defer it behind extra JS work.
+  await page.waitForTimeout(4000);
+}
+
 async function getWarmedContext(tenant: string, landingUrl: string): Promise<BrowserContext> {
   const existing = warmedContexts.get(tenant);
   if (existing) return existing;
   const c = await newContext();
   const page = await c.newPage();
-  await page.goto(landingUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
-  await page.waitForTimeout(3000);
+  await warmPage(page, landingUrl);
   await page.close();
   warmedContexts.set(tenant, c);
   return c;
@@ -292,11 +313,7 @@ async function getToken(
   // Re-warm: open the page again, read the token out of localStorage.
   const page = await ctx.newPage();
   try {
-    await page.goto(`https://${tenant}.cps.golf/onlineresweb/search-teetime`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3000);
+    await warmPage(page, `https://${tenant}.cps.golf/onlineresweb/search-teetime`);
     const token = (await page.evaluate(() =>
       localStorage.getItem("online-reservation-v5-short_lived_token"),
     )) as string | null;
