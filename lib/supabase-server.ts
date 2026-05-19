@@ -41,14 +41,22 @@ export interface TeeTimeRow {
  * at the data layer is the next-best option: cuts page render time from
  * ~7s to ~200ms after the first warm request.
  */
+/** How many days forward we surface in the app. */
+const WINDOW_DAYS = 14;
+
 async function fetchUpcomingTeeTimesUncached(
   maxRows = 20_000,
 ): Promise<TeeTimeRow[]> {
   const sb = supabaseServer();
-  const nowIso = new Date().toISOString();
+  const now = new Date();
+  const nowIso = now.toISOString();
+  // Cap the window at WINDOW_DAYS days out. We had ~11.6k rows when looking
+  // 21 days ahead; trimming to 14 days drops that ~30% and brings the
+  // paginated DB roundtrip from ~5s to ~3s on cold runs.
+  const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const cutoffIso = cutoff.toISOString();
   // Supabase caps each response at 1000 rows by default. Paginate through
-  // all upcoming rows so the day picker reflects the full ~21-day window
-  // even when the scrapers are pulling ~7-10k rows.
+  // all upcoming rows so the day picker reflects the full window.
   const pageSize = 1000;
   const out: TeeTimeRow[] = [];
   for (let offset = 0; offset < maxRows; offset += pageSize) {
@@ -58,6 +66,7 @@ async function fetchUpcomingTeeTimesUncached(
         "id, course_id, tee_time_at, players_max, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
       )
       .gt("tee_time_at", nowIso)
+      .lt("tee_time_at", cutoffIso)
       .order("tee_time_at", { ascending: true })
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
