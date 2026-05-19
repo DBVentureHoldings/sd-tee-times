@@ -65,6 +65,18 @@ export const cpsScraper: Scraper = {
     const browserCtx = await getWarmedContext(cfg.tenant, landingUrl);
     const token = await getToken(browserCtx, cfg.tenant);
 
+    // Keep one page open per scrape session so we can call fetch() inside
+    // its JS context. Using page.evaluate(fetch) instead of
+    // browserCtx.request.get is the difference between getting through
+    // jcgpub3's stricter Cloudflare (browser HTTP fingerprint matches the
+    // cf_clearance cookie) and getting 403'd repeatedly.
+    const apiPage = await browserCtx.newPage();
+    await apiPage.goto(landingUrl, {
+      waitUntil: "domcontentloaded",
+      timeout: 45_000,
+    });
+    await apiPage.waitForTimeout(8_000);
+
     const headers = {
       accept: "application/json, text/plain, */*",
       authorization: `Bearer ${token}`,
@@ -110,18 +122,30 @@ export const cpsScraper: Scraper = {
           "x-requestid": crypto.randomUUID(),
         };
 
-        const res = await browserCtx.request.get(url, { headers: headersForReq });
-        if (!res.ok()) {
-          if (res.status() === 401) {
+        const fetchFromBrowser = async (auth: string) =>
+          apiPage.evaluate(
+            async ([fetchUrl, fetchHeaders]: [string, Record<string, string>]) => {
+              const r = await fetch(fetchUrl, { headers: fetchHeaders });
+              const text = await r.text();
+              return { status: r.status, text };
+            },
+            [url, { ...headersForReq, authorization: auth }] as [
+              string,
+              Record<string, string>,
+            ],
+          );
+
+        const res = await fetchFromBrowser(headersForReq.authorization);
+        if (res.status < 200 || res.status >= 300) {
+          if (res.status === 401) {
             const fresh = await getToken(browserCtx, cfg.tenant, true);
-            headersForReq.authorization = `Bearer ${fresh}`;
-            const retry = await browserCtx.request.get(url, { headers: headersForReq });
-            if (!retry.ok()) {
+            const retry = await fetchFromBrowser(`Bearer ${fresh}`);
+            if (retry.status < 200 || retry.status >= 300) {
               throw new Error(
-                `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${retry.status()} after token refresh`,
+                `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${retry.status} after token refresh`,
               );
             }
-            const json = (await retry.json()) as CpsResponse;
+            const json = JSON.parse(retry.text) as CpsResponse;
             results.push(
               ...extractSlots(json).map((s) =>
                 toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
@@ -129,20 +153,21 @@ export const cpsScraper: Scraper = {
             );
             continue;
           }
-          const body = await res.text().catch(() => "");
           // CPS returns 400 with this message when we query past the
           // membership's booking window — treat as end-of-data, not error.
           if (
-            res.status() === 400 &&
-            /days in advance|not able to book this tee time currently/i.test(body)
+            res.status === 400 &&
+            /days in advance|not able to book this tee time currently/i.test(
+              res.text,
+            )
           ) {
             break;
           }
           throw new Error(
-            `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${res.status()} — ${body.slice(0, 160)}`,
+            `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${res.status} — ${res.text.slice(0, 160)}`,
           );
         }
-        const json = (await res.json()) as CpsResponse;
+        const json = JSON.parse(res.text) as CpsResponse;
         results.push(
           ...extractSlots(json).map((s) =>
             toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
@@ -151,6 +176,7 @@ export const cpsScraper: Scraper = {
       }
     }
 
+    await apiPage.close().catch(() => {});
     return results;
   },
 };
@@ -269,25 +295,22 @@ const cachedTokens = new Map<string, { token: string; cachedAt: number }>();
 const TOKEN_TTL_MS = 8 * 60 * 1000;
 
 /**
- * Wait long enough for Cloudflare's JS challenge to fully resolve. Different
- * CPS tenants are configured with different Cloudflare WAF rules:
- *   - jcgpub29 (Twin Oaks)       : light protection, ~3s and we're through
- *   - jcgpub3  (Oaks North/Welk) : heavier protection, needs networkidle +
- *                                  several seconds for cf_clearance cookie
+ * Wait for Cloudflare's JS challenge to resolve. Different tenants have
+ * different WAF strictness:
+ *   - jcgpub29 (Twin Oaks)       : light protection, clears in ~3s
+ *   - jcgpub3  (Oaks North/Welk) : heavier protection, needs ~8-10s
  *
- * Original implementation used `domcontentloaded` + 3s, which worked for
- * the light tenants but left subsequent API calls 403'd on the heavier
- * ones (logs: "✗ oaks-north: HTTP 403 — Just a moment...").
+ * Earlier attempt used `networkidle` to wait for the challenge to fully
+ * settle, but jcgpub3 keeps its network busy with periodic heartbeats
+ * even after the challenge solves — page.goto then timed out at 45s.
  *
- * Switching to `networkidle` waits until in-flight Cloudflare challenge
- * scripts settle, after which cf_clearance is issued and inherited by
- * subsequent `browserCtx.request.get` calls.
+ * Compromise: use `domcontentloaded` (returns fast, before the challenge
+ * even runs) + an 8s sleep that's empirically long enough for cf_clearance
+ * to be set on both tenants.
  */
 async function warmPage(page: import("playwright").Page, url: string) {
-  await page.goto(url, { waitUntil: "networkidle", timeout: 45_000 });
-  // Extra slack for the SPA to fully bootstrap and write the token into
-  // localStorage on tenants that defer it behind extra JS work.
-  await page.waitForTimeout(4000);
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45_000 });
+  await page.waitForTimeout(8_000);
 }
 
 async function getWarmedContext(tenant: string, landingUrl: string): Promise<BrowserContext> {
