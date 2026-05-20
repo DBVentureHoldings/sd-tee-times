@@ -368,10 +368,9 @@ export default async function Page({
           course={course}
           counts={timeCounts}
         />
-      </div>
-
-      <section>
-        <header className="mb-3 border-b-2 border-black pb-2">
+        {/* Day header lives inside the frozen pane so the date the user is
+            browsing stays visible while they scroll the tee time list. */}
+        <header className="border-t-2 border-black pt-2">
           <h2 className="font-display text-3xl uppercase leading-none tracking-tight text-black">
             {formatDayHeader(selectedDate)}
           </h2>
@@ -387,7 +386,9 @@ export default async function Page({
             )}
           </p>
         </header>
+      </div>
 
+      <section>
         {dayRows.length > 0 ? (
           <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
             {dayRows.map((r) => (
