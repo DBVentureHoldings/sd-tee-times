@@ -15,6 +15,7 @@ import {
   relativeMinutes,
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
+import { CourseDirectory } from "./CourseDirectory";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 
@@ -265,6 +266,11 @@ export default async function Page({
           selected={course}
           preserveQuery={preserveQuery}
         />
+        <CourseDirectory
+          groups={courseGroups}
+          selected={course}
+          preserveQuery={preserveQuery}
+        />
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
             No {label} open
@@ -322,6 +328,12 @@ export default async function Page({
           weather={weather}
         />
       </div>
+
+      <CourseDirectory
+        groups={courseGroups}
+        selected={course}
+        preserveQuery={preserveQuery}
+      />
 
       <section>
         <header className="mb-3 border-b-2 border-black pb-2">
