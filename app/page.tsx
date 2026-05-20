@@ -633,10 +633,10 @@ function TimeOfDayPicker({
             prefetch={false}
             scroll={false}
             className={
-              "flex flex-1 items-center justify-center gap-1 rounded-full border-2 border-black px-2 py-1 font-display text-xs uppercase tracking-wider transition-all " +
+              "flex flex-1 items-center justify-center gap-1 rounded-sm border-2 border-black px-2 py-1.5 font-display text-xs uppercase tracking-wider transition-all " +
               (active
                 ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-                : "bg-white text-black hover:bg-cream-dark") +
+                : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5") +
               (empty ? " opacity-45" : "")
             }
           >
