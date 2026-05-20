@@ -1,7 +1,7 @@
 [
   {
     "slug": "torrey-pines-north",
-    "name": "Torrey Pines — North",
+    "name": "Torrey Pines \u2014 North",
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
     "scraperId": "foreUp",
     "scraperConfig": {
@@ -22,7 +22,7 @@
   },
   {
     "slug": "torrey-pines-south",
-    "name": "Torrey Pines — South",
+    "name": "Torrey Pines \u2014 South",
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
     "scraperId": "foreUp",
     "scraperConfig": {
@@ -189,7 +189,7 @@
   },
   {
     "slug": "singing-hills-willow-glen",
-    "name": "Singing Hills — Willow Glen (Sycuan)",
+    "name": "Singing Hills \u2014 Willow Glen (Sycuan)",
     "bookingUrl": "https://www.sycuan.com/golf/tee-times",
     "scraperId": "foreUp",
     "scraperConfig": {},
@@ -261,7 +261,7 @@
   },
   {
     "slug": "admiral-baker-north",
-    "name": "Admiral Baker — North",
+    "name": "Admiral Baker \u2014 North",
     "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=28&begintime=07%3A00+am",
     "scraperId": "webtrac",
     "scraperConfig": {
@@ -275,7 +275,7 @@
   },
   {
     "slug": "admiral-baker-south",
-    "name": "Admiral Baker — South",
+    "name": "Admiral Baker \u2014 South",
     "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=29&begintime=07%3A00+am",
     "scraperId": "webtrac",
     "scraperConfig": {
@@ -288,7 +288,7 @@
     "active": true
   },
   {
-    "_note": "Arrowood books on GolfDistrict (arrowood.golfdistrict.com). GolfNow lists the facility but no inventory is published there. Needs a GolfDistrict scraper to scrape — leaving inactive for now.",
+    "_note": "Arrowood books on GolfDistrict (arrowood.golfdistrict.com). GolfNow lists the facility but no inventory is published there. Needs a GolfDistrict scraper to scrape \u2014 leaving inactive for now.",
     "slug": "arrowood",
     "name": "Arrowood Golf Course",
     "bookingUrl": "https://arrowood.golfdistrict.com/F0B",
@@ -381,7 +381,9 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "6161",
-      "bookingClasses": ["7870"]
+      "bookingClasses": [
+        "7870"
+      ]
     },
     "active": true
   },
@@ -393,30 +395,40 @@
     "scraperId": "foreUp",
     "scraperConfig": {
       "scheduleId": "614",
-      "bookingClasses": ["14763"],
-      "holes": [9]
+      "bookingClasses": [
+        "14763"
+      ],
+      "holes": [
+        9
+      ]
     },
     "active": true
   },
   {
-    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS — courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set.",
+    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS \u2014 courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
     "slug": "oaks-north",
     "name": "Oaks North Golf Course",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
     "scraperId": "cps",
     "scraperConfig": {
       "tenant": "jcgpub3",
-      "courseIds": [10, 13, 11],
+      "courseIds": [
+        10,
+        13,
+        11
+      ],
       "siteId": 3,
       "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
-      "classCodes": ["PUB"]
+      "classCodes": [
+        "PUB"
+      ]
     },
-    "active": true
+    "active": false
   },
   {
-    "_note": "Welk Resort — Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ.",
+    "_note": "Welk Resort \u2014 Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
     "slug": "welk-fountains",
-    "name": "The Welk — Fountains",
+    "name": "The Welk \u2014 Fountains",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
     "scraperId": "cps",
     "scraperConfig": {
@@ -424,14 +436,16 @@
       "courseId": 18,
       "siteId": 11,
       "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
-      "classCodes": ["PUB"]
+      "classCodes": [
+        "PUB"
+      ]
     },
-    "active": true
+    "active": false
   },
   {
-    "_note": "Welk Resort — Oaks 9. Same tenant as Welk Fountains.",
+    "_note": "Welk Resort \u2014 Oaks 9. Same tenant as Welk Fountains. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
     "slug": "welk-oaks",
-    "name": "The Welk — Oaks",
+    "name": "The Welk \u2014 Oaks",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
     "scraperId": "cps",
     "scraperConfig": {
@@ -439,9 +453,11 @@
       "courseId": 17,
       "siteId": 11,
       "websiteId": "590f1416-72c3-4623-52f9-08d8d8f9344f",
-      "classCodes": ["PUB"]
+      "classCodes": [
+        "PUB"
+      ]
     },
-    "active": true
+    "active": false
   },
   {
     "_note": "Par-3 executive in Solana Beach. Uses teeitup; facilityId 1241 from the booking URL's ?course=1241 param.",
