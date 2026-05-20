@@ -143,7 +143,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": false,
+    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
   },
   {
     "slug": "twin-oaks",
@@ -157,7 +158,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": false,
+    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
   },
   {
     "slug": "encinitas-ranch",
@@ -171,7 +173,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": false,
+    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
   },
   {
     "slug": "crossings-carlsbad",
@@ -185,7 +188,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": false,
+    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
   },
   {
     "slug": "singing-hills-willow-glen",

@@ -79,6 +79,18 @@ const SHORT_SLUGS = new Set([
   "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach
 ]);
 
+// Courses temporarily hidden from the app. Their booking platform
+// (cps.golf) started Cloudflare-blocking our scraper, so the only data we
+// have for them is going stale. Hidden at the app layer — their rows stay
+// in the DB but never render — so this is a one-line undo if we get CPS
+// scraping working again (stealth browser / residential proxy).
+const SUPPRESSED_SLUGS = new Set([
+  "twin-oaks",
+  "encinitas-ranch",
+  "crossings-carlsbad",
+  "rancho-bernardo-inn",
+]);
+
 type View = "all" | "muni" | "nc" | "sc" | "short";
 
 // Time-of-day filter — "all" means no filter; the others map to TimeBucket.
@@ -134,6 +146,12 @@ export default async function Page({
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Failed to load tee times";
   }
+
+  // Drop suppressed courses (scraper currently blocked — see SUPPRESSED_SLUGS)
+  // so their stale rows never surface anywhere in the UI.
+  rows = rows.filter(
+    (r) => !(r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)),
+  );
 
   if (loadError) {
     return (
