@@ -13,9 +13,10 @@ import {
   formatPrice,
   formatTime,
   relativeMinutes,
+  teeTimeBucket,
+  type TimeBucket,
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
-import { CourseDirectory } from "./CourseDirectory";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 
@@ -80,10 +81,18 @@ const SHORT_SLUGS = new Set([
 
 type View = "all" | "muni" | "nc" | "sc" | "short";
 
+// Time-of-day filter — "all" means no filter; the others map to TimeBucket.
+type TimeFilter = "all" | TimeBucket;
+
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ day?: string; view?: string; course?: string }>;
+  searchParams: Promise<{
+    day?: string;
+    view?: string;
+    course?: string;
+    time?: string;
+  }>;
 }) {
   const sp = await searchParams;
   const requestedDay = sp.day;
@@ -99,6 +108,14 @@ export default async function Page({
             : "all";
   const course =
     sp.course && sp.course.trim().length > 0 ? sp.course.trim() : undefined;
+  const timeFilter: TimeFilter =
+    sp.time === "morning"
+      ? "morning"
+      : sp.time === "midday"
+        ? "midday"
+        : sp.time === "evening"
+          ? "evening"
+          : "all";
 
   let rows: TeeTimeRow[] = [];
   let lastScrape: Date | null = null;
@@ -219,17 +236,36 @@ export default async function Page({
 
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
-  const dayRows = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
+  // All rows for the selected day (before the time-of-day filter). The day
+  // header + the time pills' counts are computed from this, so they stay
+  // stable as the user toggles the pills.
+  const allDayRows = selectedDay ? (byDay.get(selectedDay) ?? []) : [];
   const selectedDate =
-    dayRows.length > 0 ? new Date(dayRows[0].tee_time_at) : null;
+    allDayRows.length > 0 ? new Date(allDayRows[0].tee_time_at) : null;
+
+  // Per-bucket counts for the time pills (computed from the un-time-filtered
+  // day so each pill shows how much that slice holds).
+  const timeCounts = { all: allDayRows.length, morning: 0, midday: 0, evening: 0 };
+  for (const r of allDayRows) {
+    timeCounts[teeTimeBucket(new Date(r.tee_time_at))]++;
+  }
+
+  // The actual displayed list — narrowed by the time-of-day pill.
+  const dayRows =
+    timeFilter === "all"
+      ? allDayRows
+      : allDayRows.filter(
+          (r) => teeTimeBucket(new Date(r.tee_time_at)) === timeFilter,
+        );
   const viableToday = dayRows.filter((r) => r.players_avail >= 2).length;
 
-  // Query string we want to keep alive across navigations (day + view).
+  // Query string we want to keep alive across navigations (day + view + time).
   // When a course chip is tapped it gets appended as `&course=…`; when a tab
   // is tapped, the page navigates away from the course filter entirely.
   const preserveParts: string[] = [];
   if (selectedDay) preserveParts.push(`day=${selectedDay}`);
   if (view !== "all") preserveParts.push(`view=${view}`);
+  if (timeFilter !== "all") preserveParts.push(`time=${timeFilter}`);
   const preserveQuery =
     preserveParts.length > 0 ? `&${preserveParts.join("&")}` : "";
 
@@ -254,6 +290,7 @@ export default async function Page({
         <ViewTabs
           view={view}
           selectedDay={requestedDay}
+          timeFilter={timeFilter}
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
@@ -262,11 +299,6 @@ export default async function Page({
           dimmed={Boolean(course)}
         />
         <CoursePicker
-          groups={courseGroups}
-          selected={course}
-          preserveQuery={preserveQuery}
-        />
-        <CourseDirectory
           groups={courseGroups}
           selected={course}
           preserveQuery={preserveQuery}
@@ -307,6 +339,7 @@ export default async function Page({
         <ViewTabs
           view={view}
           selectedDay={requestedDay ?? selectedDay}
+          timeFilter={timeFilter}
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
@@ -325,15 +358,17 @@ export default async function Page({
           selected={selectedDay}
           view={view}
           course={course}
+          timeFilter={timeFilter}
           weather={weather}
         />
+        <TimeOfDayPicker
+          timeFilter={timeFilter}
+          selectedDay={selectedDay}
+          view={view}
+          course={course}
+          counts={timeCounts}
+        />
       </div>
-
-      <CourseDirectory
-        groups={courseGroups}
-        selected={course}
-        preserveQuery={preserveQuery}
-      />
 
       <section>
         <header className="mb-3 border-b-2 border-black pb-2">
@@ -353,14 +388,30 @@ export default async function Page({
           </p>
         </header>
 
-        <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
-          {dayRows.map((r) => (
-            <TeeTimeRow
-              key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
-              row={r}
-            />
-          ))}
-        </ul>
+        {dayRows.length > 0 ? (
+          <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
+            {dayRows.map((r) => (
+              <TeeTimeRow
+                key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
+                row={r}
+              />
+            ))}
+          </ul>
+        ) : (
+          // The day has tee times, just none in the selected time-of-day
+          // window. (allDayRows is non-empty here — a fully empty day routes
+          // to the empty-state branch above instead.)
+          <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
+            <p className="font-display text-2xl uppercase tracking-wider">
+              No {timeFilter} tee times
+            </p>
+            <p className="mt-1 text-xs text-neutral-500">
+              This day has {allDayRows.length} other{" "}
+              {allDayRows.length === 1 ? "time" : "times"} — try a different
+              time of day above.
+            </p>
+          </div>
+        )}
       </section>
 
       <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
@@ -385,6 +436,7 @@ export default async function Page({
 function ViewTabs({
   view,
   selectedDay,
+  timeFilter,
   totalAll,
   totalMuni,
   totalNc,
@@ -401,6 +453,8 @@ function ViewTabs({
    * this day.
    */
   selectedDay: string | undefined;
+  /** Time-of-day filter to preserve in tab hrefs. */
+  timeFilter: TimeFilter;
   totalAll: number;
   totalMuni: number;
   totalNc: number;
@@ -423,6 +477,7 @@ function ViewTabs({
         const parts: string[] = [];
         if (t.key !== "all") parts.push(`view=${t.key}`);
         if (selectedDay) parts.push(`day=${selectedDay}`);
+        if (timeFilter !== "all") parts.push(`time=${timeFilter}`);
         const href = parts.length > 0 ? `/?${parts.join("&")}` : "/";
         return (
           <Link
@@ -459,6 +514,7 @@ function DayPicker({
   selected,
   view,
   course,
+  timeFilter,
   weather,
 }: {
   days: string[];
@@ -466,11 +522,13 @@ function DayPicker({
   selected: string;
   view: View;
   course: string | undefined;
+  timeFilter: TimeFilter;
   weather: Map<string, DayWeather>;
 }) {
   const extraParts: string[] = [];
   if (view !== "all") extraParts.push(`view=${view}`);
   if (course) extraParts.push(`course=${course}`);
+  if (timeFilter !== "all") extraParts.push(`time=${timeFilter}`);
   const extraParams = extraParts.length ? `&${extraParts.join("&")}` : "";
   return (
     <DayPickerScroll>
@@ -529,6 +587,72 @@ function DayPicker({
           );
         })}
     </DayPickerScroll>
+  );
+}
+
+/**
+ * Time-of-day filter pills, shown right below the day picker. Narrows the
+ * selected day's tee times to morning / midday / evening. "All day" clears
+ * the filter. Counts are for the selected day, so each pill previews how
+ * much sits in that window.
+ */
+function TimeOfDayPicker({
+  timeFilter,
+  selectedDay,
+  view,
+  course,
+  counts,
+}: {
+  timeFilter: TimeFilter;
+  selectedDay: string;
+  view: View;
+  course: string | undefined;
+  counts: { all: number; morning: number; midday: number; evening: number };
+}) {
+  const opts: Array<{ key: TimeFilter; label: string; count: number }> = [
+    { key: "all", label: "All day", count: counts.all },
+    { key: "morning", label: "Morning", count: counts.morning },
+    { key: "midday", label: "Midday", count: counts.midday },
+    { key: "evening", label: "Evening", count: counts.evening },
+  ];
+  return (
+    <div className="flex gap-1.5">
+      {opts.map((o) => {
+        const active = timeFilter === o.key;
+        const parts: string[] = [];
+        if (selectedDay) parts.push(`day=${selectedDay}`);
+        if (view !== "all") parts.push(`view=${view}`);
+        if (course) parts.push(`course=${course}`);
+        if (o.key !== "all") parts.push(`time=${o.key}`);
+        const href = parts.length > 0 ? `/?${parts.join("&")}` : "/";
+        const empty = o.count === 0 && !active;
+        return (
+          <Link
+            key={o.key}
+            href={href}
+            prefetch={false}
+            scroll={false}
+            className={
+              "flex flex-1 items-center justify-center gap-1 rounded-full border-2 border-black px-2 py-1 font-display text-xs uppercase tracking-wider transition-all " +
+              (active
+                ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
+                : "bg-white text-black hover:bg-cream-dark") +
+              (empty ? " opacity-45" : "")
+            }
+          >
+            <span>{o.label}</span>
+            <span
+              className={
+                "text-[10px] tabular-nums " +
+                (active ? "text-cream/70" : "text-neutral-500")
+              }
+            >
+              {o.count}
+            </span>
+          </Link>
+        );
+      })}
+    </div>
   );
 }
 

@@ -90,6 +90,27 @@ export function formatDayHeader(d: Date): string {
   }).format(d);
 }
 
+/** Time-of-day buckets for the filter pills. */
+export type TimeBucket = "morning" | "midday" | "evening";
+
+/**
+ * Classify a tee time into a time-of-day bucket, by its hour in Pacific time:
+ *   morning  — before 11 AM
+ *   midday   — 11 AM to 2:59 PM
+ *   evening  — 3 PM onward
+ */
+export function teeTimeBucket(d: Date): TimeBucket {
+  const hourStr = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "2-digit",
+    hour12: false,
+  }).format(d);
+  const hour = Number(hourStr) % 24;
+  if (hour < 11) return "morning";
+  if (hour < 15) return "midday";
+  return "evening";
+}
+
 export function formatTime(d: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,
