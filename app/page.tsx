@@ -15,7 +15,7 @@ import {
   relativeMinutes,
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
-import { CourseDirectory } from "./CourseDirectory";
+import { CourseMap } from "./CourseMap";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 
@@ -266,7 +266,7 @@ export default async function Page({
           selected={course}
           preserveQuery={preserveQuery}
         />
-        <CourseDirectory
+        <CourseMap
           groups={courseGroups}
           selected={course}
           preserveQuery={preserveQuery}
@@ -329,7 +329,7 @@ export default async function Page({
         />
       </div>
 
-      <CourseDirectory
+      <CourseMap
         groups={courseGroups}
         selected={course}
         preserveQuery={preserveQuery}
