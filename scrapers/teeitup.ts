@@ -87,8 +87,14 @@ export const teeItUpScraper: Scraper = {
             preferred ??
             slot.rates?.find((r) => /online/i.test(r.name ?? "")) ??
             slot.rates?.[0];
-          // greenFeeCart is already in cents.
-          const cents = rate?.promotion?.greenFeeCart ?? rate?.greenFeeCart;
+          // Prices are in cents. Most courses bundle a cart (greenFeeCart);
+          // walking-only courses (e.g. National City, a 9-hole muni) publish
+          // greenFeeWalking instead — fall back to it so those don't show
+          // a blank price.
+          const cents =
+            rate?.promotion?.greenFeeCart ??
+            rate?.greenFeeCart ??
+            rate?.greenFeeWalking;
           // maxPlayers represents how many additional players can still book.
           const playersAvail = slot.maxPlayers ?? 4;
           results.push({
@@ -113,6 +119,7 @@ interface TeeItUpRate {
   allowedPlayers?: number[];
   holes?: number;
   greenFeeCart?: number;
+  greenFeeWalking?: number;
   transactionFees?: number;
   promotion?: { greenFeeCart?: number };
 }

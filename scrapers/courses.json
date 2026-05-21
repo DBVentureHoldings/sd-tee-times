@@ -231,13 +231,15 @@
     "active": true
   },
   {
+    "_note": "Switched from GolfNow to native TeeItUp. National City is a 9-hole walking muni — single '9 Walking' rate (~$15), priced via greenFeeWalking. No resident rate, but native booking is the cleaner, fee-free experience.",
     "slug": "national-city",
     "name": "National City Golf Course",
-    "bookingUrl": "https://www.golfnow.com/tee-times/facility/3056-national-city-golf-course/search",
-    "scraperId": "golfnow",
+    "bookingUrl": "https://national-city-golf-course.book.teeitup.com/",
+    "scraperId": "teeitup",
     "scraperConfig": {
+      "alias": "national-city-golf-course",
       "facilityId": 3056,
-      "clubUrl": "https://www.golfnow.com/tee-times/facility/3056-national-city-golf-course/search"
+      "clubUrl": "https://national-city-golf-course.book.teeitup.com/"
     },
     "active": true
   },
