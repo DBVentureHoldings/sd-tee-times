@@ -16,6 +16,12 @@ import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
  *                              e.g. coronado-resident's alias is "coronado-res")
  *   - facilityId  (number)  — facility/course id (see Network tab on the page)
  *   - clubUrl     (string)  — used as Referer and per-row booking_url
+ *   - preferRate  (string)  — optional, case-insensitive substring. When set,
+ *                              pick the rate whose name contains it (e.g.
+ *                              "resident" to surface a San Diego County
+ *                              Resident rate instead of the default Standard
+ *                              Rate). Falls back to the normal rate pick if
+ *                              no rate matches.
  */
 export const teeItUpScraper: Scraper = {
   id: "teeitup",
@@ -26,6 +32,7 @@ export const teeItUpScraper: Scraper = {
       facilityId?: number | string;
       clubUrl?: string;
       apiBase?: string;
+      preferRate?: string;
     };
     if (!cfg.alias || cfg.facilityId == null) {
       throw new Error(
@@ -66,8 +73,18 @@ export const teeItUpScraper: Scraper = {
         for (const slot of course.teetimes ?? []) {
           const teeTimeAt = new Date(slot.teetime);
           if (isNaN(teeTimeAt.getTime())) continue;
-          // Pick the lowest non-promoted rate, prefer "Online Rate" over deals.
+          // Rate selection: if `preferRate` is configured, pick the rate
+          // whose name contains it (e.g. "resident"). Otherwise prefer an
+          // "Online Rate", else fall back to the first rate.
+          const preferred = cfg.preferRate
+            ? slot.rates?.find((r) =>
+                (r.name ?? "")
+                  .toLowerCase()
+                  .includes(cfg.preferRate!.toLowerCase()),
+              )
+            : undefined;
           const rate =
+            preferred ??
             slot.rates?.find((r) => /online/i.test(r.name ?? "")) ??
             slot.rates?.[0];
           // greenFeeCart is already in cents.

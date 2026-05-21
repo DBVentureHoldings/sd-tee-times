@@ -357,13 +357,16 @@
     "active": true
   },
   {
+    "_note": "Switched from GolfNow to the course's native TeeItUp booking (eastlake-country-club.book.teeitup.golf, facilityId 245). GolfNow only exposed the $150 Standard Rate; the native TeeItUp feed also carries the 'San Diego County Resident' rate (~$69-99), which preferRate selects.",
     "slug": "enagic-chula-vista",
     "name": "Enagic Golf Club at EastLake",
-    "bookingUrl": "https://www.golfnow.com/tee-times/facility/245-enagic-golf-club-at-eastlake/search",
-    "scraperId": "golfnow",
+    "bookingUrl": "https://eastlake-country-club.book.teeitup.golf/",
+    "scraperId": "teeitup",
     "scraperConfig": {
+      "alias": "eastlake-country-club",
       "facilityId": 245,
-      "clubUrl": "https://www.golfnow.com/tee-times/facility/245-enagic-golf-club-at-eastlake/search"
+      "clubUrl": "https://eastlake-country-club.book.teeitup.golf/",
+      "preferRate": "county resident"
     },
     "active": true
   },
