@@ -12,6 +12,10 @@ import { supabaseAdmin } from "./supabase.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const COURSES_PATH = join(__dirname, "..", "courses.json");
 
+// Email digest is paused while the alert criteria are being reworked.
+// Flip back to false to resume sending.
+const ALERTS_PAUSED = true;
+
 function readCourseSlugsExcludedFromAlerts(): Set<string> {
   try {
     const raw = readFileSync(COURSES_PATH, "utf8");
@@ -201,6 +205,11 @@ async function sendEmail(
 export async function checkAndSendAlerts(
   criteria: Criteria = DEFAULT_CRITERIA,
 ): Promise<{ matched: number; sent: number }> {
+  if (ALERTS_PAUSED) {
+    console.log("(alerts: paused — skipping digest email)");
+    return { matched: 0, sent: 0 };
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   // Resend's free tier matches your verified address case-insensitively but
   // still 403's a mis-cased recipient. Normalize to lowercase.
