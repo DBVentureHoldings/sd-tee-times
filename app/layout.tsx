@@ -17,9 +17,26 @@ const sansFont = Inter({
   display: "swap",
 });
 
+const SITE_DESCRIPTION =
+  "Every open tee time across San Diego — 25 courses, free, no login, updated every 30 minutes.";
+
 export const metadata: Metadata = {
+  // metadataBase makes the auto-generated og:image URL absolute. Update this
+  // if the site moves to a custom domain.
+  metadataBase: new URL("https://sd-tee-times.vercel.app"),
   title: "SD Tee Times",
-  description: "Earliest open tee times across San Diego munis & publics.",
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: "SD Tee Times — San Diego's open tee sheet",
+    description: SITE_DESCRIPTION,
+    siteName: "SD Tee Times",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "SD Tee Times — San Diego's open tee sheet",
+    description: SITE_DESCRIPTION,
+  },
 };
 
 export const viewport: Viewport = {
