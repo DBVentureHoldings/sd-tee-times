@@ -117,6 +117,36 @@ export function teeTimeBucket(d: Date): TimeBucket {
   return "evening";
 }
 
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+/** Day of week (0=Sun … 6=Sat) for a tee time, evaluated in Pacific time. */
+export function teeTimeWeekday(d: Date): number {
+  const s = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    weekday: "short",
+  }).format(d);
+  return WEEKDAY_INDEX[s] ?? 0;
+}
+
+/**
+ * A "prime" tee time = the rare, high-demand slots San Diego golfers fight
+ * over: weekend (Fri/Sat/Sun) mornings with room for a group. These vanish
+ * fast, so surfacing them is the whole point of the app.
+ */
+export function isPrimeTeeTime(d: Date, playersAvail: number): boolean {
+  const dow = teeTimeWeekday(d);
+  const isWeekend = dow === 5 || dow === 6 || dow === 0; // Fri, Sat, Sun
+  return isWeekend && teeTimeBucket(d) === "morning" && playersAvail >= 2;
+}
+
 export function formatTime(d: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     timeZone: TZ,
