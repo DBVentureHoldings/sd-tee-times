@@ -113,6 +113,16 @@ const SUPPRESSED_SLUGS = new Set([
   "welk-oaks",
 ]);
 
+// Prime deliberately EXCLUDES short / par-3 / executive courses (the Short
+// Courses set). People hunting rare weekend tee times want a real round, not a
+// par-3 — including them just clutters the hero. A "prime row" is a prime tee
+// time at a non-short course.
+function isPrimeRow(r: TeeTimeRow): boolean {
+  const slug = r.courses?.slug;
+  if (!slug || SHORT_SLUGS.has(slug)) return false;
+  return isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail);
+}
+
 type View = "all" | "muni" | "nc" | "ec" | "sc" | "short" | "prime";
 
 // Time-of-day filter — "all" means no filter; the others map to TimeBucket.
@@ -222,9 +232,7 @@ export default async function Page({
               : null;
   const viewFilteredRows =
     view === "prime"
-      ? rows.filter((r) =>
-          isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail),
-        )
+      ? rows.filter(isPrimeRow)
       : filterSlugs
         ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
         : rows;
@@ -298,9 +306,7 @@ export default async function Page({
   // Prime is its own county-wide mode.
   // Count of prime (weekend-morning) slots across all courses — drives the
   // 🔥 Prime tab badge. Prime itself is applied as a view filter above.
-  const primeTotal = rows.filter((r) =>
-    isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail),
-  ).length;
+  const primeTotal = rows.filter(isPrimeRow).length;
 
   // Deal baselines: per (course, time-of-day) median price, built from the
   // full row set. TeeTimeRow uses this to flag slots priced well below the
@@ -308,13 +314,15 @@ export default async function Page({
   const dealBaselines = buildDealBaselines(rows);
 
   // 🔥 Today's Drops — the hero. The rarest, most-shareable finds: prime
-  // weekend-morning foursomes OR strong deals (>=30% off). Deduped to ONE per
-  // course (the soonest) so the strip shows a spread of courses, not six of
-  // the same. Soonest first, top 6.
+  // weekend-morning foursomes OR strong deals (>=30% off). Short / par-3
+  // courses are excluded entirely (same rationale as Prime). Deduped to ONE
+  // per course (the soonest) so the strip shows a spread of courses, not six
+  // of the same. Soonest first, top 6.
   const allDrops: Drop[] = rows
     .map((r): Drop | null => {
-      const isPrime = isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail);
-      if (isPrime && r.players_avail >= 4) {
+      // No short / par-3 courses in the drops hero.
+      if (r.courses?.slug && SHORT_SLUGS.has(r.courses.slug)) return null;
+      if (isPrimeRow(r) && r.players_avail >= 4) {
         return { row: r, kind: "prime" };
       }
       const deal = getDealInfo(r, dealBaselines);
