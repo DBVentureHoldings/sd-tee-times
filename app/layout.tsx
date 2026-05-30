@@ -57,7 +57,7 @@ export default function RootLayout({
           <div className="mx-auto max-w-2xl px-4 py-5">
             <div className="flex items-end justify-between gap-3">
               <div>
-                <h1 className="font-display text-5xl leading-none tracking-tight">
+                <h1 className="font-display text-5xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_3px_3px_0_rgba(0,0,0,0.25)]">
                   SD <span className="text-magred">TEE</span> TIMES
                 </h1>
                 <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-cream/70">
