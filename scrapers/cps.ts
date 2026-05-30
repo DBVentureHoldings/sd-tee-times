@@ -1,27 +1,45 @@
 import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
-import { newContext } from "./_shared/browser.js";
-import type { BrowserContext } from "playwright";
+import { chromium as stealthChromium } from "playwright-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import type { Browser, Page } from "playwright";
+
+// Register the stealth plugin once. It masks the ~20 automation tells
+// (navigator.webdriver, headless markers, missing plugins/codecs, etc.)
+// that Cloudflare's managed challenge uses to fingerprint headless
+// browsers. Without it, cps.golf serves an endless "Just a moment..."
+// challenge (HTTP 403) — verified to block even from residential IPs, so
+// this is a fingerprint problem, not an IP-reputation one.
+stealthChromium.use(StealthPlugin());
 
 /**
- * CPS.golf scraper (e.g. JC Resorts: Encinitas Ranch, Carmel Mountain Ranch,
- * Crossings at Carlsbad).
+ * CPS.golf scraper (JC Resorts: Twin Oaks, Encinitas Ranch, Crossings at
+ * Carlsbad, Rancho Bernardo Inn on jcgpub29; Oaks North + The Welk on
+ * jcgpub3).
  *
- * Each CPS tenant runs at <tenant>.cps.golf, hosts an Angular SPA at
- * /onlineresweb/search-teetime, and serves data from /onlineres/onlineapi.
- * Requests need a short-lived JWT (from /identityapi/myconnect/token/short)
- * plus a thick set of x-* headers that the SPA injects.
+ * Each CPS tenant runs at <tenant>.cps.golf behind Cloudflare's managed
+ * challenge, hosts an Angular SPA at /onlineresweb/search-teetime, and
+ * serves data from /onlineres/onlineapi with a short-lived JWT + a thick
+ * set of x-* headers.
  *
- * Strategy: warm a Playwright context once per scraper-instance lifetime,
- * read the JWT from localStorage, then issue plain HTTP requests through
- * the context (so cookies + UA match what produced the token).
+ * Strategy:
+ *   1. Launch a STEALTH browser (playwright-extra + stealth) so Cloudflare's
+ *      challenge resolves and issues a cf_clearance cookie.
+ *   2. Keep one warmed page open per tenant (on the tenant origin).
+ *   3. Read the JWT from localStorage.
+ *   4. Make ALL API calls via page.evaluate(fetch) — i.e. from inside the
+ *      page's JS context — so they carry the browser's real fingerprint AND
+ *      the cf_clearance cookie. (Playwright's context.request.get uses a
+ *      separate HTTP stack that Cloudflare fingerprints independently and
+ *      403s, so we must not use it here.)
  *
  * scraperConfig:
  *   - tenant       (string)   — e.g. "jcgpub29"
  *   - courseId     (number)   — CPS-internal course id
- *   - siteId       (number)   — CPS-internal site id (often differs from courseId)
+ *   - courseIds    (number[]) — multi-loop courses (e.g. Oaks North); merged
+ *   - siteId       (number)   — CPS-internal site id (often != courseId)
  *   - websiteId    (string)   — tenant-wide GUID
  *   - moduleId     (number)   — defaults to 7
- *   - classCodes   (string[]) — defaults to ["R"]; CPS uses Resident (R) for default
+ *   - classCodes   (string[]) — defaults to ["R"]
  *   - clubUrl      (string)   — landing page for "Book" links
  */
 export const cpsScraper: Scraper = {
@@ -31,12 +49,6 @@ export const cpsScraper: Scraper = {
     const cfg = (ctx.course.scraperConfig ?? {}) as {
       tenant?: string;
       courseId?: number;
-      /**
-       * Some CPS facilities split a course into multiple "loops" with their
-       * own courseId each (e.g., Oaks North has 3 separate 9-hole loops you
-       * can book in combination). Setting `courseIds` instead of `courseId`
-       * tells the scraper to query all of them at once and merge.
-       */
       courseIds?: number[];
       siteId?: number;
       websiteId?: string;
@@ -58,41 +70,36 @@ export const cpsScraper: Scraper = {
       );
     }
     const courseIdsParam = courseIds.join(",");
-
-    const landingUrl = `https://${cfg.tenant}.cps.golf/onlineresweb/search-teetime`;
     const apiBase = `https://${cfg.tenant}.cps.golf/onlineres/onlineapi/api/v1/onlinereservation`;
 
-    const browserCtx = await getWarmedContext(cfg.tenant, landingUrl);
-    const token = await getToken(browserCtx, cfg.tenant);
+    const page = await getWarmedPage(cfg.tenant);
+    let token = await readToken(page);
 
-    const headers = {
+    const buildHeaders = (auth: string): Record<string, string> => ({
       accept: "application/json, text/plain, */*",
-      authorization: `Bearer ${token}`,
+      authorization: `Bearer ${auth}`,
       "x-ismobile": "false",
       "x-timezoneid": "America/Los_Angeles",
       "x-timezone-offset": "420",
       "x-terminalid": "3",
       "x-productid": "1",
-      "x-websiteid": cfg.websiteId,
+      "x-websiteid": cfg.websiteId!,
       "x-moduleid": String(cfg.moduleId ?? 7),
       "x-siteid": String(cfg.siteId),
       "x-componentid": String(cfg.componentId ?? 1),
       "client-id": "onlineresweb",
-      "if-modified-since": "0",
-      "cache-control": "no-cache, no-store, must-revalidate",
-      pragma: "no-cache",
-      referer: landingUrl,
-    };
+      "x-requestid": crypto.randomUUID(),
+    });
 
-    // Generate a transactionId client-side and "register" it. The CPS
-    // backend just records that this ID is in use; the actual value comes
-    // from us.
+    // Register a transaction id (CPS requires this before TeeTimes returns
+    // data — without it you get 400 "Invalid Transaction Id").
     const transactionId = crypto.randomUUID();
-    await registerTransaction(browserCtx, apiBase, headers, transactionId).catch(
-      () => {
-        /* non-fatal: the TeeTimes call has been observed to work without it */
-      },
-    );
+    await browserFetch(page, "POST", `${apiBase}/RegisterTransactionId`, {
+      headers: { ...buildHeaders(token), "content-type": "application/json" },
+      body: JSON.stringify({ transactionId }),
+    }).catch(() => {
+      /* non-fatal */
+    });
 
     const classCodes = cfg.classCodes ?? ["R"];
     const results: ScrapedTeeTime[] = [];
@@ -102,47 +109,47 @@ export const cpsScraper: Scraper = {
         const date = new Date();
         date.setDate(date.getDate() + i);
         const searchDate = encodeURIComponent(date.toDateString());
-
         const url = `${apiBase}/TeeTimes?searchDate=${searchDate}&holes=18&numberOfPlayer=0&courseIds=${courseIdsParam}&searchTimeType=0&transactionId=${transactionId}&teeOffTimeMin=0&teeOffTimeMax=23&isChangeTeeOffTime=true&teeSheetSearchView=5&classCode=${classCode}&defaultOnlineRate=N&isUseCapacityPricing=false&memberStoreId=1&searchType=1`;
 
-        const headersForReq = {
-          ...headers,
-          "x-requestid": crypto.randomUUID(),
-        };
+        let res = await browserFetch(page, "GET", url, {
+          headers: buildHeaders(token),
+        });
 
-        const res = await browserCtx.request.get(url, { headers: headersForReq });
-        if (!res.ok()) {
-          if (res.status() === 401) {
-            const fresh = await getToken(browserCtx, cfg.tenant, true);
-            headersForReq.authorization = `Bearer ${fresh}`;
-            const retry = await browserCtx.request.get(url, { headers: headersForReq });
-            if (!retry.ok()) {
-              throw new Error(
-                `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${retry.status()} after token refresh`,
-              );
-            }
-            const json = (await retry.json()) as CpsResponse;
-            results.push(
-              ...extractSlots(json).map((s) =>
-                toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
-              ),
+        if (res.status === 401) {
+          // Stale token — re-read from localStorage and retry once.
+          token = await readToken(page, true);
+          res = await browserFetch(page, "GET", url, {
+            headers: buildHeaders(token),
+          });
+          if (res.status === 401) {
+            throw new Error(
+              `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP 401 after token refresh`,
             );
-            continue;
           }
-          const body = await res.text().catch(() => "");
+        }
+
+        if (res.status < 200 || res.status >= 300) {
           // CPS returns 400 with this message when we query past the
           // membership's booking window — treat as end-of-data, not error.
           if (
-            res.status() === 400 &&
-            /days in advance|not able to book this tee time currently/i.test(body)
+            res.status === 400 &&
+            /days in advance|not able to book this tee time currently/i.test(
+              res.body,
+            )
           ) {
             break;
           }
           throw new Error(
-            `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${res.status()} — ${body.slice(0, 160)}`,
+            `CPS ${ctx.course.slug} day ${i} class ${classCode}: HTTP ${res.status} — ${res.body.slice(0, 160)}`,
           );
         }
-        const json = (await res.json()) as CpsResponse;
+
+        let json: CpsResponse;
+        try {
+          json = JSON.parse(res.body) as CpsResponse;
+        } catch {
+          continue;
+        }
         results.push(
           ...extractSlots(json).map((s) =>
             toScraped(s, cfg.clubUrl ?? ctx.course.bookingUrl),
@@ -155,21 +162,24 @@ export const cpsScraper: Scraper = {
   },
 };
 
-async function registerTransaction(
-  ctx: BrowserContext,
-  apiBase: string,
-  baseHeaders: Record<string, string>,
-  transactionId: string,
-): Promise<void> {
-  const url = `${apiBase}/RegisterTransactionId`;
-  await ctx.request.post(url, {
-    headers: {
-      ...baseHeaders,
-      "content-type": "application/json",
-      "x-requestid": crypto.randomUUID(),
+/** Make an HTTP request from inside the page's JS context (rides cf_clearance). */
+async function browserFetch(
+  page: Page,
+  method: "GET" | "POST",
+  url: string,
+  opts: { headers: Record<string, string>; body?: string },
+): Promise<{ status: number; body: string }> {
+  return page.evaluate(
+    async ([m, u, headers, body]) => {
+      const r = await fetch(u as string, {
+        method: m as string,
+        headers: headers as Record<string, string>,
+        body: (body as string) || undefined,
+      });
+      return { status: r.status, body: await r.text() };
     },
-    data: { transactionId },
-  });
+    [method, url, opts.headers, opts.body ?? null] as const,
+  );
 }
 
 interface CpsSlot {
@@ -197,24 +207,18 @@ function extractSlots(json: CpsResponse): CpsSlot[] {
 }
 
 function toScraped(slot: CpsSlot, bookingUrl: string): ScrapedTeeTime {
-  // CPS times come without an explicit timezone but represent local (PT).
-  // Add a "PT offset" by treating the wall-clock as Pacific.
   const teeTimeAt = parsePacific(slot.startTime ?? "");
   // availableParticipantNo is the list of OPEN POSITIONS in the foursome
-  // (e.g., [3,4] means 2 spots remain — positions 3 and 4). The COUNT of
-  // entries is the open-spot count, NOT the max value.
+  // (e.g., [3,4] means 2 spots remain). The COUNT is the open-spot count.
   const avail =
     Array.isArray(slot.availableParticipantNo) &&
     slot.availableParticipantNo.length > 0
       ? slot.availableParticipantNo.length
       : (slot.maxPlayer ?? 4);
-  // Pull the green-fee price; cart fee comes through as a separate item.
-  const greenFee = slot.shItemPrices?.find(
-    (p) => (p.shItemCode ?? "").toLowerCase().includes("greenfee"),
+  const greenFee = slot.shItemPrices?.find((p) =>
+    (p.shItemCode ?? "").toLowerCase().includes("greenfee"),
   );
   const price = greenFee?.displayPrice ?? greenFee?.price;
-  // Surface the course's group-size floor so the UI can warn about courses
-  // that don't allow solo bookings (JC Resorts, etc.).
   const playersMin = slot.isNotAllowSingleBooking
     ? Math.max(slot.minPlayer ?? 2, 2)
     : (slot.minPlayer ?? 1);
@@ -229,9 +233,7 @@ function toScraped(slot: CpsSlot, bookingUrl: string): ScrapedTeeTime {
   };
 }
 
-/**
- * Parse "2026-05-18T14:42:00" as wall-clock Pacific time and return a UTC Date.
- */
+/** Parse "2026-05-18T14:42:00" as wall-clock Pacific time → UTC Date. */
 function parsePacific(s: string): Date | null {
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/);
   if (!m) {
@@ -262,48 +264,61 @@ function parsePacific(s: string): Date | null {
   return new Date(utcGuess - offset);
 }
 
-// --- shared per-tenant context + token cache ---
+// --- shared stealth browser + per-tenant warmed page ---
 
-const warmedContexts = new Map<string, BrowserContext>();
-const cachedTokens = new Map<string, { token: string; cachedAt: number }>();
-const TOKEN_TTL_MS = 8 * 60 * 1000;
+let browserPromise: Promise<Browser> | null = null;
+const warmedPages = new Map<string, Page>();
+const TOKEN_KEY = "online-reservation-v5-short_lived_token";
 
-async function getWarmedContext(tenant: string, landingUrl: string): Promise<BrowserContext> {
-  const existing = warmedContexts.get(tenant);
-  if (existing) return existing;
-  const c = await newContext();
-  const page = await c.newPage();
-  await page.goto(landingUrl, { waitUntil: "domcontentloaded", timeout: 30_000 });
-  await page.waitForTimeout(3000);
-  await page.close();
-  warmedContexts.set(tenant, c);
-  return c;
+async function getBrowser(): Promise<Browser> {
+  if (!browserPromise) {
+    browserPromise = stealthChromium.launch({
+      headless: true,
+      args: ["--disable-blink-features=AutomationControlled"],
+    });
+  }
+  return browserPromise;
 }
 
-async function getToken(
-  ctx: BrowserContext,
-  tenant: string,
-  force = false,
-): Promise<string> {
-  const now = Date.now();
-  const cached = cachedTokens.get(tenant);
-  if (!force && cached && now - cached.cachedAt < TOKEN_TTL_MS) return cached.token;
+/**
+ * One warmed page per tenant, kept open for the scrape session. Loading the
+ * SPA lets Cloudflare's challenge resolve (issuing cf_clearance) and lets the
+ * Angular app deposit the JWT into localStorage. Subsequent page.evaluate
+ * fetches inherit that clearance.
+ */
+async function getWarmedPage(tenant: string): Promise<Page> {
+  const existing = warmedPages.get(tenant);
+  if (existing && !existing.isClosed()) return existing;
 
-  // Re-warm: open the page again, read the token out of localStorage.
+  const browser = await getBrowser();
+  const ctx = await browser.newContext({
+    userAgent:
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Safari/605.1.15",
+    viewport: { width: 1280, height: 900 },
+    locale: "en-US",
+    timezoneId: "America/Los_Angeles",
+  });
   const page = await ctx.newPage();
-  try {
-    await page.goto(`https://${tenant}.cps.golf/onlineresweb/search-teetime`, {
-      waitUntil: "domcontentloaded",
-      timeout: 30_000,
-    });
-    await page.waitForTimeout(3000);
-    const token = (await page.evaluate(() =>
-      localStorage.getItem("online-reservation-v5-short_lived_token"),
-    )) as string | null;
-    if (!token) throw new Error("CPS token not found in localStorage");
-    cachedTokens.set(tenant, { token, cachedAt: now });
-    return token;
-  } finally {
-    await page.close();
+  await page.goto(`https://${tenant}.cps.golf/onlineresweb/search-teetime`, {
+    waitUntil: "domcontentloaded",
+    timeout: 45_000,
+  });
+  // Allow the Cloudflare JS challenge to solve + the SPA to write the token.
+  await page.waitForTimeout(8000);
+  warmedPages.set(tenant, page);
+  return page;
+}
+
+async function readToken(page: Page, force = false): Promise<string> {
+  if (force) {
+    // Reload to mint a fresh token, then re-clear Cloudflare if needed.
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
+    await page.waitForTimeout(6000);
   }
+  const token = (await page.evaluate(
+    (k) => localStorage.getItem(k),
+    TOKEN_KEY,
+  )) as string | null;
+  if (!token) throw new Error("CPS token not found in localStorage");
+  return token;
 }

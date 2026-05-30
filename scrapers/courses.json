@@ -143,8 +143,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": false,
-    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
+    "active": true,
+    "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]"
   },
   {
     "slug": "twin-oaks",
@@ -158,8 +158,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": false,
-    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
+    "active": true,
+    "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]"
   },
   {
     "slug": "encinitas-ranch",
@@ -173,8 +173,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": false,
-    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
+    "active": true,
+    "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]"
   },
   {
     "slug": "crossings-carlsbad",
@@ -188,8 +188,8 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": false,
-    "_note": "[INACTIVE: cps.golf began Cloudflare-blocking our scraper ~May 2026. Deactivated for launch. Revisit with a stealth browser or residential proxy.]"
+    "active": true,
+    "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]"
   },
   {
     "slug": "singing-hills-willow-glen",
@@ -231,7 +231,7 @@
     "active": true
   },
   {
-    "_note": "Switched from GolfNow to native TeeItUp. National City is a 9-hole walking muni — single '9 Walking' rate (~$15), priced via greenFeeWalking. No resident rate, but native booking is the cleaner, fee-free experience.",
+    "_note": "Switched from GolfNow to native TeeItUp. National City is a 9-hole walking muni \u2014 single '9 Walking' rate (~$15), priced via greenFeeWalking. No resident rate, but native booking is the cleaner, fee-free experience.",
     "slug": "national-city",
     "name": "National City Golf Course",
     "bookingUrl": "https://national-city-golf-course.book.teeitup.com/",
@@ -414,7 +414,7 @@
     "active": true
   },
   {
-    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS \u2014 courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
+    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS \u2014 courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
     "slug": "oaks-north",
     "name": "Oaks North Golf Course",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -432,10 +432,10 @@
         "PUB"
       ]
     },
-    "active": false
+    "active": true
   },
   {
-    "_note": "Welk Resort \u2014 Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
+    "_note": "Welk Resort \u2014 Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
     "slug": "welk-fountains",
     "name": "The Welk \u2014 Fountains",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -449,10 +449,10 @@
         "PUB"
       ]
     },
-    "active": false
+    "active": true
   },
   {
-    "_note": "Welk Resort \u2014 Oaks 9. Same tenant as Welk Fountains. [INACTIVE: jcgpub3 CPS tenant Cloudflare-blocks our scraper \u2014 never returned data. Revisit if we crack jcgpub3.]",
+    "_note": "Welk Resort \u2014 Oaks 9. Same tenant as Welk Fountains. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
     "slug": "welk-oaks",
     "name": "The Welk \u2014 Oaks",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -466,7 +466,7 @@
         "PUB"
       ]
     },
-    "active": false
+    "active": true
   },
   {
     "_note": "Par-3 executive in Solana Beach. Uses teeitup; facilityId 1241 from the booking URL's ?course=1241 param.",
@@ -482,7 +482,7 @@
     "active": true
   },
   {
-    "_note": "Carlton Oaks (Santee, East County) — native site embeds TeeItUp (carlton-oaks-golf-club.book-v2.teeitup.golf, facilityId 2129). Verified: 74 tee times, 'Online Rate' $60-65. The junk 'Hot Deal $500' rate is ignored by our Online-Rate-first pick.",
+    "_note": "Carlton Oaks (Santee, East County) \u2014 native site embeds TeeItUp (carlton-oaks-golf-club.book-v2.teeitup.golf, facilityId 2129). Verified: 74 tee times, 'Online Rate' $60-65. The junk 'Hot Deal $500' rate is ignored by our Online-Rate-first pick.",
     "slug": "carlton-oaks",
     "name": "Carlton Oaks Golf Club",
     "bookingUrl": "https://carlton-oaks-golf-club.book-v2.teeitup.golf/",
@@ -495,7 +495,7 @@
     "active": true
   },
   {
-    "_note": "Reidy Creek (Escondido) — par-3/executive, CourseCo-managed. Native booking on the Total-e Integrated 'Unify' platform; gateway courseco-gateway.totaleintegrated.net, courseId REIDY_CREEK. Open JSON API (no Cloudflare, no auth). Verified: 40 tee times, $47/pp.",
+    "_note": "Reidy Creek (Escondido) \u2014 par-3/executive, CourseCo-managed. Native booking on the Total-e Integrated 'Unify' platform; gateway courseco-gateway.totaleintegrated.net, courseId REIDY_CREEK. Open JSON API (no Cloudflare, no auth). Verified: 40 tee times, $47/pp.",
     "slug": "reidy-creek",
     "name": "Reidy Creek Golf Course",
     "bookingUrl": "https://reidycreek.totaleintegrated.net/web/tee-times",
@@ -508,7 +508,7 @@
     "active": true
   },
   {
-    "_note": "Park Hyatt Aviara Golf Club — premier Carlsbad resort course (Arnold Palmer design, Troon-managed). Books publicly via GolfNow facility 4082. Verified live (52 tee times returned on test).",
+    "_note": "Park Hyatt Aviara Golf Club \u2014 premier Carlsbad resort course (Arnold Palmer design, Troon-managed). Books publicly via GolfNow facility 4082. Verified live (52 tee times returned on test).",
     "slug": "aviara",
     "name": "Park Hyatt Aviara Golf Club",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/4082-aviara-golf-club/search",
