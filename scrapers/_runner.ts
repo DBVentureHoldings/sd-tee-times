@@ -119,13 +119,20 @@ async function main() {
   );
 
   // Send digest email for any new tee times that match the user's criteria.
-  // No-op if RESEND_API_KEY or ALERT_EMAIL is unset.
-  try {
-    const { matched, sent } = await checkAndSendAlerts();
-    if (sent > 0)
-      console.log(`Alerts: emailed ${sent} new slot${sent === 1 ? "" : "s"} (${matched} matched total)`);
-  } catch (err) {
-    console.error("Alerts step failed:", err instanceof Error ? err.message : err);
+  // PAUSED: alert emails are off until ALERTS_ENABLED=true is set in the
+  // environment. They were firing every scrape (~every 30 min) which was too
+  // noisy; will revisit with smarter alerting (e.g. only true deals / prime
+  // foursomes). To re-enable, set the ALERTS_ENABLED secret to "true".
+  if (process.env.ALERTS_ENABLED === "true") {
+    try {
+      const { matched, sent } = await checkAndSendAlerts();
+      if (sent > 0)
+        console.log(`Alerts: emailed ${sent} new slot${sent === 1 ? "" : "s"} (${matched} matched total)`);
+    } catch (err) {
+      console.error("Alerts step failed:", err instanceof Error ? err.message : err);
+    }
+  } else {
+    console.log("Alerts: paused (set ALERTS_ENABLED=true to re-enable)");
   }
 
   // Hard-exit so any lingering Playwright contexts (chronogolf/cps keep their
