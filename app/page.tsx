@@ -199,6 +199,9 @@ export default async function Page({
 
   // Apply the view (tab) filter, then the course (dropdown) filter, before
   // computing day chips so counts + chips reflect what the user is browsing.
+  // Most tabs filter by a course-slug set; "prime" filters by a predicate
+  // (weekend mornings) but otherwise flows through the SAME pipeline so the
+  // day picker / course picker / time pills all keep working uniformly.
   const filterSlugs =
     view === "muni"
       ? MUNI_SLUGS
@@ -211,9 +214,14 @@ export default async function Page({
             : view === "short"
               ? SHORT_SLUGS
               : null;
-  const viewFilteredRows = filterSlugs
-    ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
-    : rows;
+  const viewFilteredRows =
+    view === "prime"
+      ? rows.filter((r) =>
+          isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail),
+        )
+      : filterSlugs
+        ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
+        : rows;
   const visibleRows = course
     ? viewFilteredRows.filter((r) => r.courses?.slug === course)
     : viewFilteredRows;
@@ -282,13 +290,11 @@ export default async function Page({
   // Prime: the rare weekend-morning slots, across ALL courses. Computed from
   // the full row set (independent of the region/course/day filters) since
   // Prime is its own county-wide mode.
-  const primeRows = rows
-    .filter((r) => isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail))
-    .sort(
-      (a, b) =>
-        new Date(a.tee_time_at).getTime() - new Date(b.tee_time_at).getTime(),
-    );
-  const primeTotal = primeRows.length;
+  // Count of prime (weekend-morning) slots across all courses — drives the
+  // 🔥 Prime tab badge. Prime itself is applied as a view filter above.
+  const primeTotal = rows.filter((r) =>
+    isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail),
+  ).length;
 
   // Deal baselines: per (course, time-of-day) median price, built from the
   // full row set. TeeTimeRow uses this to flag slots priced well below the
@@ -334,102 +340,6 @@ export default async function Page({
     ? (courseStats.get(course)?.name ?? course)
     : null;
 
-  // --- Prime Times: the rare weekend-morning feed, its own render path ---
-  if (view === "prime") {
-    const primeByDay = new Map<string, TeeTimeRow[]>();
-    for (const r of primeRows) {
-      const k = dayKey(new Date(r.tee_time_at));
-      const arr = primeByDay.get(k);
-      if (arr) arr.push(r);
-      else primeByDay.set(k, [r]);
-    }
-    const primeDays = Array.from(primeByDay.keys());
-    return (
-      <div className="space-y-5">
-        <div className="sticky top-0 z-20 -mx-4 space-y-3 border-b-2 border-black bg-cream px-4 pb-3 pt-4">
-          <ViewTabs
-            view={view}
-            selectedDay={undefined}
-            timeFilter="all"
-            totalAll={rows.length}
-            totalMuni={muniTotal}
-            totalNc={ncTotal}
-            totalEast={ecTotal}
-            totalSc={scTotal}
-            totalShort={shortTotal}
-            totalPrime={primeTotal}
-          />
-        </div>
-
-        <header className="border-b-2 border-black pb-2">
-          <h2 className="font-display text-3xl uppercase leading-none tracking-tight text-black">
-            🔥 Prime Tee Times
-          </h2>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-neutral-600">
-            Weekend mornings · the hard-to-get ones ·{" "}
-            <span className="font-bold text-magred">{primeTotal} open</span>
-          </p>
-        </header>
-
-        {primeDays.length === 0 ? (
-          <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-            <p className="font-display text-2xl uppercase tracking-wider">
-              No prime times right now
-            </p>
-            <p className="mt-1 text-xs text-neutral-500">
-              No Fri/Sat/Sun morning openings in the window. They go fast —
-              check back after the next refresh.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-5">
-            {primeDays.map((d) => {
-              const slots = primeByDay.get(d) ?? [];
-              const foursomes = slots.filter((r) => r.players_avail >= 4).length;
-              return (
-                <section key={d}>
-                  <header className="mb-2 flex items-baseline justify-between border-b border-neutral-300 pb-1">
-                    <h3 className="font-display text-xl uppercase tracking-wide text-black">
-                      {formatDayHeader(new Date(slots[0].tee_time_at))}
-                    </h3>
-                    <span className="text-[11px] uppercase tracking-[0.15em] text-neutral-500">
-                      {slots.length} open
-                      {foursomes > 0 && (
-                        <>
-                          {" · "}
-                          <span className="font-bold text-magred">
-                            {foursomes} foursome{foursomes === 1 ? "" : "s"}
-                          </span>
-                        </>
-                      )}
-                    </span>
-                  </header>
-                  <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
-                    {slots.map((r) => (
-                      <TeeTimeRow
-                        key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
-                        row={r}
-                        baselines={dealBaselines}
-                      />
-                    ))}
-                  </ul>
-                </section>
-              );
-            })}
-          </div>
-        )}
-
-        <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
-          <div>
-            {lastScrape
-              ? `Updated ${relativeMinutes(lastScrape)}`
-              : "No data yet"}
-          </div>
-        </footer>
-      </div>
-    );
-  }
-
   if (days.length === 0 || !selectedDate) {
     const label = selectedCourseName
       ? selectedCourseName
@@ -443,7 +353,9 @@ export default async function Page({
               ? "South County"
               : view === "short"
                 ? "short courses"
-                : "tee times";
+                : view === "prime"
+                  ? "prime weekend-morning times"
+                  : "tee times";
     return (
       <div className="space-y-5">
         <ViewTabs
