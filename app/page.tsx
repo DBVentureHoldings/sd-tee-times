@@ -37,7 +37,7 @@ const MUNI_SLUGS = new Set([
   "the-loma-club", // Point Loma, City of SD area
 ]);
 
-// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Ramona / Escondido / Oceanside / Solana Beach.
+// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Escondido / Oceanside / Solana Beach.
 const NC_SLUGS = new Set([
   "encinitas-ranch",
   "crossings-carlsbad",
@@ -45,8 +45,6 @@ const NC_SLUGS = new Set([
   "rancho-bernardo-inn",
   "maderas",
   "links-at-lakehouse",
-  "mt-woodson",
-  "san-vicente",
   "vineyard-escondido",
   "arrowood",
   "goat-hill-park",
@@ -58,13 +56,21 @@ const NC_SLUGS = new Set([
   "reidy-creek",
 ]);
 
+// East County: El Cajon / Santee / Jamul / Lakeside / Ramona / Rancho San Diego.
+const EC_SLUGS = new Set([
+  "steele-canyon", // Jamul
+  "cottonwood", // Rancho San Diego
+  "carlton-oaks", // Santee
+  "mt-woodson", // Ramona
+  "san-vicente", // Ramona
+]);
+
 // South County: National City / Chula Vista / Bonita area.
 const SC_SLUGS = new Set([
   "national-city",
   "enagic-chula-vista",
   "chula-vista-muni",
   "bonita",
-  "carlton-oaks", // Santee — East/South-ish; group with South County
 ]);
 
 // "Short courses" tab — lives orthogonal to the geographic region tabs
@@ -95,7 +101,7 @@ const SUPPRESSED_SLUGS = new Set([
   "rancho-bernardo-inn",
 ]);
 
-type View = "all" | "muni" | "nc" | "sc" | "short";
+type View = "all" | "muni" | "nc" | "ec" | "sc" | "short";
 
 // Time-of-day filter — "all" means no filter; the others map to TimeBucket.
 type TimeFilter = "all" | TimeBucket;
@@ -117,11 +123,13 @@ export default async function Page({
       ? "muni"
       : sp.view === "nc"
         ? "nc"
-        : sp.view === "sc"
-          ? "sc"
-          : sp.view === "short" || sp.view === "par3"
-            ? "short" // accept legacy ?view=par3 URLs from before the rename
-            : "all";
+        : sp.view === "ec"
+          ? "ec"
+          : sp.view === "sc"
+            ? "sc"
+            : sp.view === "short" || sp.view === "par3"
+              ? "short" // accept legacy ?view=par3 URLs from before the rename
+              : "all";
   const course =
     sp.course && sp.course.trim().length > 0 ? sp.course.trim() : undefined;
   const timeFilter: TimeFilter =
@@ -188,11 +196,13 @@ export default async function Page({
       ? MUNI_SLUGS
       : view === "nc"
         ? NC_SLUGS
-        : view === "sc"
-          ? SC_SLUGS
-          : view === "short"
-            ? SHORT_SLUGS
-            : null;
+        : view === "ec"
+          ? EC_SLUGS
+          : view === "sc"
+            ? SC_SLUGS
+            : view === "short"
+              ? SHORT_SLUGS
+              : null;
   const viewFilteredRows = filterSlugs
     ? rows.filter((r) => r.courses?.slug && filterSlugs.has(r.courses.slug))
     : rows;
@@ -222,6 +232,7 @@ export default async function Page({
       ([s]) =>
         !MUNI_SLUGS.has(s) &&
         !NC_SLUGS.has(s) &&
+        !EC_SLUGS.has(s) &&
         !SC_SLUGS.has(s) &&
         !SHORT_SLUGS.has(s),
     )
@@ -230,6 +241,7 @@ export default async function Page({
   const courseGroups: CourseGroup[] = [
     { label: "SD Munis", courses: entriesFor(MUNI_SLUGS) },
     { label: "North County", courses: entriesFor(NC_SLUGS) },
+    { label: "East County", courses: entriesFor(EC_SLUGS) },
     { label: "South County", courses: entriesFor(SC_SLUGS) },
     { label: "Short Courses", courses: entriesFor(SHORT_SLUGS) },
     { label: "Other", courses: otherEntries },
@@ -248,6 +260,9 @@ export default async function Page({
   ).length;
   const ncTotal = rows.filter(
     (r) => r.courses?.slug && NC_SLUGS.has(r.courses.slug),
+  ).length;
+  const ecTotal = rows.filter(
+    (r) => r.courses?.slug && EC_SLUGS.has(r.courses.slug),
   ).length;
   const scTotal = rows.filter(
     (r) => r.courses?.slug && SC_SLUGS.has(r.courses.slug),
@@ -302,11 +317,13 @@ export default async function Page({
         ? "munis"
         : view === "nc"
           ? "North County"
-          : view === "sc"
-            ? "South County"
-            : view === "short"
-              ? "short courses"
-              : "tee times";
+          : view === "ec"
+            ? "East County"
+            : view === "sc"
+              ? "South County"
+              : view === "short"
+                ? "short courses"
+                : "tee times";
     return (
       <div className="space-y-5">
         <ViewTabs
@@ -316,6 +333,7 @@ export default async function Page({
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
+          totalEast={ecTotal}
           totalSc={scTotal}
           totalShort={shortTotal}
           dimmed={Boolean(course)}
@@ -365,6 +383,7 @@ export default async function Page({
           totalAll={rows.length}
           totalMuni={muniTotal}
           totalNc={ncTotal}
+          totalEast={ecTotal}
           totalSc={scTotal}
           totalShort={shortTotal}
           dimmed={Boolean(course)}
@@ -463,6 +482,7 @@ function ViewTabs({
   totalAll,
   totalMuni,
   totalNc,
+  totalEast,
   totalSc,
   totalShort,
   dimmed = false,
@@ -481,6 +501,7 @@ function ViewTabs({
   totalAll: number;
   totalMuni: number;
   totalNc: number;
+  totalEast: number;
   totalSc: number;
   totalShort: number;
   /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
@@ -489,12 +510,19 @@ function ViewTabs({
   const tabs: Array<{ key: View; label: string; count: number }> = [
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
+    { key: "ec", label: "East County", count: totalEast },
     { key: "sc", label: "South County", count: totalSc },
     { key: "short", label: "Short Courses", count: totalShort },
     { key: "all", label: "All courses", count: totalAll },
   ];
   return (
-    <div className={"flex gap-2 " + (dimmed ? "opacity-60" : "")}>
+    // Horizontally scrollable so all 6 region tabs fit on narrow phones
+    // without overflowing the page (same pattern as the day chip row).
+    <div
+      className={
+        "-mx-4 flex gap-2 overflow-x-auto px-4 " + (dimmed ? "opacity-60" : "")
+      }
+    >
       {tabs.map((t) => {
         const active = view === t.key && !dimmed;
         const parts: string[] = [];
@@ -509,7 +537,7 @@ function ViewTabs({
             prefetch={false}
             scroll={false}
             className={
-              "flex items-center gap-1.5 rounded-sm border-2 border-black px-3 py-1.5 font-display text-sm uppercase tracking-wider transition-all " +
+              "flex shrink-0 items-center gap-1.5 rounded-sm border-2 border-black px-3 py-1.5 font-display text-sm uppercase tracking-wider transition-all " +
               (active
                 ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
                 : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
