@@ -96,16 +96,21 @@ const SHORT_SLUGS = new Set([
   "reidy-creek",           // par-3/executive, Escondido
 ]);
 
-// Courses temporarily hidden from the app. Their booking platform
-// (cps.golf) started Cloudflare-blocking our scraper, so the only data we
-// have for them is going stale. Hidden at the app layer — their rows stay
-// in the DB but never render — so this is a one-line undo if we get CPS
-// scraping working again (stealth browser / residential proxy).
+// Courses hidden from the app because we can't keep their data fresh.
+//
+// The 4 jcgpub29 CPS courses (Twin Oaks, Encinitas Ranch, Crossings, RB Inn)
+// are NO LONGER here — the stealth browser + token-polling fix got them
+// scraping reliably on GitHub Actions, so they're live again.
+//
+// The 3 jcgpub3 CPS courses below stay hidden: jcgpub3 serves a stronger
+// Cloudflare challenge that stealth can't clear from a datacenter IP (CI logs
+// show a persistent "Just a moment..." interstitial). They're also marked
+// inactive in courses.json so we stop scraping them. Revisit with a
+// residential proxy.
 const SUPPRESSED_SLUGS = new Set([
-  "twin-oaks",
-  "encinitas-ranch",
-  "crossings-carlsbad",
-  "rancho-bernardo-inn",
+  "oaks-north",
+  "welk-fountains",
+  "welk-oaks",
 ]);
 
 type View = "all" | "muni" | "nc" | "ec" | "sc" | "short" | "prime";
