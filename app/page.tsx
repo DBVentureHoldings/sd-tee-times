@@ -55,6 +55,7 @@ const NC_SLUGS = new Set([
   "welk-fountains",
   "welk-oaks",
   "aviara",
+  "reidy-creek",
 ]);
 
 // South County: National City / Chula Vista / Bonita area.
@@ -63,6 +64,7 @@ const SC_SLUGS = new Set([
   "enagic-chula-vista",
   "chula-vista-muni",
   "bonita",
+  "carlton-oaks", // Santee — East/South-ish; group with South County
 ]);
 
 // "Short courses" tab — lives orthogonal to the geographic region tabs
@@ -78,6 +80,7 @@ const SHORT_SLUGS = new Set([
   "the-loma-club",         // par-27 9-hole par-3, Point Loma
   "oaks-north",            // par-3 executive 27, JC Resorts RB
   "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach
+  "reidy-creek",           // par-3/executive, Escondido
 ]);
 
 // Courses temporarily hidden from the app. Their booking platform

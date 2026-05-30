@@ -482,6 +482,32 @@
     "active": true
   },
   {
+    "_note": "Carlton Oaks (Santee) — native site embeds TeeItUp (carlton-oaks-golf-club.book-v2.teeitup.golf, facilityId 2129). Verified: 74 tee times, 'Online Rate' $60-65. The junk 'Hot Deal $500' rate is ignored by our Online-Rate-first pick.",
+    "slug": "carlton-oaks",
+    "name": "Carlton Oaks Golf Club",
+    "bookingUrl": "https://carlton-oaks-golf-club.book-v2.teeitup.golf/",
+    "scraperId": "teeitup",
+    "scraperConfig": {
+      "alias": "carlton-oaks-golf-club",
+      "facilityId": 2129,
+      "clubUrl": "https://carlton-oaks-golf-club.book-v2.teeitup.golf/"
+    },
+    "active": true
+  },
+  {
+    "_note": "Reidy Creek (Escondido) — par-3/executive, CourseCo-managed. Native booking on the Total-e Integrated 'Unify' platform; gateway courseco-gateway.totaleintegrated.net, courseId REIDY_CREEK. Open JSON API (no Cloudflare, no auth). Verified: 40 tee times, $47/pp.",
+    "slug": "reidy-creek",
+    "name": "Reidy Creek Golf Course",
+    "bookingUrl": "https://reidycreek.totaleintegrated.net/web/tee-times",
+    "scraperId": "totaleintegrated",
+    "scraperConfig": {
+      "gateway": "courseco-gateway.totaleintegrated.net",
+      "courseId": "REIDY_CREEK",
+      "clubUrl": "https://reidycreek.totaleintegrated.net/web/tee-times"
+    },
+    "active": true
+  },
+  {
     "_note": "Park Hyatt Aviara Golf Club — premier Carlsbad resort course (Arnold Palmer design, Troon-managed). Books publicly via GolfNow facility 4082. Verified live (52 tee times returned on test).",
     "slug": "aviara",
     "name": "Park Hyatt Aviara Golf Club",
