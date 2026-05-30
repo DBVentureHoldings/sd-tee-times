@@ -1,5 +1,45 @@
 const TZ = "America/Los_Angeles";
 
+// Cached Intl formatters. Constructing an Intl.DateTimeFormat is expensive
+// (~100µs each). Several of these functions run over the FULL upcoming-rows
+// set (~15k) multiple times per render (deal baselines, prime/drops
+// curation, time-of-day counts) — so a per-call `new Intl.DateTimeFormat`
+// meant tens of thousands of constructions per request, enough to blow past
+// the serverless function timeout. Reuse one instance each.
+const HOUR_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  hour: "2-digit",
+  hour12: false,
+});
+const WEEKDAY_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  weekday: "short",
+});
+const TIME_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+});
+const DAYKEY_FMT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: TZ,
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+const DAYHEADER_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  weekday: "long",
+  month: "long",
+  day: "numeric",
+});
+const DAYCHIP_FMT = new Intl.DateTimeFormat("en-US", {
+  timeZone: TZ,
+  weekday: "short",
+  month: "short",
+  day: "numeric",
+});
+
 /**
  * Per-course accent color. Returns Tailwind class fragments.
  * `bar` is a vertical stripe (full opacity), `dot` is a small swatch.
@@ -88,12 +128,7 @@ export function courseAccent(slug: string | undefined): {
 }
 
 export function formatDayHeader(d: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  }).format(d);
+  return DAYHEADER_FMT.format(d);
 }
 
 /** Time-of-day buckets for the filter pills. */
@@ -106,11 +141,7 @@ export type TimeBucket = "morning" | "midday" | "evening";
  *   evening  — 3 PM onward
  */
 export function teeTimeBucket(d: Date): TimeBucket {
-  const hourStr = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    hour: "2-digit",
-    hour12: false,
-  }).format(d);
+  const hourStr = HOUR_FMT.format(d);
   const hour = Number(hourStr) % 24;
   if (hour < 11) return "morning";
   if (hour < 15) return "midday";
@@ -129,20 +160,13 @@ const WEEKDAY_INDEX: Record<string, number> = {
 
 /** Day of week (0=Sun … 6=Sat) for a tee time, evaluated in Pacific time. */
 export function teeTimeWeekday(d: Date): number {
-  const s = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    weekday: "short",
-  }).format(d);
+  const s = WEEKDAY_FMT.format(d);
   return WEEKDAY_INDEX[s] ?? 0;
 }
 
 /** Hour-of-day (0–23) for a tee time, in Pacific time. */
 export function teeTimeHour(d: Date): number {
-  const h = new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    hour: "2-digit",
-    hour12: false,
-  }).format(d);
+  const h = HOUR_FMT.format(d);
   return Number(h) % 24;
 }
 
@@ -171,12 +195,7 @@ export function isPrimeTeeTime(d: Date, playersAvail: number): boolean {
 }
 
 export function formatTime(d: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).format(d);
+  return TIME_FMT.format(d);
 }
 
 export function formatPrice(cents: number | null | undefined): string {
@@ -188,12 +207,7 @@ export function formatPrice(cents: number | null | undefined): string {
 }
 
 export function dayKey(d: Date): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: TZ,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(d);
+  return DAYKEY_FMT.format(d);
 }
 
 /**
@@ -211,12 +225,7 @@ export function formatDayChip(key: string, today: Date = new Date()): string {
   const [y, m, d] = key.split("-").map(Number);
   // Construct noon Pacific to avoid DST edge cases
   const dt = new Date(Date.UTC(y, m - 1, d, 19, 0, 0));
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: TZ,
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-  }).format(dt);
+  return DAYCHIP_FMT.format(dt);
 }
 
 /**
