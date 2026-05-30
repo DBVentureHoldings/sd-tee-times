@@ -136,15 +136,38 @@ export function teeTimeWeekday(d: Date): number {
   return WEEKDAY_INDEX[s] ?? 0;
 }
 
+/** Hour-of-day (0–23) for a tee time, in Pacific time. */
+export function teeTimeHour(d: Date): number {
+  const h = new Intl.DateTimeFormat("en-US", {
+    timeZone: TZ,
+    hour: "2-digit",
+    hour12: false,
+  }).format(d);
+  return Number(h) % 24;
+}
+
 /**
- * A "prime" tee time = the rare, high-demand slots San Diego golfers fight
- * over: weekend (Fri/Sat/Sun) mornings with room for a group. These vanish
- * fast, so surfacing them is the whole point of the app.
+ * What counts as a "prime" (rare, high-demand) tee time. These are the slots
+ * San Diego golfers actually fight over and that sell out first — NOT the
+ * wide-open crack-of-dawn slots that are available precisely because nobody
+ * wants them.
+ *
+ * Definition: weekend (Fri/Sat/Sun) + the desirable mid-morning window
+ * (7:00–10:59 AM) + room for a group (2+ spots). Tune the window here.
  */
+export const PRIME_START_HOUR = 7; // 7 AM — earlier = "alarm-clock special", not rare
+export const PRIME_END_HOUR = 11; // exclusive (before 11 AM)
+
 export function isPrimeTeeTime(d: Date, playersAvail: number): boolean {
   const dow = teeTimeWeekday(d);
   const isWeekend = dow === 5 || dow === 6 || dow === 0; // Fri, Sat, Sun
-  return isWeekend && teeTimeBucket(d) === "morning" && playersAvail >= 2;
+  const hour = teeTimeHour(d);
+  return (
+    isWeekend &&
+    hour >= PRIME_START_HOUR &&
+    hour < PRIME_END_HOUR &&
+    playersAvail >= 2
+  );
 }
 
 export function formatTime(d: Date): string {

@@ -324,11 +324,16 @@ export default async function Page({
       return null;
     })
     .filter((d): d is Drop => d !== null)
-    .sort(
-      (a, b) =>
+    // Lead with the rare prime gems (weekend-morning foursomes); deals only
+    // fill in after, so the hero stays focused on the hard-to-get times
+    // rather than early-bird discounts. Within each kind, soonest first.
+    .sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === "prime" ? -1 : 1;
+      return (
         new Date(a.row.tee_time_at).getTime() -
-        new Date(b.row.tee_time_at).getTime(),
-    );
+        new Date(b.row.tee_time_at).getTime()
+      );
+    });
   const seenDropCourses = new Set<string>();
   const drops: Drop[] = [];
   for (const d of allDrops) {
