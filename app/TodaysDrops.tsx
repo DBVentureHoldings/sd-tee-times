@@ -41,10 +41,12 @@ export function TodaysDrops({ drops }: { drops: Drop[] }) {
       <div className="-mx-4 overflow-x-auto px-4">
         <div className="flex gap-3 pb-1">
           {drops.map((d) => (
-            <DropCard
+            <div
               key={`${d.row.courses?.slug ?? "x"}-${d.row.tee_time_at}-${d.row.holes}`}
-              drop={d}
-            />
+              className="w-64 shrink-0"
+            >
+              <DropCard drop={d} />
+            </div>
           ))}
         </div>
       </div>
@@ -52,7 +54,12 @@ export function TodaysDrops({ drops }: { drops: Drop[] }) {
   );
 }
 
-function DropCard({ drop }: { drop: Drop }) {
+/**
+ * A single big, branded, screenshot-worthy tile. Fills its container's width
+ * (the hero strip constrains it to a fixed width; the Prime grid lets it fill
+ * a column).
+ */
+export function DropCard({ drop }: { drop: Drop }) {
   const { row } = drop;
   const time = new Date(row.tee_time_at);
   const accent = courseAccent(row.courses?.slug);
@@ -65,7 +72,7 @@ function DropCard({ drop }: { drop: Drop }) {
       href={row.booking_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="relative flex w-60 shrink-0 flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"
+      className="relative flex h-full w-full flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"
     >
       {/* Accent stripe */}
       <div className={"absolute left-0 top-0 h-full w-2 " + accent.bar} />

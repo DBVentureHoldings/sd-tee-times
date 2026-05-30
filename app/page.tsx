@@ -18,7 +18,7 @@ import {
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
-import { TodaysDrops, type Drop } from "./TodaysDrops";
+import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
 import { SecondaryFilters } from "./SecondaryFilters";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import {
@@ -521,7 +521,19 @@ export default async function Page({
       </div>
 
       <section>
-        {dayRows.length > 0 ? (
+        {dayRows.length > 0 && view === "prime" ? (
+          // 🔥 Prime is the showcase — render the rare slots as the big
+          // shareable tiles instead of a compact list. 1 col on phones,
+          // 2 on wider screens.
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {dayRows.map((r) => (
+              <DropCard
+                key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
+                drop={{ row: r, kind: "prime" }}
+              />
+            ))}
+          </div>
+        ) : dayRows.length > 0 ? (
           <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
             {dayRows.map((r) => (
               <TeeTimeRow
