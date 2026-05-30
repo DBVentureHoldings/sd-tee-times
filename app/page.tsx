@@ -20,6 +20,11 @@ import {
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
+import {
+  buildDealBaselines,
+  getDealInfo,
+  type DealBaselines,
+} from "@/lib/deals";
 
 export const revalidate = 60;
 
@@ -285,6 +290,11 @@ export default async function Page({
     );
   const primeTotal = primeRows.length;
 
+  // Deal baselines: per (course, time-of-day) median price, built from the
+  // full row set. TeeTimeRow uses this to flag slots priced well below the
+  // course's usual rate for that time of day.
+  const dealBaselines = buildDealBaselines(rows);
+
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
   // All rows for the selected day (before the time-of-day filter). The day
@@ -399,6 +409,7 @@ export default async function Page({
                       <TeeTimeRow
                         key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
                         row={r}
+                        baselines={dealBaselines}
                       />
                     ))}
                   </ul>
@@ -547,6 +558,7 @@ export default async function Page({
               <TeeTimeRow
                 key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
                 row={r}
+                baselines={dealBaselines}
               />
             ))}
           </ul>
@@ -859,11 +871,18 @@ function WeatherGlyph({ wx }: { wx: DayWeather }) {
   );
 }
 
-function TeeTimeRow({ row }: { row: TeeTimeRow }) {
+function TeeTimeRow({
+  row,
+  baselines,
+}: {
+  row: TeeTimeRow;
+  baselines?: DealBaselines;
+}) {
   const time = new Date(row.tee_time_at);
   const viable = row.players_avail >= 2;
   const courseName = row.courses?.name ?? "Unknown course";
   const accent = courseAccent(row.courses?.slug);
+  const deal = baselines ? getDealInfo(row, baselines) : { isDeal: false };
 
   return (
     <li
@@ -890,14 +909,32 @@ function TeeTimeRow({ row }: { row: TeeTimeRow }) {
           )}
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
-          <span className="font-bold text-black tabular-nums">
+          <span
+            className={
+              "font-bold tabular-nums " +
+              (deal.isDeal ? "text-magred" : "text-black")
+            }
+          >
             {formatPrice(row.price_cents)}
           </span>
+          {deal.isDeal && deal.usualCents != null && (
+            <span className="tabular-nums text-[11px] text-neutral-400 line-through">
+              {formatPrice(deal.usualCents)}
+            </span>
+          )}
           <span className="text-neutral-400">·</span>
           <span className="tabular-nums">
             {row.players_avail}{" "}
             {row.players_avail === 1 ? "spot" : "spots"}
           </span>
+          {deal.isDeal && (
+            <span
+              className="rounded-sm border border-magred bg-magred px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cream"
+              title={`Usually ${formatPrice(deal.usualCents)} at this time of day — ${deal.percentOff}% off`}
+            >
+              🔥 {deal.percentOff}% off
+            </span>
+          )}
           {viable && (
             <span className="rounded-sm border border-brand bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">
               ✓ 2+
