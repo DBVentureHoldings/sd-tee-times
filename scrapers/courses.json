@@ -480,5 +480,17 @@
       "clubUrl": "https://lomas-santa-fe-executive-golf-course.book.teeitup.com/"
     },
     "active": true
+  },
+  {
+    "_note": "Park Hyatt Aviara Golf Club — premier Carlsbad resort course (Arnold Palmer design, Troon-managed). Books publicly via GolfNow facility 4082. Verified live (52 tee times returned on test).",
+    "slug": "aviara",
+    "name": "Park Hyatt Aviara Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/4082-aviara-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 4082,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/4082-aviara-golf-club/search"
+    },
+    "active": true
   }
 ]
