@@ -613,14 +613,16 @@ function ViewTabs({
   /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
   dimmed?: boolean;
 }) {
+  // "All courses" leads (far left) so it reads as the default home; "🔥 Prime"
+  // sits right beside it as a deliberate toggle, not the landing view.
   const tabs: Array<{ key: View; label: string; count: number }> = [
+    { key: "all", label: "All courses", count: totalAll },
     { key: "prime", label: "🔥 Prime", count: totalPrime },
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
     { key: "ec", label: "East County", count: totalEast },
     { key: "sc", label: "South County", count: totalSc },
     { key: "short", label: "Short Courses", count: totalShort },
-    { key: "all", label: "All courses", count: totalAll },
   ];
   return (
     // Horizontally scrollable so all 6 region tabs fit on narrow phones
