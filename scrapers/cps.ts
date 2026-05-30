@@ -303,22 +303,41 @@ async function getWarmedPage(tenant: string): Promise<Page> {
     waitUntil: "domcontentloaded",
     timeout: 45_000,
   });
-  // Allow the Cloudflare JS challenge to solve + the SPA to write the token.
-  await page.waitForTimeout(8000);
+  // Wait for the token to actually appear in localStorage rather than a fixed
+  // sleep. Cloudflare's challenge + Angular bootstrap can take noticeably
+  // longer on a datacenter IP (harder challenge) or a slow CI runner, so poll
+  // up to 35s. Don't throw here — readToken surfaces a diagnostic if it never
+  // lands.
+  await page
+    .waitForFunction((k) => !!localStorage.getItem(k), TOKEN_KEY, {
+      timeout: 35_000,
+      polling: 1000,
+    })
+    .catch(() => {});
   warmedPages.set(tenant, page);
   return page;
 }
 
 async function readToken(page: Page, force = false): Promise<string> {
   if (force) {
-    // Reload to mint a fresh token, then re-clear Cloudflare if needed.
+    // Reload to mint a fresh token; give the challenge time to re-clear.
     await page.reload({ waitUntil: "domcontentloaded", timeout: 45_000 });
-    await page.waitForTimeout(6000);
+    await page
+      .waitForFunction((k) => !!localStorage.getItem(k), TOKEN_KEY, {
+        timeout: 35_000,
+        polling: 1000,
+      })
+      .catch(() => {});
   }
   const token = (await page.evaluate(
     (k) => localStorage.getItem(k),
     TOKEN_KEY,
   )) as string | null;
-  if (!token) throw new Error("CPS token not found in localStorage");
+  if (!token) {
+    // Diagnostic: title tells us whether we're stuck on Cloudflare's
+    // "Just a moment..." interstitial (hard IP block) vs a slow/blank SPA.
+    const title = await page.title().catch(() => "?");
+    throw new Error(`CPS token not found (page title: "${title}")`);
+  }
   return token;
 }
