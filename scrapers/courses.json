@@ -414,7 +414,7 @@
     "active": true
   },
   {
-    "_note": "JC Resorts par-3 executive in Rancho Bernardo. 27 holes split into 3 separate 9-hole loops in CPS \u2014 courseIds 10/13/11 all share siteId 3. The scraper merges all three when courseIds[] is set. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
+    "_note": "[INACTIVE: jcgpub3 CPS tenant serves a stronger Cloudflare challenge that stealth cannot clear from datacenter IPs (persistent \"Just a moment...\"). The 4 jcgpub29 CPS courses work; jcgpub3 needs a residential proxy.]",
     "slug": "oaks-north",
     "name": "Oaks North Golf Course",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -432,10 +432,10 @@
         "PUB"
       ]
     },
-    "active": true
+    "active": false
   },
   {
-    "_note": "Welk Resort \u2014 Fountains 9. Same jcgpub3 tenant as Oaks North but storeId/siteId differ. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
+    "_note": "[INACTIVE: jcgpub3 CPS tenant serves a stronger Cloudflare challenge that stealth cannot clear from datacenter IPs (persistent \"Just a moment...\"). The 4 jcgpub29 CPS courses work; jcgpub3 needs a residential proxy.]",
     "slug": "welk-fountains",
     "name": "The Welk \u2014 Fountains",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -449,10 +449,10 @@
         "PUB"
       ]
     },
-    "active": true
+    "active": false
   },
   {
-    "_note": "Welk Resort \u2014 Oaks 9. Same tenant as Welk Fountains. [Reactivated: stealth browser defeats jcgpub3 Cloudflare.]",
+    "_note": "[INACTIVE: jcgpub3 CPS tenant serves a stronger Cloudflare challenge that stealth cannot clear from datacenter IPs (persistent \"Just a moment...\"). The 4 jcgpub29 CPS courses work; jcgpub3 needs a residential proxy.]",
     "slug": "welk-oaks",
     "name": "The Welk \u2014 Oaks",
     "bookingUrl": "https://jcgpub3.cps.golf/onlineresweb/search-teetime",
@@ -466,7 +466,7 @@
         "PUB"
       ]
     },
-    "active": true
+    "active": false
   },
   {
     "_note": "Par-3 executive in Solana Beach. Uses teeitup; facilityId 1241 from the booking URL's ?course=1241 param.",
