@@ -53,32 +53,24 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${displayFont.variable} ${sansFont.variable}`}>
       <body className="min-h-screen bg-cream font-sans text-neutral-900 antialiased">
+        {/* Slim brand bar — kept compact so the tee times lead. Feedback link
+            lives in the footer instead of eating header space. */}
         <header className="border-b-4 border-black bg-brand text-cream">
-          <div className="mx-auto max-w-2xl px-4 py-5">
-            <div className="flex items-end justify-between gap-3">
-              <div>
-                <h1 className="font-display text-5xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_3px_3px_0_rgba(0,0,0,0.25)]">
-                  SD <span className="text-magred">TEE</span> TIMES
-                </h1>
-                <p className="mt-1 text-[11px] uppercase tracking-[0.2em] text-cream/70">
-                  San Diego&apos;s open tee sheet
-                </p>
-              </div>
-              <div className="flex flex-col items-end gap-1.5">
-                <a
-                  href="mailto:Daniel@globaldronehq.com?subject=SD%20Tee%20Times%20feedback&body=What%20did%20you%20like%20or%20what%20sucks%3F%20%28brutal%20honesty%20welcome%29%0A%0A"
-                  className="whitespace-nowrap rounded-sm border border-cream/60 bg-cream/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-cream transition-colors hover:bg-cream hover:text-brand"
-                >
-                  Got feedback? Shoot me an email
-                </a>
-                <span className="rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
-                  Vol. I
-                </span>
-              </div>
+          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
+            <div className="min-w-0">
+              <h1 className="font-display text-3xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_2px_2px_0_rgba(0,0,0,0.25)]">
+                SD <span className="text-magred">TEE</span> TIMES
+              </h1>
+              <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-cream/70">
+                San Diego&apos;s open tee sheet
+              </p>
             </div>
+            <span className="shrink-0 rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
+              Vol. I
+            </span>
           </div>
         </header>
-        <main className="mx-auto max-w-2xl px-4 py-5">{children}</main>
+        <main className="mx-auto max-w-2xl px-4 py-4">{children}</main>
         <Analytics />
         <SpeedInsights />
       </body>
