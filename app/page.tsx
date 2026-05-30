@@ -9,7 +9,6 @@ import {
   dayKey,
   dayKeyChargesBookingFee,
   formatDayChip,
-  formatDayHeader,
   formatPrice,
   formatTime,
   relativeMinutes,
@@ -19,6 +18,8 @@ import {
 } from "@/lib/format";
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
+import { TodaysDrops, type Drop } from "./TodaysDrops";
+import { SecondaryFilters } from "./SecondaryFilters";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import {
   buildDealBaselines,
@@ -306,6 +307,48 @@ export default async function Page({
   // course's usual rate for that time of day.
   const dealBaselines = buildDealBaselines(rows);
 
+  // 🔥 Today's Drops — the hero. The rarest, most-shareable finds: prime
+  // weekend-morning foursomes OR strong deals (>=30% off). Deduped to ONE per
+  // course (the soonest) so the strip shows a spread of courses, not six of
+  // the same. Soonest first, top 6.
+  const allDrops: Drop[] = rows
+    .map((r): Drop | null => {
+      const isPrime = isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail);
+      if (isPrime && r.players_avail >= 4) {
+        return { row: r, kind: "prime" };
+      }
+      const deal = getDealInfo(r, dealBaselines);
+      if (deal.isDeal && (deal.percentOff ?? 0) >= 30) {
+        return {
+          row: r,
+          kind: "deal",
+          percentOff: deal.percentOff,
+          usualCents: deal.usualCents,
+        };
+      }
+      return null;
+    })
+    .filter((d): d is Drop => d !== null)
+    // Lead with the rare prime gems (weekend-morning foursomes); deals only
+    // fill in after, so the hero stays focused on the hard-to-get times
+    // rather than early-bird discounts. Within each kind, soonest first.
+    .sort((a, b) => {
+      if (a.kind !== b.kind) return a.kind === "prime" ? -1 : 1;
+      return (
+        new Date(a.row.tee_time_at).getTime() -
+        new Date(b.row.tee_time_at).getTime()
+      );
+    });
+  const seenDropCourses = new Set<string>();
+  const drops: Drop[] = [];
+  for (const d of allDrops) {
+    const slug = d.row.courses?.slug ?? "";
+    if (seenDropCourses.has(slug)) continue;
+    seenDropCourses.add(slug);
+    drops.push(d);
+    if (drops.length >= 6) break;
+  }
+
   const selectedDay =
     requestedDay && byDay.has(requestedDay) ? requestedDay : days[0];
   // All rows for the selected day (before the time-of-day filter). The day
@@ -405,13 +448,38 @@ export default async function Page({
     );
   }
 
+  // Compact day summary shown in the (collapsed) secondary-filter row, e.g.
+  // "SAT MAY 23 · 78 open". Replaces the big day header to reclaim space.
+  const daySummary = (
+    <div className="flex items-baseline gap-2 truncate">
+      <span className="font-display text-xl uppercase leading-none tracking-tight text-black">
+        {formatDayChip(selectedDay)}
+      </span>
+      <span className="text-[11px] uppercase tracking-[0.12em] text-neutral-600">
+        <span className="font-bold text-brand">{viableToday}</span> open
+        {dayKeyChargesBookingFee(selectedDay) && (
+          <>
+            <span className="mx-1 text-neutral-400">·</span>
+            <span className="font-bold text-magred">+fee</span>
+          </>
+        )}
+      </span>
+    </div>
+  );
+
+  const isDefaultView = view === "all" && !course;
+
   return (
     <div className="space-y-5">
+      {/* 🔥 Today's Drops — the hero, only on the clean default view. Sits
+          above the sticky bar so it's the first content; scrolls away as the
+          filter bar pins. */}
+      {isDefaultView && <TodaysDrops drops={drops} />}
+
       {/*
-        Sticky filter bar: tabs + course picker + day chips stay pinned to the
-        viewport top as the user scrolls through tee times. `top-0` sticks to
-        the very top of <main>; layout's `<header>` scrolls away first so we
-        don't double-stack with the brand header.
+        Sticky filter bar — condensed for mobile: region tabs + day chips stay
+        visible; the course picker + time pills collapse behind a Filters
+        toggle, with a compact day summary always shown.
       */}
       <div className="sticky top-0 z-20 -mx-4 space-y-3 border-b-2 border-black bg-cream px-4 pb-3 pt-4 shadow-[0_3px_0_0_rgba(0,0,0,0.04)]">
         <ViewTabs
@@ -427,11 +495,6 @@ export default async function Page({
           totalPrime={primeTotal}
           dimmed={Boolean(course)}
         />
-        <CoursePicker
-          groups={courseGroups}
-          selected={course}
-          preserveQuery={preserveQuery}
-        />
         <DayPicker
           days={days}
           byDay={byDay}
@@ -441,31 +504,20 @@ export default async function Page({
           timeFilter={timeFilter}
           weather={weather}
         />
-        <TimeOfDayPicker
-          timeFilter={timeFilter}
-          selectedDay={selectedDay}
-          view={view}
-          course={course}
-          counts={timeCounts}
-        />
-        {/* Day header lives inside the frozen pane so the date the user is
-            browsing stays visible while they scroll the tee time list. */}
-        <header className="border-t-2 border-black pt-2">
-          <h2 className="font-display text-3xl uppercase leading-none tracking-tight text-black">
-            {formatDayHeader(selectedDate)}
-          </h2>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.15em] text-neutral-600">
-            <span className="font-bold text-brand">{viableToday}</span> viable
-            <span className="mx-1.5 text-neutral-400">·</span>
-            <span className="tabular-nums">{dayRows.length}</span> total
-            {dayKeyChargesBookingFee(selectedDay) && (
-              <>
-                <span className="mx-1.5 text-neutral-400">·</span>
-                <span className="font-bold text-magred">+fee</span>
-              </>
-            )}
-          </p>
-        </header>
+        <SecondaryFilters summary={daySummary}>
+          <CoursePicker
+            groups={courseGroups}
+            selected={course}
+            preserveQuery={preserveQuery}
+          />
+          <TimeOfDayPicker
+            timeFilter={timeFilter}
+            selectedDay={selectedDay}
+            view={view}
+            course={course}
+            counts={timeCounts}
+          />
+        </SecondaryFilters>
       </div>
 
       <section>
@@ -871,7 +923,7 @@ function TeeTimeRow({
         href={row.booking_url}
         target="_blank"
         rel="noopener noreferrer"
-        className="shrink-0 rounded-sm border-2 border-black bg-magred px-3 py-1.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"
+        className="flex shrink-0 items-center rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"
       >
         Book
       </a>
