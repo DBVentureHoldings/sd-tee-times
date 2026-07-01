@@ -120,6 +120,18 @@
     "active": true
   },
   {
+    "_note": "Native Oaks (Valley Center, North County) — par-72 18-hole (formerly Woods Valley GC), Troon-managed. Native site books via EZLinks (Cloudflare-blocked) + Troon; GolfNow facility 1815 is the scrapable path.",
+    "slug": "native-oaks",
+    "name": "Native Oaks Golf Club",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/1815-native-oaks-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 1815,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/1815-native-oaks-golf-club/search"
+    },
+    "active": true
+  },
+  {
     "slug": "mission-trails",
     "name": "Mission Trails GC",
     "bookingUrl": "https://mission-trails-golf-course.book.teeitup.com/",

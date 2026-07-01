@@ -61,6 +61,7 @@ const NC_SLUGS = new Set([
   "welk-oaks",
   "aviara",
   "reidy-creek",
+  "native-oaks",
 ]);
 
 // East County: El Cajon / Santee / Jamul / Lakeside / Ramona / Rancho San Diego.

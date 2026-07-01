@@ -105,6 +105,8 @@ export function courseAccent(slug: string | undefined): {
       return { bar: "bg-amber-500", dot: "bg-amber-500", label: "amber" };
     case "reidy-creek":
       return { bar: "bg-teal-600", dot: "bg-teal-600", label: "teal" };
+    case "native-oaks":
+      return { bar: "bg-lime-600", dot: "bg-lime-600", label: "lime" };
     case "bonita":
       return { bar: "bg-blue-500", dot: "bg-blue-500", label: "blue" };
     case "admiral-baker-north":
