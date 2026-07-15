@@ -1,5 +1,28 @@
 import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
 
+// YYYY-MM-DD in San Diego (Pacific) time — the date the golfer sees for a
+// slot. The TeeItUp booking widget deep-links to a specific day via
+// `?date=YYYY-MM-DD` (verified: it renders "Showing Tee Times for: <date>"),
+// so stamping each row's booking_url with its own date drops the golfer on
+// the right day instead of the widget's default (today).
+const PT_DATE = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Los_Angeles",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function bookingUrlForDate(baseUrl: string, teeTimeAt: Date): string {
+  const dateStr = PT_DATE.format(teeTimeAt); // e.g. "2026-07-18"
+  try {
+    const u = new URL(baseUrl);
+    u.searchParams.set("date", dateStr);
+    return u.toString();
+  } catch {
+    return baseUrl; // malformed base — fall back to the generic page
+  }
+}
+
 /**
  * TeeItUp / Kenna.io scraper.
  *
@@ -102,7 +125,7 @@ export const teeItUpScraper: Scraper = {
             playersMax: 4,
             playersAvail,
             priceCents: typeof cents === "number" ? cents : undefined,
-            bookingUrl: referer,
+            bookingUrl: bookingUrlForDate(referer, teeTimeAt),
             holes: rate?.holes ?? 18,
           });
         }
