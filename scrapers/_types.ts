@@ -22,6 +22,16 @@ export interface CourseConfig {
   active?: boolean;
   /** When true, exclude this course from email alerts (still appears in the app). */
   alertExclude?: boolean;
+  /**
+   * UI metadata (read by the web app via lib/courses.ts — see there). The
+   * scrapers ignore these; they live here so courses.json is a single source
+   * of truth for both the scrapers and the app.
+   */
+  region?: "muni" | "nc" | "ec" | "sc";
+  /** Short / par-3 / executive course — excluded from Prime + the drops hero. */
+  short?: boolean;
+  /** Hidden from the UI (scraper blocked; stale rows must never surface). */
+  hidden?: boolean;
 }
 
 export interface ScrapeContext {

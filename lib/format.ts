@@ -40,9 +40,46 @@ const DAYCHIP_FMT = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
+// Fallback palette for courses without an explicit case below. A new course
+// added to courses.json auto-gets a stable color from its slug — no edit here
+// required. (All CURRENT courses have explicit cases, so this changes nothing
+// visible today; it only saves a manual step going forward.) These literal
+// class strings must stay in-source so Tailwind's scanner emits them.
+const ACCENT_PALETTE = [
+  "bg-emerald-500",
+  "bg-sky-500",
+  "bg-amber-500",
+  "bg-rose-500",
+  "bg-violet-500",
+  "bg-cyan-500",
+  "bg-lime-500",
+  "bg-orange-500",
+  "bg-teal-500",
+  "bg-fuchsia-500",
+  "bg-indigo-500",
+  "bg-pink-500",
+];
+
+function autoAccent(slug: string | undefined): {
+  bar: string;
+  dot: string;
+  label: string;
+} {
+  if (!slug) return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
+  let hash = 0;
+  for (let i = 0; i < slug.length; i++) {
+    hash = (hash * 31 + slug.charCodeAt(i)) >>> 0;
+  }
+  const cls = ACCENT_PALETTE[hash % ACCENT_PALETTE.length];
+  return { bar: cls, dot: cls, label: "auto" };
+}
+
 /**
  * Per-course accent color. Returns Tailwind class fragments.
  * `bar` is a vertical stripe (full opacity), `dot` is a small swatch.
+ *
+ * Courses with an explicit case keep their hand-picked color; anything else
+ * falls through to a deterministic auto-color (see autoAccent).
  */
 export function courseAccent(slug: string | undefined): {
   bar: string;
@@ -125,7 +162,7 @@ export function courseAccent(slug: string | undefined): {
     case "arrowood":
       return { bar: "bg-teal-700", dot: "bg-teal-700", label: "teal" };
     default:
-      return { bar: "bg-neutral-300", dot: "bg-neutral-300", label: "neutral" };
+      return autoAccent(slug);
   }
 }
 

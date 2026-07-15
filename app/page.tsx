@@ -26,93 +26,19 @@ import {
   getDealInfo,
   type DealBaselines,
 } from "@/lib/deals";
+// Region / short / hidden membership is derived from scrapers/courses.json
+// (the single source of truth — see lib/courses.ts). Adding a course is a
+// one-file edit there; these Sets update automatically.
+import {
+  MUNI_SLUGS,
+  NC_SLUGS,
+  EC_SLUGS,
+  SC_SLUGS,
+  SHORT_SLUGS,
+  SUPPRESSED_SLUGS,
+} from "@/lib/courses";
 
 export const revalidate = 60;
-
-// Courses that count as "San Diego munis" for the filter tab.
-// City-of-SD-style courses in SD proper + Coronado + Navy MWR.
-const MUNI_SLUGS = new Set([
-  "torrey-pines-north",
-  "torrey-pines-south",
-  "balboa-park",
-  "mission-bay",
-  "coronado-muni",
-  "admiral-baker-north",
-  "admiral-baker-south",
-  "riverwalk",
-  "mission-trails",
-  "the-loma-club", // Point Loma, City of SD area
-]);
-
-// North County: Carlsbad / Encinitas / San Marcos / Vista / RB / Poway / Escondido / Oceanside / Solana Beach.
-const NC_SLUGS = new Set([
-  "encinitas-ranch",
-  "crossings-carlsbad",
-  "twin-oaks",
-  "rancho-bernardo-inn",
-  "maderas",
-  "links-at-lakehouse",
-  "vineyard-escondido",
-  "arrowood",
-  "goat-hill-park",
-  "oaks-north",
-  "lomas-santa-fe-executive",
-  "welk-fountains",
-  "welk-oaks",
-  "aviara",
-  "reidy-creek",
-  "native-oaks",
-]);
-
-// East County: El Cajon / Santee / Jamul / Lakeside / Ramona / Rancho San Diego.
-const EC_SLUGS = new Set([
-  "steele-canyon", // Jamul
-  "cottonwood", // Rancho San Diego
-  "carlton-oaks", // Santee
-  "mt-woodson", // Ramona
-  "san-vicente", // Ramona
-]);
-
-// South County: National City / Chula Vista / Bonita area.
-const SC_SLUGS = new Set([
-  "national-city",
-  "enagic-chula-vista",
-  "chula-vista-muni",
-  "bonita",
-]);
-
-// "Short courses" tab — lives orthogonal to the geographic region tabs
-// (a course can be in both SD munis AND short). Includes strict par-3
-// layouts (Colina, Loma Club, Oaks North) plus shorter executive courses
-// that play as quick-round alternatives (Mission Bay par-32, Goat Hill
-// par-65). Renamed from "Par 3" → "Short Courses" because not all
-// included courses are strictly par 3.
-const SHORT_SLUGS = new Set([
-  "colina-park",           // par-3 9-hole, Hillcrest (City of SD)
-  "mission-bay",           // par-32 executive 18, Mission Bay (City of SD)
-  "goat-hill-park",        // par-65 short course, Oceanside
-  "the-loma-club",         // par-27 9-hole par-3, Point Loma
-  "oaks-north",            // par-3 executive 27, JC Resorts RB
-  "lomas-santa-fe-executive", // par-3 executive 18, Solana Beach
-  "reidy-creek",           // par-3/executive, Escondido
-]);
-
-// Courses hidden from the app because we can't keep their data fresh.
-//
-// The 4 jcgpub29 CPS courses (Twin Oaks, Encinitas Ranch, Crossings, RB Inn)
-// are NO LONGER here — the stealth browser + token-polling fix got them
-// scraping reliably on GitHub Actions, so they're live again.
-//
-// The 3 jcgpub3 CPS courses below stay hidden: jcgpub3 serves a stronger
-// Cloudflare challenge that stealth can't clear from a datacenter IP (CI logs
-// show a persistent "Just a moment..." interstitial). They're also marked
-// inactive in courses.json so we stop scraping them. Revisit with a
-// residential proxy.
-const SUPPRESSED_SLUGS = new Set([
-  "oaks-north",
-  "welk-fountains",
-  "welk-oaks",
-]);
 
 // Prime deliberately EXCLUDES short / par-3 / executive courses (the Short
 // Courses set). People hunting rare weekend tee times want a real round, not a

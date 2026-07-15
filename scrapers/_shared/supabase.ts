@@ -59,15 +59,27 @@ export async function writeTeeTimes(args: {
   const sb = supabaseAdmin();
   const nowIso = new Date().toISOString();
 
-  // Clear forward-looking rows for this course so stale "available" times go away.
-  const { error: delErr } = await sb
-    .from("tee_times")
-    .delete()
-    .eq("course_id", args.courseId)
-    .gte("tee_time_at", nowIso);
-  if (delErr) throw delErr;
+  // Mark-and-sweep, NOT delete-then-insert. We upsert the fresh rows FIRST
+  // (each stamped with this run's scraped_at = nowIso), THEN delete only the
+  // forward rows left over from a previous run (older scraped_at). Why:
+  //   - If the upsert fails, the course keeps its previous (slightly stale)
+  //     times instead of going BLANK on the live site until the next
+  //     successful scrape. Insert-first is failure-safe.
+  //   - There's never an instant where the course has zero rows, so a reader
+  //     loading mid-scrape never sees the course flicker empty.
+  // A scrape that legitimately finds nothing (course full/closed) returns an
+  // empty array — the scraper throws on real failure, so 0 here means "truly
+  // empty", and we clear the course's forward rows.
 
-  if (args.times.length === 0) return;
+  if (args.times.length === 0) {
+    const { error: delErr } = await sb
+      .from("tee_times")
+      .delete()
+      .eq("course_id", args.courseId)
+      .gte("tee_time_at", nowIso);
+    if (delErr) throw delErr;
+    return;
+  }
 
   // Dedupe by (tee_time_at, holes) within this batch — overlapping booking
   // classes return the same slot, and Postgres rejects an upsert that
@@ -90,10 +102,24 @@ export async function writeTeeTimes(args: {
     scraped_at: nowIso,
   }));
 
-  const { error } = await sb
+  // 1. Upsert the fresh rows. Rows that already existed get scraped_at bumped
+  //    to nowIso (so they survive the sweep below); genuinely new slots are
+  //    inserted.
+  const { error: upErr } = await sb
     .from("tee_times")
     .upsert(rows, { onConflict: "course_id,tee_time_at,holes" });
-  if (error) throw error;
+  if (upErr) throw upErr;
+
+  // 2. Sweep: remove this course's forward rows that this run did NOT touch
+  //    (i.e. slots that disappeared since the last scrape). They keep an
+  //    older scraped_at because the upsert above didn't update them.
+  const { error: sweepErr } = await sb
+    .from("tee_times")
+    .delete()
+    .eq("course_id", args.courseId)
+    .gte("tee_time_at", nowIso)
+    .lt("scraped_at", nowIso);
+  if (sweepErr) throw sweepErr;
 }
 
 export async function startScrapeRun(courseId: string): Promise<string> {
