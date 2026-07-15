@@ -217,6 +217,38 @@
     "active": true
   },
   {
+    "_note": "Dos Osos (Escondido, San Pasqual Valley) — JC Golf, North County. On the jcgpub29 CPS tenant (the one the stealth scraper clears); courseId 26 / siteId 19 from the OnlineCourses endpoint.",
+    "slug": "dos-osos",
+    "name": "Dos Osos Golf Club",
+    "region": "nc",
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 26,
+      "siteId": 19,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
+  },
+  {
+    "_note": "The Golf Club of California (Fallbrook) — JC Golf, North County. jcgpub29 CPS tenant; courseId 23 / siteId 16 from the OnlineCourses endpoint.",
+    "slug": "golf-club-of-california",
+    "name": "The Golf Club of California",
+    "region": "nc",
+    "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
+    "scraperId": "cps",
+    "scraperConfig": {
+      "tenant": "jcgpub29",
+      "courseId": 23,
+      "siteId": 16,
+      "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
+      "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
+    },
+    "active": true
+  },
+  {
     "slug": "singing-hills-willow-glen",
     "name": "Singing Hills — Willow Glen (Sycuan)",
     "bookingUrl": "https://www.sycuan.com/golf/tee-times",
