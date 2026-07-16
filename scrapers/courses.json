@@ -1,5 +1,6 @@
 [
   {
+    "_note": "Class map (from page 19347 SCHEDULES): 3181=Non Resident 0-90d, 3201=Resident 8-90d (price includes the city's advance-booking premium, e.g. $163), 1135=Resident 0-7d (usually sold out — the Torrey scramble), 14483/14533=Resident Back 9 weekend classes. Non-res listed FIRST so resident prices win the same-slot dedupe (later entries overwrite). maxPriceCents raised 15000→45000: the old $150 cap was censoring 100% of real inventory once the 8-90d resident price passed $150; 45000 is only a junk-rate sanity ceiling now.",
     "slug": "torrey-pines-north",
     "name": "Torrey Pines — North",
     "region": "muni",
@@ -9,19 +10,22 @@
       "scheduleId": "1468",
       "requiresAuth": true,
       "bookingClasses": [
+        "3181",
         "3201",
         "1135",
-        "3181"
+        "14483",
+        "14533"
       ],
       "holes": [
         18,
         9
       ],
-      "maxPriceCents": 15000
+      "maxPriceCents": 45000
     },
     "active": true
   },
   {
+    "_note": "Class map: 3088=Non Resident 0-90d, 3195=Resident 8-90d (includes advance premium, e.g. $258), 888=Resident 0-7d (usually sold out). Non-res first so resident prices win dedupe. Cap raised 15000→45000 (same reason as North — the $150 cap was filtering out all real inventory).",
     "slug": "torrey-pines-south",
     "name": "Torrey Pines — South",
     "region": "muni",
@@ -31,15 +35,15 @@
       "scheduleId": "1487",
       "requiresAuth": true,
       "bookingClasses": [
+        "3088",
         "3195",
-        "888",
-        "3088"
+        "888"
       ],
       "holes": [
         18,
         9
       ],
-      "maxPriceCents": 15000
+      "maxPriceCents": 45000
     },
     "active": true
   },
@@ -56,6 +60,28 @@
       "bookingClasses": [
         "51735",
         "929"
+      ],
+      "maxPriceCents": 10000
+    },
+    "active": true
+  },
+  {
+    "_note": "Balboa's 9-hole course — separate foreUp teesheet (1490, from page 19348's SCHEDULES). Class 929 is the one that returns 9-hole slots (51735 comes back empty for this schedule). Verified: 19 slots @ $32 on a day+3 probe.",
+    "slug": "balboa-park-9",
+    "name": "Balboa Park — 9 Hole",
+    "region": "muni",
+    "short": true,
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19348",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1490",
+      "requiresAuth": true,
+      "loginUrl": "https://foreupsoftware.com/index.php/booking/19347",
+      "bookingClasses": [
+        "929"
+      ],
+      "holes": [
+        9
       ],
       "maxPriceCents": 10000
     },
