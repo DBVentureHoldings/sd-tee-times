@@ -3,6 +3,7 @@ import { Bebas_Neue, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import { SITE_URL } from "@/lib/site";
 
 const displayFont = Bebas_Neue({
   weight: "400",
@@ -21,9 +22,9 @@ const SITE_DESCRIPTION =
   "Every open tee time across San Diego — 25 courses, free, no login, updated every 30 minutes.";
 
 export const metadata: Metadata = {
-  // metadataBase makes the auto-generated og:image URL absolute. Update this
-  // if the site moves to a custom domain.
-  metadataBase: new URL("https://sd-tee-times.vercel.app"),
+  // metadataBase makes the auto-generated og:image URL absolute. Domain
+  // changes happen in ONE place: lib/site.ts.
+  metadataBase: new URL(SITE_URL),
   title: "SD Tee Times",
   description: SITE_DESCRIPTION,
   openGraph: {

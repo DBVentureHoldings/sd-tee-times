@@ -6,6 +6,8 @@ import {
   formatTime,
 } from "@/lib/format";
 import type { TeeTimeRow } from "@/lib/supabase-server";
+import { SITE_URL, SITE_HOST } from "@/lib/site";
+import { ShareButton } from "./ShareButton";
 
 /**
  * 🔥 Today's Drops — the hero. A horizontally-scrolling strip of the rarest,
@@ -64,16 +66,31 @@ export function DropCard({ drop }: { drop: Drop }) {
   const time = new Date(row.tee_time_at);
   const accent = courseAccent(row.courses?.slug);
   const courseName = row.courses?.name ?? "Tee time";
-  const dayLabel = formatDayChip(dayKey(time)).toUpperCase();
+  const day = dayKey(time);
+  const dayLabel = formatDayChip(day).toUpperCase();
   const isFoursome = row.players_avail >= 4;
 
+  // Share payload: readable summary + a deep link into the app pre-filtered
+  // to this day + course, so the recipient lands on the relevant view (not
+  // the booking site — the app is what we're spreading).
+  const shareText = [
+    `🔥 ${courseName}`,
+    `${formatDayChip(day)} · ${formatTime(time)}`,
+    `${formatPrice(row.price_cents)} · ${row.players_avail} spot${row.players_avail === 1 ? "" : "s"}`,
+  ].join(" — ");
+  const shareUrl = row.courses?.slug
+    ? `${SITE_URL}/?day=${day}&course=${row.courses.slug}`
+    : SITE_URL;
+
   return (
-    <a
-      href={row.booking_url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="relative flex h-full w-full flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"
-    >
+    <div className="relative h-full w-full">
+      <ShareButton title="SD Tee Times" text={shareText} url={shareUrl} />
+      <a
+        href={row.booking_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="relative flex h-full w-full flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"
+      >
       {/* Accent stripe */}
       <div className={"absolute left-0 top-0 h-full w-2 " + accent.bar} />
 
@@ -125,15 +142,16 @@ export function DropCard({ drop }: { drop: Drop }) {
         </div>
       </div>
 
-      {/* Brand footer — so a screenshot carries the brand */}
-      <div className="mt-2 flex items-center justify-between border-t-2 border-black bg-brand px-3 py-1.5">
-        <span className="font-display text-sm uppercase tracking-wider text-cream">
-          SD <span className="text-magred">TEE</span> TIMES
-        </span>
-        <span className="text-[9px] uppercase tracking-widest text-cream/70">
-          sd-tee-times.vercel.app
-        </span>
-      </div>
-    </a>
+        {/* Brand footer — so a screenshot carries the brand */}
+        <div className="mt-2 flex items-center justify-between border-t-2 border-black bg-brand px-3 py-1.5">
+          <span className="font-display text-sm uppercase tracking-wider text-cream">
+            SD <span className="text-magred">TEE</span> TIMES
+          </span>
+          <span className="text-[9px] uppercase tracking-widest text-cream/70">
+            {SITE_HOST}
+          </span>
+        </div>
+      </a>
+    </div>
   );
 }
