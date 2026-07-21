@@ -275,12 +275,30 @@
     "active": true
   },
   {
+    "_note": "Singing Hills at Sycuan (El Cajon, Dehesa Valley) — 54-hole resort, East County. Native booking is EZLinks (Cloudflare-blocked); GolfNow facility 3532 is the scrapable path, same pattern as Native Oaks. Willow Glen = the championship 18.",
     "slug": "singing-hills-willow-glen",
     "name": "Singing Hills — Willow Glen (Sycuan)",
-    "bookingUrl": "https://www.sycuan.com/golf/tee-times",
-    "scraperId": "foreUp",
-    "scraperConfig": {},
-    "active": false
+    "region": "ec",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/3532-singing-hills-golf-club-willow-glen/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 3532,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/3532-singing-hills-golf-club-willow-glen/search"
+    },
+    "active": true
+  },
+  {
+    "_note": "Singing Hills at Sycuan — Oak Glen, the second full 18 (gentler, flatter terrain). GolfNow facility 3533.",
+    "slug": "singing-hills-oak-glen",
+    "name": "Singing Hills — Oak Glen (Sycuan)",
+    "region": "ec",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/3533-singing-hills-golf-club-oak-glen/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 3533,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/3533-singing-hills-golf-club-oak-glen/search"
+    },
+    "active": true
   },
   {
     "slug": "steele-canyon",
