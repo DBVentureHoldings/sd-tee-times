@@ -20,7 +20,6 @@ import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
 import { SecondaryFilters } from "./SecondaryFilters";
-import { SubscribeForm } from "./SubscribeForm";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import {
   buildDealBaselines,
@@ -495,8 +494,6 @@ export default async function Page({
           </div>
         )}
       </section>
-
-      <SubscribeForm />
 
       <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
         <div>

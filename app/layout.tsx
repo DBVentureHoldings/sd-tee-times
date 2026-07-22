@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
+import { PrimeAlertBar } from "./PrimeAlertBar";
 
 const displayFont = Bebas_Neue({
   weight: "400",
@@ -72,6 +73,7 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-2xl px-4 py-4">{children}</main>
+        <PrimeAlertBar />
         <Analytics />
         <SpeedInsights />
       </body>
