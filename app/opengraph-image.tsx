@@ -18,6 +18,18 @@ const CREAM = "#F5EFE0";
 const RED = "#C8102E";
 const INK = "#111111";
 
+// Chunky outlined masthead effect. The app's <h1> uses a dark-green outline,
+// but at share-card scale on a green field that reads flat — so here we use a
+// black outline + hard offset, which pops AND ties into the black-bordered
+// tee rows below (the app's dominant neo-brutalist motif).
+const TITLE_SHADOW = [
+  `-3px -3px 0 ${INK}`,
+  `3px -3px 0 ${INK}`,
+  `-3px 3px 0 ${INK}`,
+  `3px 3px 0 ${INK}`,
+  `7px 7px 0 rgba(0,0,0,0.3)`,
+].join(", ");
+
 // Illustrative tee-sheet rows — realistic San Diego finds that show the
 // product at a glance (the rare weekend-morning "prime" slots + a deal).
 const ROWS: Array<{
@@ -88,9 +100,9 @@ export default async function OpengraphImage() {
                   lineHeight: 1,
                 }}
               >
-                <span style={{ color: CREAM }}>SD</span>
-                <span style={{ color: RED }}>TEE</span>
-                <span style={{ color: CREAM }}>TIMES</span>
+                <span style={{ color: CREAM, textShadow: TITLE_SHADOW }}>SD</span>
+                <span style={{ color: RED, textShadow: TITLE_SHADOW }}>TEE</span>
+                <span style={{ color: CREAM, textShadow: TITLE_SHADOW }}>TIMES</span>
               </div>
               <div
                 style={{
