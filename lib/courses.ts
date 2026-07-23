@@ -15,13 +15,16 @@ import coursesJson from "@/scrapers/courses.json";
 
 export type Region = "muni" | "nc" | "ec" | "sc";
 
-interface CourseMeta {
+export interface CourseMeta {
   slug: string;
+  name: string;
+  bookingUrl: string;
   region?: Region;
   /** Short / par-3 / executive course — excluded from Prime + the drops hero. */
   short?: boolean;
   /** Hidden from the UI (scraper blocked; stale rows must never surface). */
   hidden?: boolean;
+  active?: boolean;
 }
 
 // The JSON carries many more fields (scraperConfig, etc.); we only read the
@@ -30,6 +33,53 @@ const COURSES = coursesJson as unknown as CourseMeta[];
 
 function slugsWhere(pred: (c: CourseMeta) => boolean): Set<string> {
   return new Set(COURSES.filter(pred).map((c) => c.slug));
+}
+
+/**
+ * Courses that get a public SEO landing page: active and not hidden. These
+ * are the ones we can actually keep fresh, so they're the only ones worth
+ * indexing.
+ */
+export function publicCourses(): CourseMeta[] {
+  return COURSES.filter((c) => c.active !== false && !c.hidden);
+}
+
+export function getCourse(slug: string): CourseMeta | undefined {
+  const c = COURSES.find((x) => x.slug === slug);
+  if (!c || c.hidden || c.active === false) return undefined;
+  return c;
+}
+
+const REGION_LABEL: Record<Region, string> = {
+  muni: "SD Munis",
+  nc: "North County",
+  ec: "East County",
+  sc: "South County",
+};
+
+// Human phrase for prose/SEO copy, e.g. "in North County San Diego".
+const REGION_AREA: Record<Region, string> = {
+  muni: "San Diego",
+  nc: "North County San Diego",
+  ec: "East County San Diego",
+  sc: "South County San Diego",
+};
+
+export function regionLabel(region: Region | undefined): string {
+  return region ? REGION_LABEL[region] : "San Diego";
+}
+
+export function regionArea(region: Region | undefined): string {
+  return region ? REGION_AREA[region] : "San Diego";
+}
+
+/** Region tab key used by the homepage query string (?view=…). */
+export function regionView(region: Region | undefined): string | undefined {
+  if (region === "muni") return "muni";
+  if (region === "nc") return "nc";
+  if (region === "ec") return "ec";
+  if (region === "sc") return "sc";
+  return undefined;
 }
 
 export const MUNI_SLUGS = slugsWhere((c) => c.region === "muni");

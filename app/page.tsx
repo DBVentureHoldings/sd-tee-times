@@ -5,12 +5,9 @@ import {
   type TeeTimeRow,
 } from "@/lib/supabase-server";
 import {
-  courseAccent,
   dayKey,
   dayKeyChargesBookingFee,
   formatDayChip,
-  formatPrice,
-  formatTime,
   relativeMinutes,
   teeTimeBucket,
   isPrimeTeeTime,
@@ -20,12 +17,9 @@ import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
 import { SecondaryFilters } from "./SecondaryFilters";
+import { TeeTimeRowItem } from "./TeeTimeRowItem";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
-import {
-  buildDealBaselines,
-  getDealInfo,
-  type DealBaselines,
-} from "@/lib/deals";
+import { buildDealBaselines, getDealInfo } from "@/lib/deals";
 // Region / short / hidden membership is derived from scrapers/courses.json
 // (the single source of truth — see lib/courses.ts). Adding a course is a
 // one-file edit there; these Sets update automatically.
@@ -406,6 +400,11 @@ export default async function Page({
 
   return (
     <div className="space-y-5">
+      {/* Primary heading for SEO. Visually hidden so the tee sheet still leads,
+          but gives the homepage a single, keyword-focused <h1>. */}
+      <h1 className="sr-only">
+        San Diego Tee Times — Every Open Golf Tee Time in One Place
+      </h1>
       {/* 🔥 Today's Drops — the hero, only on the clean default view. Sits
           above the sticky bar so it's the first content; scrolls away as the
           filter bar pins. */}
@@ -471,7 +470,7 @@ export default async function Page({
         ) : dayRows.length > 0 ? (
           <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
             {dayRows.map((r) => (
-              <TeeTimeRow
+              <TeeTimeRowItem
                 key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
                 row={r}
                 baselines={dealBaselines}
@@ -500,6 +499,14 @@ export default async function Page({
           {lastScrape
             ? `Updated ${relativeMinutes(lastScrape)}`
             : "No data yet"}
+        </div>
+        <div>
+          <Link
+            href="/courses"
+            className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand"
+          >
+            Browse all San Diego courses
+          </Link>
         </div>
         <div>
           <a
@@ -789,93 +796,3 @@ function WeatherGlyph({ wx }: { wx: DayWeather }) {
   );
 }
 
-function TeeTimeRow({
-  row,
-  baselines,
-}: {
-  row: TeeTimeRow;
-  baselines?: DealBaselines;
-}) {
-  const time = new Date(row.tee_time_at);
-  const viable = row.players_avail >= 2;
-  const courseName = row.courses?.name ?? "Unknown course";
-  const accent = courseAccent(row.courses?.slug);
-  const deal = baselines ? getDealInfo(row, baselines) : { isDeal: false };
-
-  return (
-    <li
-      className={
-        "relative flex items-center gap-3 px-3 py-3 text-sm transition-colors " +
-        (viable ? "hover:bg-cream/40" : "opacity-50")
-      }
-    >
-      <div className={"absolute left-0 top-0 h-full w-1.5 " + accent.bar} />
-      <div className="ml-1.5 w-20 shrink-0">
-        <div className="font-display text-2xl uppercase leading-none tracking-tight text-black tabular-nums">
-          {formatTime(time)}
-        </div>
-      </div>
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline gap-1.5">
-          <span className="truncate text-sm font-bold uppercase tracking-tight text-black">
-            {courseName}
-          </span>
-          {row.holes === 9 && (
-            <span className="shrink-0 rounded-sm border border-black bg-cream px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
-              9
-            </span>
-          )}
-        </div>
-        <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-600">
-          <span
-            className={
-              "font-bold tabular-nums " +
-              (deal.isDeal ? "text-magred" : "text-black")
-            }
-          >
-            {formatPrice(row.price_cents)}
-          </span>
-          {deal.isDeal && deal.usualCents != null && (
-            <span className="tabular-nums text-[11px] text-neutral-400 line-through">
-              {formatPrice(deal.usualCents)}
-            </span>
-          )}
-          <span className="text-neutral-400">·</span>
-          <span className="tabular-nums">
-            {row.players_avail}{" "}
-            {row.players_avail === 1 ? "spot" : "spots"}
-          </span>
-          {deal.isDeal && (
-            <span
-              className="rounded-sm border border-magred bg-magred px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-cream"
-              title={`Usually ${formatPrice(deal.usualCents)} at this time of day — ${deal.percentOff}% off`}
-            >
-              🔥 {deal.percentOff}% off
-            </span>
-          )}
-          {viable && (
-            <span className="rounded-sm border border-brand bg-brand/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand">
-              ✓ 2+
-            </span>
-          )}
-          {row.players_min > 1 && (
-            <span
-              className="rounded-sm border border-magred bg-magred/10 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-magred"
-              title={`This course requires at least ${row.players_min} players to book this slot — solo bookings are blocked.`}
-            >
-              min {row.players_min}
-            </span>
-          )}
-        </div>
-      </div>
-      <a
-        href={row.booking_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex shrink-0 items-center rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"
-      >
-        Book
-      </a>
-    </li>
-  );
-}

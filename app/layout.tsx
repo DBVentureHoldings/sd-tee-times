@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import Link from "next/link";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { PrimeAlertBar } from "./PrimeAlertBar";
@@ -59,14 +60,16 @@ export default function RootLayout({
             lives in the footer instead of eating header space. */}
         <header className="border-b-4 border-black bg-brand text-cream">
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
-            <div className="min-w-0">
-              <h1 className="font-display text-3xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_2px_2px_0_rgba(0,0,0,0.25)]">
+            {/* Brand/logo, not the page heading — each page supplies its own
+                <h1> for SEO. Links home so it doubles as navigation. */}
+            <Link href="/" className="block min-w-0">
+              <div className="font-display text-3xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_2px_2px_0_rgba(0,0,0,0.25)]">
                 SD <span className="text-magred">TEE</span> TIMES
-              </h1>
+              </div>
               <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-cream/70">
                 San Diego&apos;s open tee sheet
               </p>
-            </div>
+            </Link>
             <span className="shrink-0 rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
               Vol. I
             </span>
