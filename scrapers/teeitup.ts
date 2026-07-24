@@ -23,6 +23,33 @@ function bookingUrlForDate(baseUrl: string, teeTimeAt: Date): string {
   }
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * Fetch a TeeItUp day, retrying politely on rate-limit (429) or transient 5xx.
+ * The Kenna API rate-limits bursts of requests, so we back off (honoring the
+ * Retry-After header when present) instead of hammering it — this is what
+ * clears the 429s. Non-retryable statuses are returned as-is for the caller
+ * to handle.
+ */
+async function fetchWithBackoff(
+  url: string,
+  headers: Record<string, string>,
+  attempts = 4,
+): Promise<Response> {
+  let res = await fetch(url, { headers });
+  for (let a = 1; a < attempts && (res.status === 429 || res.status === 503); a++) {
+    const retryAfter = Number(res.headers.get("retry-after"));
+    const waitMs =
+      Number.isFinite(retryAfter) && retryAfter > 0
+        ? retryAfter * 1000
+        : 800 * 2 ** (a - 1) + Math.floor(Math.random() * 400);
+    await sleep(Math.min(waitMs, 15_000));
+    res = await fetch(url, { headers });
+  }
+  return res;
+}
+
 /**
  * TeeItUp / Kenna.io scraper.
  *
@@ -82,7 +109,11 @@ export const teeItUpScraper: Scraper = {
       const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       const url = `${apiBase}/v2/tee-times?date=${dateStr}&facilityIds=${cfg.facilityId}`;
 
-      const res = await fetch(url, { headers });
+      // Space requests out slightly so we don't burst the Kenna API (the cause
+      // of the 429 rate-limiting).
+      if (i > 0) await sleep(150);
+
+      const res = await fetchWithBackoff(url, headers);
       if (!res.ok) {
         if (res.status === 404) continue;
         throw new Error(

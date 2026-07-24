@@ -19,7 +19,11 @@ import type { CourseConfig } from "./_types.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const COURSES_PATH = join(__dirname, "courses.json");
-const DAYS_AHEAD = 21;
+// Match the app's display window (WINDOW_DAYS = 14 in lib/supabase-server.ts).
+// We used to scrape 21 days but only ever show 14, so ~1/3 of every scrape was
+// wasted work that lengthened runs and fed the source rate-limiting (TeeItUp
+// 429s, cps.golf Cloudflare). Scraping only what we display cuts that load.
+const DAYS_AHEAD = 14;
 
 function loadCourses(): CourseConfig[] {
   const raw = readFileSync(COURSES_PATH, "utf8");
