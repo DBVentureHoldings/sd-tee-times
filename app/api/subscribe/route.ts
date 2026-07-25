@@ -1,11 +1,17 @@
 /**
- * Email capture endpoint for prime-drop alerts.
+ * Email capture endpoint.
  *
- * Inserts into the `subscribers` table via the anon Supabase client, which is
- * gated by an insert-only RLS policy (see 0005_subscribers.sql). No service
- * role needed — so this works with the env the app already has.
+ * Always adds the email to the general `subscribers` list. If a valid `course`
+ * slug is provided (the per-course signup on a course page), it ALSO records a
+ * row in `course_alerts` so we know which course that person wants alerts for.
+ *
+ * Both inserts go through the anon Supabase client, gated by insert-only RLS
+ * (see 0005_subscribers.sql / 0006_course_alerts.sql). No service role needed.
+ * The course_alerts insert is best-effort: if that table doesn't exist yet, the
+ * signup still succeeds on the general list.
  */
 import { supabaseServer } from "@/lib/supabase-server";
+import { getCourse } from "@/lib/courses";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -15,7 +21,7 @@ export const dynamic = "force-dynamic";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request): Promise<Response> {
-  let body: { email?: unknown; company?: unknown };
+  let body: { email?: unknown; company?: unknown; course?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -38,23 +44,37 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
+  // Validate the course against the real course list (ignore anything unknown).
+  const course =
+    typeof body.course === "string" && getCourse(body.course)
+      ? body.course
+      : undefined;
+
   const sb = supabaseServer();
+
+  // Primary: the general list. This one must succeed.
   const { error } = await sb.from("subscribers").insert({
     email,
-    source: "homepage",
+    source: course ? `course:${course}` : "homepage",
   });
-
-  if (error) {
-    // 23505 = unique_violation → already on the list. That's a success from
-    // the user's point of view.
-    if (error.code === "23505") {
-      return Response.json({ ok: true, already: true });
-    }
+  const primaryOk =
+    !error || error.code === "23505"; // 23505 = already on the list = fine
+  if (!primaryOk) {
     return Response.json(
       { ok: false, error: "Couldn't sign you up — try again." },
       { status: 500 },
     );
   }
 
-  return Response.json({ ok: true });
+  // Secondary: the per-course interest. Best-effort — a failure here (e.g. the
+  // table not existing yet) must not fail the signup.
+  if (course) {
+    await sb
+      .from("course_alerts")
+      .insert({ email, course_slug: course })
+      .then(() => {})
+      .then(undefined, () => {});
+  }
+
+  return Response.json({ ok: true, already: Boolean(error) });
 }

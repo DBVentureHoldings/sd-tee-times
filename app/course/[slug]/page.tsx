@@ -9,6 +9,7 @@ import {
 } from "@/lib/format";
 import { buildDealBaselines } from "@/lib/deals";
 import { TeeTimeRowItem } from "@/app/TeeTimeRowItem";
+import { CourseAlertForm } from "@/app/CourseAlertForm";
 import {
   getCourse,
   publicCourses,
@@ -221,6 +222,10 @@ export default async function CoursePage({
           </dd>
         </div>
       </dl>
+
+      {/* Course-specific alert signup — highest-intent ask for a visitor who
+          arrived searching for this exact course. */}
+      <CourseAlertForm courseName={course.name} courseSlug={slug} />
 
       {/* Live tee times, grouped by day */}
       {days.length > 0 && (
