@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 /**
  * Slim, dismissible email-capture bar pinned to the bottom of the viewport.
@@ -25,6 +26,12 @@ export function PrimeAlertBar() {
   const [msg, setMsg] = useState("");
   const honeypot = useRef<HTMLInputElement>(null);
 
+  // Suppress the general bar on course detail pages — those have their own
+  // course-specific alert form, so a second ask would be redundant.
+  const pathname = usePathname();
+  const onCoursePage = !!pathname && pathname.startsWith("/course/");
+  const show = visible && !onCoursePage;
+
   useEffect(() => {
     try {
       if (localStorage.getItem(DISMISS_KEY)) return;
@@ -36,7 +43,7 @@ export function PrimeAlertBar() {
 
   useEffect(() => {
     // Reserve space so the fixed bar never covers page content (the footer).
-    if (visible) {
+    if (show) {
       document.body.style.paddingBottom = "72px";
     } else {
       document.body.style.paddingBottom = "";
@@ -44,7 +51,7 @@ export function PrimeAlertBar() {
     return () => {
       document.body.style.paddingBottom = "";
     };
-  }, [visible]);
+  }, [show]);
 
   function persistDismiss() {
     try {
@@ -88,7 +95,7 @@ export function PrimeAlertBar() {
     }
   }
 
-  if (!visible) return null;
+  if (!show) return null;
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-black bg-brand shadow-[0_-3px_0_0_rgba(0,0,0,0.15)]">

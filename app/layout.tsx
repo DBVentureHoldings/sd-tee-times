@@ -21,7 +21,7 @@ const sansFont = Inter({
 });
 
 const SITE_DESCRIPTION =
-  "Every open tee time across San Diego — 25 courses, free, no login, updated every 30 minutes.";
+  "Every open tee time across San Diego — 35+ courses, free, no login, updated every 15 minutes.";
 
 export const metadata: Metadata = {
   // metadataBase makes the auto-generated og:image URL absolute. Domain

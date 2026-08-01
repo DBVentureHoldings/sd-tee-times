@@ -1,5 +1,5 @@
 /**
- * Cron endpoint hit by cron-job.org every 30 minutes.
+ * Cron endpoint hit by cron-job.org every 15 minutes.
  *
  * GitHub Actions' built-in cron schedule is best-effort on the free tier
  * (observed delays of 3-4 hours). Vercel's Hobby tier disallows sub-daily

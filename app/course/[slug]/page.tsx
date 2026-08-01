@@ -39,7 +39,7 @@ export async function generateMetadata({
 
   const area = regionArea(course.region);
   const title = `${course.name} Tee Times — Open Times & Prices | SD Tee Times`;
-  const description = `See every open tee time at ${course.name} in ${area}. Live availability updated every 30 minutes, green fees, and one-tap booking. Free, no login.`;
+  const description = `See every open tee time at ${course.name} in ${area}. Live availability updated every 15 minutes, green fees, and one-tap booking. Free, no login.`;
   const url = `${SITE_URL}/course/${slug}`;
 
   return {
@@ -185,12 +185,12 @@ export default async function CoursePage({
                 , with green fees from <strong>{priceRange}</strong>
               </>
             ) : null}
-            . Times update every 30 minutes. Find one you like and book straight
+            . Times update every 15 minutes. Find one you like and book straight
             through the course. No login, no added fees.
           </p>
         ) : (
           <p className="text-sm leading-relaxed text-neutral-700">
-            No open tee times at {course.name} right now, but we check every 30
+            No open tee times at {course.name} right now, but we check every 15
             minutes. Browse other {regionLabel(course.region)} courses below, or
             see the full San Diego tee sheet.
           </p>

@@ -2,6 +2,7 @@ import {
   courseAccent,
   formatPrice,
   formatTime,
+  shortCourseName,
 } from "@/lib/format";
 import { getDealInfo, type DealBaselines } from "@/lib/deals";
 import type { TeeTimeRow } from "@/lib/supabase-server";
@@ -45,8 +46,8 @@ export function TeeTimeRowItem({
       <div className="min-w-0 flex-1">
         {!hideCourseName && (
           <div className="flex items-baseline gap-1.5">
-            <span className="truncate text-sm font-bold uppercase tracking-tight text-black">
-              {courseName}
+            <span className="line-clamp-2 text-sm font-bold uppercase leading-tight tracking-tight text-black">
+              {shortCourseName(courseName)}
             </span>
             {row.holes === 9 && (
               <span className="shrink-0 rounded-sm border border-black bg-cream px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">

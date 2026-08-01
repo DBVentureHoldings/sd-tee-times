@@ -73,7 +73,7 @@ export default function CoursesIndexPage() {
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
           Every San Diego course we track, with live open tee times updated
-          every 30 minutes. Pick a course for its open times and green fees, or
+          every 15 minutes. Pick a course for its open times and green fees, or
           see the{" "}
           <Link href="/" className="font-bold text-brand underline">
             full San Diego tee sheet

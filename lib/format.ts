@@ -170,6 +170,23 @@ export function formatDayHeader(d: Date): string {
   return DAYHEADER_FMT.format(d);
 }
 
+/**
+ * Shorter course name for the compact tee-time rows, where horizontal space is
+ * tight on phones and long names ("Rams Hill Golf Club") were truncating. Drops
+ * a redundant trailing generic suffix so the distinctive part of the name shows
+ * ("Rams Hill"). Only strips a TRAILING suffix, so mid-name words are kept
+ * (e.g. "Enagic Golf Club at EastLake" is left alone). Full names are still
+ * used everywhere else (course pages, pickers, share cards).
+ */
+const NAME_SUFFIX_RE =
+  /\s+(golf club|golf course|golf resort|country club|municipal gc|golf|gc)$/i;
+
+export function shortCourseName(name: string): string {
+  const trimmed = name.replace(NAME_SUFFIX_RE, "").trim();
+  // Guard against over-shortening to almost nothing.
+  return trimmed.length >= 3 ? trimmed : name;
+}
+
 /** Time-of-day buckets for the filter pills. */
 export type TimeBucket = "morning" | "midday" | "evening";
 
