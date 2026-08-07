@@ -1,5 +1,24 @@
 import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * POST to GolfNow, retrying transient 5xx server errors with backoff. Some
+ * facilities intermittently 500; a couple of retries usually rides it out.
+ */
+async function golfNowFetch(
+  url: string,
+  init: RequestInit,
+  attempts = 3,
+): Promise<Response> {
+  let res = await fetch(url, init);
+  for (let a = 1; a < attempts && res.status >= 500; a++) {
+    await sleep(500 * 2 ** (a - 1) + Math.floor(Math.random() * 300));
+    res = await fetch(url, init);
+  }
+  return res;
+}
+
 /**
  * GolfNow scraper.
  *
@@ -34,6 +53,7 @@ export const golfNowScraper: Scraper = {
       `https://www.golfnow.com/tee-times/facility/${cfg.facilityId}/search`;
 
     const results: ScrapedTeeTime[] = [];
+    let serverErrored = false; // any day returned a 5xx after retries
 
     for (let i = 0; i < ctx.daysAhead; i++) {
       const date = new Date();
@@ -64,7 +84,7 @@ export const golfNowScraper: Scraper = {
         excludePrivateFacilities: false,
       };
 
-      const res = await fetch(
+      const res = await golfNowFetch(
         "https://www.golfnow.com/api/tee-times/tee-time-search-results",
         {
           method: "POST",
@@ -81,6 +101,12 @@ export const golfNowScraper: Scraper = {
 
       if (!res.ok) {
         if (res.status === 404) continue;
+        // A 5xx means GolfNow can't serve this facility right now. Skip the day
+        // rather than throwing away the whole course — other days may work.
+        if (res.status >= 500) {
+          serverErrored = true;
+          continue;
+        }
         throw new Error(
           `GolfNow ${ctx.course.slug} day ${i}: HTTP ${res.status}`,
         );
@@ -109,6 +135,15 @@ export const golfNowScraper: Scraper = {
           holes: rate?.holeCount ?? 18,
         });
       }
+    }
+
+    // If we got zero times AND hit server errors, the facility is down — throw
+    // so the runner keeps this course's last-good data instead of clearing it
+    // (an empty result would otherwise sweep the course to nothing).
+    if (results.length === 0 && serverErrored) {
+      throw new Error(
+        `GolfNow ${ctx.course.slug}: facility returning 5xx (kept last-good data)`,
+      );
     }
 
     return results;

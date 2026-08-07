@@ -360,16 +360,18 @@
     "active": true
   },
   {
+    "_note": "[INACTIVE: GolfNow facility 2084 consistently returns HTTP 500 (fails from a clean residential IP too, so it's GolfNow's bug, not IP reputation). Bonita is primarily a phone-booking course, so it may have no reliable online GolfNow inventory. Deactivated to stop the recurring 5xx error; revisit if GolfNow fixes the facility or another source appears.]",
     "slug": "bonita",
     "name": "Bonita Golf Club",
     "region": "sc",
+    "hidden": true,
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/2084-bonita-golf-club/search",
     "scraperId": "golfnow",
     "scraperConfig": {
       "facilityId": 2084,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/2084-bonita-golf-club/search"
     },
-    "active": true
+    "active": false
   },
   {
     "slug": "admiral-baker-north",
