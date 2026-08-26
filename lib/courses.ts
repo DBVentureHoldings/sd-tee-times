@@ -18,6 +18,8 @@ export type Region = "muni" | "nc" | "ec" | "sc";
 export interface CourseMeta {
   slug: string;
   name: string;
+  /** City/locality (e.g. "Poway", "La Jolla") — powers unique page copy and the GolfCourse JSON-LD addressLocality. */
+  city?: string;
   bookingUrl: string;
   region?: Region;
   /** Short / par-3 / executive course — excluded from Prime + the drops hero. */
@@ -80,6 +82,33 @@ export function regionView(region: Region | undefined): string | undefined {
   if (region === "ec") return "ec";
   if (region === "sc") return "sc";
   return undefined;
+}
+
+/**
+ * URL slug of the region's crawlable landing page (/tee-times/<slug>).
+ * These are real static pages (unlike the homepage's ?view= params, which
+ * are canonicalized away) so region queries have something to rank.
+ */
+const REGION_PAGE_SLUG: Record<Region, string> = {
+  muni: "san-diego-munis",
+  nc: "north-county",
+  ec: "east-county",
+  sc: "south-county",
+};
+
+export function regionPageSlug(region: Region | undefined): string | undefined {
+  return region ? REGION_PAGE_SLUG[region] : undefined;
+}
+
+export function regionFromPageSlug(slug: string): Region | undefined {
+  const hit = (Object.entries(REGION_PAGE_SLUG) as Array<[Region, string]>).find(
+    ([, s]) => s === slug,
+  );
+  return hit?.[0];
+}
+
+export function allRegionPageSlugs(): string[] {
+  return Object.values(REGION_PAGE_SLUG);
 }
 
 export const MUNI_SLUGS = slugsWhere((c) => c.region === "muni");

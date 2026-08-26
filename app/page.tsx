@@ -52,6 +52,19 @@ function isPrimeRow(r: TeeTimeRow): boolean {
 
 type View = "all" | "muni" | "nc" | "ec" | "sc" | "short" | "prime";
 
+// The marquee names golfers actually search for — rendered as a linked strip
+// above the footer (filtered at render time to courses with live data).
+const POPULAR_SLUGS: Array<{ slug: string; label: string }> = [
+  { slug: "torrey-pines-south", label: "Torrey Pines South" },
+  { slug: "torrey-pines-north", label: "Torrey Pines North" },
+  { slug: "balboa-park", label: "Balboa Park" },
+  { slug: "coronado-muni", label: "Coronado" },
+  { slug: "maderas", label: "Maderas" },
+  { slug: "aviara", label: "Aviara" },
+  { slug: "mission-bay", label: "Mission Bay" },
+  { slug: "encinitas-ranch", label: "Encinitas Ranch" },
+];
+
 // Time-of-day filter — "all" means no filter; the others map to TimeBucket.
 type TimeFilter = "all" | TimeBucket;
 
@@ -508,11 +521,56 @@ export default async function Page({
         )}
       </section>
 
+      {/* Popular courses — internal links from the busiest page to the course
+          landing pages (the strongest "this page matters" signal we can send
+          crawlers, and a quick jump for repeat visitors). */}
+      <section className="space-y-2 border-t-2 border-black pt-4">
+        <h2 className="font-display text-lg uppercase tracking-tight text-black">
+          Popular courses
+        </h2>
+        <ul className="flex flex-wrap gap-2">
+          {POPULAR_SLUGS.filter((p) => courseStats.has(p.slug)).map((p) => (
+            <li key={p.slug}>
+              <Link
+                href={`/course/${p.slug}`}
+                prefetch={false}
+                className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
+              >
+                {p.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
         <div>
           {lastScrape
             ? `Updated ${relativeMinutes(lastScrape)}`
             : "No data yet"}
+        </div>
+        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
+          <Link href="/deals" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            Deals
+          </Link>
+          <Link href="/twilight" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            Twilight
+          </Link>
+          <Link href="/this-weekend" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            This Weekend
+          </Link>
+          <Link href="/tee-times/north-county" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            North County
+          </Link>
+          <Link href="/tee-times/east-county" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            East County
+          </Link>
+          <Link href="/tee-times/south-county" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            South County
+          </Link>
+          <Link href="/tee-times/san-diego-munis" className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            SD Munis
+          </Link>
         </div>
         <div>
           <Link

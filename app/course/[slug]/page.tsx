@@ -8,6 +8,11 @@ import {
   formatPrice,
 } from "@/lib/format";
 import { buildDealBaselines } from "@/lib/deals";
+import {
+  computeCourseInsights,
+  BUCKET_LABEL,
+  BUCKET_SHORT,
+} from "@/lib/insights";
 import { TeeTimeRowItem } from "@/app/TeeTimeRowItem";
 import { CourseAlertForm } from "@/app/CourseAlertForm";
 import {
@@ -15,10 +20,21 @@ import {
   publicCourses,
   regionArea,
   regionLabel,
-  regionView,
+  regionPageSlug,
   type CourseMeta,
 } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
+
+/**
+ * "in Poway, North County San Diego" / "in San Diego" — city-first location
+ * phrase without stuttering when city and area coincide.
+ */
+function locationPhrase(course: CourseMeta): string {
+  const area = regionArea(course.region);
+  if (!course.city || course.city === area) return area;
+  if (area === "San Diego") return `${course.city}, San Diego County`;
+  return `${course.city}, ${area}`;
+}
 
 // Rebuild at most once a minute so live availability stays fresh (ISR).
 export const revalidate = 60;
@@ -37,10 +53,9 @@ export async function generateMetadata({
   const course = getCourse(slug);
   if (!course) return { title: "Course not found | SD Tee Times" };
 
-  const area = regionArea(course.region);
   // Bare title — the layout's "%s | SD Tee Times" template appends the brand.
   const title = `${course.name} Tee Times — Live Availability & Prices`;
-  const description = `See every open tee time at ${course.name} in ${area}. Live availability updated every 15 minutes, green fees, and one-tap booking. Free, no login.`;
+  const description = `See every open tee time at ${course.name} in ${locationPhrase(course)}. Live availability updated every 15 minutes, green fees, and one-tap booking. Free, no login.`;
   const url = `${SITE_URL}/course/${slug}`;
 
   return {
@@ -78,7 +93,7 @@ export default async function CoursePage({
     () => [] as Awaited<ReturnType<typeof fetchCourseTeeTimes>>,
   );
 
-  const area = regionArea(course.region);
+  const area = locationPhrase(course);
   const prices = rows
     .map((r) => r.price_cents)
     .filter((p): p is number => typeof p === "number" && p > 0);
@@ -89,6 +104,10 @@ export default async function CoursePage({
   // Deal baselines from this course's own rows (baselines are keyed per
   // course, so this is sufficient and keeps the page light).
   const baselines = buildDealBaselines(rows);
+
+  // Per-course pricing/availability insights — the unique, data-driven
+  // content that keeps 38 templated pages from reading as thin/duplicated.
+  const insights = computeCourseInsights(rows);
 
   // Group by day for a scannable, crawlable layout.
   const byDay = new Map<string, typeof rows>();
@@ -106,7 +125,7 @@ export default async function CoursePage({
     .sort((a, b) => a.name.localeCompare(b.name))
     .slice(0, 8);
 
-  const view = regionView(course.region);
+  const regionPage = regionPageSlug(course.region);
   const priceRange =
     minPrice != null && maxPrice != null
       ? minPrice === maxPrice
@@ -124,7 +143,9 @@ export default async function CoursePage({
         url: `${SITE_URL}/course/${slug}`,
         address: {
           "@type": "PostalAddress",
-          addressLocality: regionLabel(course.region),
+          // Real locality (e.g. "Poway") — was regionLabel(), which emitted
+          // non-places like "SD Munis" into structured data.
+          addressLocality: course.city ?? "San Diego",
           addressRegion: "CA",
           addressCountry: "US",
         },
@@ -220,13 +241,71 @@ export default async function CoursePage({
         </div>
         <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
           <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Area
+            Location
           </dt>
           <dd className="font-display text-xl leading-tight text-black">
-            {regionLabel(course.region)}
+            {course.city ?? regionLabel(course.region)}
           </dd>
         </div>
       </dl>
+
+      {/* Price guide — unique per-course data (bucket medians, weekday vs
+          weekend) computed from live rows. Only renders stats with enough
+          samples to be honest. */}
+      {Object.keys(insights.bucketMedians).length > 0 && (
+        <section className="space-y-2">
+          <h2 className="font-display text-xl uppercase tracking-tight text-black">
+            {course.name} Price Guide
+          </h2>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            {(Object.entries(insights.bucketMedians) as Array<
+              [keyof typeof BUCKET_LABEL, number]
+            >).map(([bucket, med]) => (
+              <div
+                key={bucket}
+                className="rounded-sm border-2 border-black bg-white px-2 py-3"
+              >
+                <div className="text-[10px] uppercase tracking-widest text-neutral-500">
+                  {BUCKET_LABEL[bucket]}
+                </div>
+                <div className="font-display text-2xl text-black">
+                  ~{formatPrice(med)}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-sm leading-relaxed text-neutral-700">
+            {insights.cheapestBucket && (
+              <>
+                The cheapest window at {course.name} right now is typically{" "}
+                <strong>
+                  {BUCKET_SHORT[insights.cheapestBucket.bucket]} at ~
+                  {formatPrice(insights.cheapestBucket.median)}
+                </strong>
+                .{" "}
+              </>
+            )}
+            {insights.weekdayRange && insights.weekendRange && (
+              <>
+                Weekday rounds currently run{" "}
+                {formatPrice(insights.weekdayRange[0])}–
+                {formatPrice(insights.weekdayRange[1])} vs{" "}
+                {formatPrice(insights.weekendRange[0])}–
+                {formatPrice(insights.weekendRange[1])} on weekends.{" "}
+              </>
+            )}
+            Open times span {insights.daysWithTimes} of the next 14 days
+            {insights.foursomeCount > 0 && (
+              <>
+                , including {insights.foursomeCount}{" "}
+                {insights.foursomeCount === 1 ? "slot" : "slots"} with room for
+                a foursome
+              </>
+            )}
+            . Figures reflect live availability and refresh every 15 minutes.
+          </p>
+        </section>
+      )}
 
       {/* Course-specific alert signup — highest-intent ask for a visitor who
           arrived searching for this exact course. */}
@@ -293,9 +372,12 @@ export default async function CoursePage({
         <Link href="/courses" className="font-bold text-brand underline">
           All San Diego courses
         </Link>
-        {view && (
-          <Link href={`/?view=${view}`} className="font-bold text-brand underline">
-            {regionLabel(course.region)} tee sheet
+        {regionPage && (
+          <Link
+            href={`/tee-times/${regionPage}`}
+            className="font-bold text-brand underline"
+          >
+            {regionLabel(course.region)} tee times
           </Link>
         )}
         <Link href="/" className="font-bold text-brand underline">

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { publicCourses } from "@/lib/courses";
+import { allRegionPageSlugs, publicCourses } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -20,6 +20,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  // Programmatic landing pages — the highest-intent queries we target.
+  const specials = ["deals", "twilight", "this-weekend"].map((p) => ({
+    url: `${SITE_URL}/${p}`,
+    lastModified,
+    changeFrequency: "hourly" as const,
+    priority: 0.9,
+  }));
+  const regions = allRegionPageSlugs().map((r) => ({
+    url: `${SITE_URL}/tee-times/${r}`,
+    lastModified,
+    changeFrequency: "hourly" as const,
+    priority: 0.9,
+  }));
+
   return [
     {
       url: SITE_URL,
@@ -33,6 +47,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 0.7,
     },
+    ...specials,
+    ...regions,
     ...courses,
   ];
 }

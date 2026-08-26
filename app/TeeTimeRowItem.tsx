@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   courseAccent,
   formatPrice,
@@ -46,9 +47,21 @@ export function TeeTimeRowItem({
       <div className="min-w-0 flex-1">
         {!hideCourseName && (
           <div className="flex items-baseline gap-1.5">
-            <span className="line-clamp-2 text-sm font-bold uppercase leading-tight tracking-tight text-black">
-              {shortCourseName(courseName)}
-            </span>
+            {/* Course name links to its landing page — the crawl path from the
+                busiest page to all 38 course pages (and a handy detail view). */}
+            {row.courses?.slug ? (
+              <Link
+                href={`/course/${row.courses.slug}`}
+                prefetch={false}
+                className="line-clamp-2 text-sm font-bold uppercase leading-tight tracking-tight text-black underline decoration-neutral-300 decoration-1 underline-offset-2 hover:text-brand hover:decoration-brand"
+              >
+                {shortCourseName(courseName)}
+              </Link>
+            ) : (
+              <span className="line-clamp-2 text-sm font-bold uppercase leading-tight tracking-tight text-black">
+                {shortCourseName(courseName)}
+              </span>
+            )}
             {row.holes === 9 && (
               <span className="shrink-0 rounded-sm border border-black bg-cream px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-black">
                 9
