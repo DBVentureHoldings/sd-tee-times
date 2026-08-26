@@ -272,10 +272,17 @@ const TOKEN_KEY = "online-reservation-v5-short_lived_token";
 
 async function getBrowser(): Promise<Browser> {
   if (!browserPromise) {
-    browserPromise = stealthChromium.launch({
-      headless: true,
-      args: ["--disable-blink-features=AutomationControlled"],
-    });
+    browserPromise = stealthChromium
+      .launch({
+        headless: true,
+        args: ["--disable-blink-features=AutomationControlled"],
+      })
+      .catch((err) => {
+        // Don't cache a rejected promise — a transient launch failure would
+        // otherwise poison every subsequent CPS course in the run.
+        browserPromise = null;
+        throw err;
+      });
   }
   return browserPromise;
 }

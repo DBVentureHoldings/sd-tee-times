@@ -27,7 +27,12 @@ export const metadata: Metadata = {
   // metadataBase makes the auto-generated og:image URL absolute. Domain
   // changes happen in ONE place: lib/site.ts.
   metadataBase: new URL(SITE_URL),
-  title: "SD Tee Times",
+  // "San Diego Tee Times" (the actual search phrase) leads the homepage
+  // title; child pages that set their own title slot into the template.
+  title: {
+    default: "San Diego Tee Times — Every Open Golf Tee Time, Live | SD Tee Times",
+    template: "%s | SD Tee Times",
+  },
   description: SITE_DESCRIPTION,
   openGraph: {
     title: "SD Tee Times — San Diego's open tee sheet",

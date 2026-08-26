@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 
 import { SCRAPERS } from "./_registry.js";
 import {
+  cleanupOldRows,
   finishScrapeRun,
   getOrCreateCourse,
   startScrapeRun,
@@ -117,6 +118,12 @@ async function main() {
   }
 
   await closeBrowser();
+
+  // Retention: prune old tee_times/scrape_runs so the free-tier DB doesn't
+  // grow without bound. Non-fatal — a failed cleanup shouldn't fail the run.
+  await cleanupOldRows().catch((err) =>
+    console.error("Retention cleanup failed:", err instanceof Error ? err.message : err),
+  );
 
   console.log(
     `Done. ${totalTimes} total tee times across ${courses.length - failures}/${courses.length} courses.`,

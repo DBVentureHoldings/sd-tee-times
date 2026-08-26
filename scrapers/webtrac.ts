@@ -93,7 +93,8 @@ export const webTracScraper: Scraper = {
         secondarycode: String(cfg.secondaryCode),
         numberofplayers: "0",
         begindate: mdy,
-        begintime: "07:00 am",
+        // 05:00 so early-morning slots aren't clipped (was 07:00).
+        begintime: "05:00 am",
         numberofholes: String(holes),
         reservee: "",
         display: "Detail",

@@ -76,5 +76,5 @@ export async function POST(req: Request): Promise<Response> {
       .then(undefined, () => {});
   }
 
-  return Response.json({ ok: true, already: Boolean(error) });
+  return Response.json({ ok: true });
 }

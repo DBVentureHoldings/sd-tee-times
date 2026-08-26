@@ -34,6 +34,12 @@ import {
 
 export const revalidate = 60;
 
+// Canonicalize every filter permutation (?view= / ?day= / ?course= / ?time=)
+// to the bare homepage so the chips don't mint crawlable duplicate URLs.
+export const metadata = {
+  alternates: { canonical: "/" },
+};
+
 // Prime deliberately EXCLUDES short / par-3 / executive courses (the Short
 // Courses set). People hunting rare weekend tee times want a real round, not a
 // par-3 — including them just clutters the hero. A "prime row" is a prime tee
@@ -127,8 +133,7 @@ export default async function Page({
           The Tee Sheet Is Empty
         </p>
         <p className="mt-1 text-xs text-neutral-500">
-          Run <code className="rounded bg-neutral-100 px-1">npm run scrape</code>{" "}
-          locally to seed.
+          Fresh times land every 15 minutes — check back shortly.
         </p>
       </div>
     );
@@ -313,6 +318,15 @@ export default async function Page({
   const preserveQuery =
     preserveParts.length > 0 ? `&${preserveParts.join("&")}` : "";
 
+  // The course picker's hrefs deliberately DROP `view`: it offers every course
+  // (with all-courses counts), so keeping a region tab active could land on
+  // `/?view=muni&course=aviara` — a false "no tee times" dead end because the
+  // region filter runs before the course filter. Picking a course switches to
+  // the all-courses view scoped to that course; day + time still carry over.
+  const coursePickerParts = preserveParts.filter((p) => !p.startsWith("view="));
+  const coursePickerQuery =
+    coursePickerParts.length > 0 ? `&${coursePickerParts.join("&")}` : "";
+
   const selectedCourseName = course
     ? (courseStats.get(course)?.name ?? course)
     : null;
@@ -351,7 +365,7 @@ export default async function Page({
         <CoursePicker
           groups={courseGroups}
           selected={course}
-          preserveQuery={preserveQuery}
+          preserveQuery={coursePickerQuery}
         />
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
@@ -442,7 +456,7 @@ export default async function Page({
           <CoursePicker
             groups={courseGroups}
             selected={course}
-            preserveQuery={preserveQuery}
+            preserveQuery={coursePickerQuery}
           />
           <TimeOfDayPicker
             timeFilter={timeFilter}

@@ -248,7 +248,7 @@ export default async function OpengraphImage() {
                 color: "rgba(245,239,224,0.9)",
               }}
             >
-              35+ COURSES · FREE · NO LOGIN · LIVE EVERY 30 MIN
+              35+ COURSES · FREE · NO LOGIN · LIVE EVERY 15 MIN
             </div>
             <div
               style={{

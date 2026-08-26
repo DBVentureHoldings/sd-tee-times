@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { fetchUpcomingTeeTimes } from "@/lib/supabase-server";
+import { fetchCourseTeeTimes } from "@/lib/supabase-server";
 import {
   dayKey,
   formatDayHeader,
@@ -38,7 +38,8 @@ export async function generateMetadata({
   if (!course) return { title: "Course not found | SD Tee Times" };
 
   const area = regionArea(course.region);
-  const title = `${course.name} Tee Times — Open Times & Prices | SD Tee Times`;
+  // Bare title — the layout's "%s | SD Tee Times" template appends the brand.
+  const title = `${course.name} Tee Times — Live Availability & Prices`;
   const description = `See every open tee time at ${course.name} in ${area}. Live availability updated every 15 minutes, green fees, and one-tap booking. Free, no login.`;
   const url = `${SITE_URL}/course/${slug}`;
 
@@ -52,6 +53,9 @@ export async function generateMetadata({
       url,
       siteName: "SD Tee Times",
       type: "website",
+      // Page-level openGraph replaces the inherited root og:image — re-add it
+      // explicitly or every course-page share renders a bare text card.
+      images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
     },
     twitter: { card: "summary_large_image", title, description },
   };
@@ -70,8 +74,9 @@ export default async function CoursePage({
   const course = getCourse(slug);
   if (!course) notFound();
 
-  let rows = await fetchUpcomingTeeTimes().catch(() => []);
-  rows = rows.filter((r) => r.courses?.slug === slug);
+  const rows = await fetchCourseTeeTimes(slug).catch(
+    () => [] as Awaited<ReturnType<typeof fetchCourseTeeTimes>>,
+  );
 
   const area = regionArea(course.region);
   const prices = rows

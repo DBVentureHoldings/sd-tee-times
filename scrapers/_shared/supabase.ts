@@ -122,6 +122,32 @@ export async function writeTeeTimes(args: {
   if (sweepErr) throw sweepErr;
 }
 
+/**
+ * Retention sweep, run once per scrape batch. Without it the tables grow
+ * forever (~3k scrape_runs rows/day; every past tee time kept) — a
+ * slow-motion outage on Supabase's free tier.
+ *  - tee_times: the app only shows future times; keep 2 days of history for
+ *    debugging, delete older.
+ *  - scrape_runs: keep 14 days of history for health/error analysis.
+ */
+export async function cleanupOldRows(): Promise<void> {
+  const sb = supabaseAdmin();
+  const teeCutoff = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+  const runCutoff = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+
+  const { error: teeErr } = await sb
+    .from("tee_times")
+    .delete()
+    .lt("tee_time_at", teeCutoff);
+  if (teeErr) console.error("cleanup tee_times failed:", teeErr.message);
+
+  const { error: runErr } = await sb
+    .from("scrape_runs")
+    .delete()
+    .lt("started_at", runCutoff);
+  if (runErr) console.error("cleanup scrape_runs failed:", runErr.message);
+}
+
 export async function startScrapeRun(courseId: string): Promise<string> {
   const sb = supabaseAdmin();
   const { data, error } = await sb

@@ -92,7 +92,10 @@ export const SC_SLUGS = slugsWhere((c) => c.region === "sc");
 export const SHORT_SLUGS = slugsWhere((c) => c.short === true);
 
 // Courses hidden from the app because we can't keep their data fresh.
-// (The 3 jcgpub3 CPS courses — Oaks North, Welk x2 — behind a Cloudflare
-// challenge stealth can't clear from a datacenter IP. Revisit with a
-// residential proxy.)
-export const SUPPRESSED_SLUGS = slugsWhere((c) => c.hidden === true);
+// `hidden` is the explicit flag; `active: false` is included too because the
+// runner stops scraping inactive courses, so their DB rows stop sweeping and
+// would otherwise sit unbookable in the UI for up to 14 days (deactivating a
+// course previously required remembering BOTH flags — now either suffices).
+export const SUPPRESSED_SLUGS = slugsWhere(
+  (c) => c.hidden === true || c.active === false,
+);

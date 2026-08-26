@@ -19,6 +19,12 @@ jobs:
     # total) and the prior 10-min budget started canceling mid-run.
     timeout-minutes: 20
     env:
+      # CRITICAL: scrapers build their day-0 date from the process-local clock.
+      # GH runners are UTC, so after 5pm PDT "today" rolled to tomorrow — every
+      # evening run skipped today and the sweep deleted today's remaining
+      # twilight slots. Pin the process TZ to Pacific so day math matches the
+      # golf courses.
+      TZ: America/Los_Angeles
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

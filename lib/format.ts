@@ -257,9 +257,10 @@ export function formatTime(d: Date): string {
 export function formatPrice(cents: number | null | undefined): string {
   if (cents == null) return "—";
   const dollars = cents / 100;
-  return dollars >= 100
-    ? `$${Math.round(dollars)}`
-    : `$${dollars.toFixed(0)}`;
+  // $100+: whole dollars. Under $100: keep real cents when present —
+  // $25.50 must not display as $26 (that's a wrong price).
+  if (dollars >= 100) return `$${Math.round(dollars)}`;
+  return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
 }
 
 export function dayKey(d: Date): string {
@@ -286,18 +287,8 @@ export function formatDayChip(key: string, today: Date = new Date()): string {
 
 /**
  * City of SD booking fee applies for tee times 8+ days out (the "advance"
- * booking window). 0-7 days = free.
- */
-export function chargesBookingFee(teeTimeAt: Date, today: Date = new Date()): boolean {
-  const teeKey = dayKey(teeTimeAt);
-  const cutoff = new Date(today);
-  cutoff.setDate(cutoff.getDate() + 7);
-  const cutoffKey = dayKey(cutoff);
-  return teeKey > cutoffKey;
-}
-
-/**
- * Same as above but operates on a dayKey string (cheap for many chips).
+ * booking window). 0-7 days = free. Operates on a dayKey string (cheap for
+ * many chips).
  */
 export function dayKeyChargesBookingFee(key: string, today: Date = new Date()): boolean {
   const cutoff = new Date(today);

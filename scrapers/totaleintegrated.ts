@@ -57,8 +57,10 @@ export const totaleIntegratedScraper: Scraper = {
         IsInitTeeTimeRequest: "false",
         TeeTimeDate: dateStr,
         CourseID: cfg.courseId,
-        StartTime: "06:00",
-        EndTime: "18:00",
+        // Full course day — the previous 06:00-18:00 window silently clipped
+        // early-bird and post-6pm twilight slots.
+        StartTime: "05:00",
+        EndTime: "21:00",
         NumOfPlayer: "Any",
         Hole: "18",
         PriceRange: "0,500",

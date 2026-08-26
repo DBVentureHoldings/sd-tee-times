@@ -4,7 +4,7 @@ import { publicCourses, regionLabel, type Region } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "San Diego Golf Courses — Tee Times for Every Course | SD Tee Times",
+  title: "San Diego Golf Courses — Tee Times for Every Course",
   description:
     "Browse every San Diego golf course we track, from Torrey Pines and Balboa to the North County and East County courses. Live open tee times, green fees, and one-tap booking. Free, no login.",
   alternates: { canonical: `${SITE_URL}/courses` },
@@ -15,6 +15,7 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/courses`,
     siteName: "SD Tee Times",
     type: "website",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630 }],
   },
 };
 

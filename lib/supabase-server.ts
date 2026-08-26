@@ -93,7 +93,11 @@ async function fetchUpcomingTeeTimesUncached(
         )
         .gt("tee_time_at", nowIso)
         .lt("tee_time_at", cutoffIso)
+        // id tiebreaker: tee_time_at isn't unique, and each page is an
+        // independent query — without a total order, rows tied on the page
+        // boundary can duplicate into two pages or drop entirely.
         .order("tee_time_at", { ascending: true })
+        .order("id", { ascending: true })
         .range(offset, offset + pageSize - 1);
       if (error) throw error;
       return (data ?? []) as unknown as TeeTimeRow[];
@@ -153,6 +157,44 @@ export async function fetchUpcomingTeeTimes(): Promise<TeeTimeRow[]> {
       });
   }
   return teePromise;
+}
+
+/**
+ * Upcoming tee times for ONE course, queried directly (uses the
+ * (course_id, tee_time_at) index) instead of pulling all ~14k rows and
+ * filtering to ~2% like the homepage does. Used by the per-course SEO pages;
+ * uncached — a single-course indexed query is fast, and 38 ISR pages
+ * revalidating on their own clocks shouldn't stampede the shared row cache.
+ * One course's inventory fits well inside a single 1000-row response for all
+ * but mega-inventories, so we page just like the full fetch to be safe.
+ */
+export async function fetchCourseTeeTimes(slug: string): Promise<TeeTimeRow[]> {
+  const sb = supabaseServer();
+  const now = new Date();
+  const nowIso = now.toISOString();
+  const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const cutoffIso = cutoff.toISOString();
+  const pageSize = 1000;
+
+  const rows: TeeTimeRow[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await sb
+      .from("tee_times")
+      .select(
+        "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, courses!inner(slug, name)",
+      )
+      .eq("courses.slug", slug)
+      .gt("tee_time_at", nowIso)
+      .lt("tee_time_at", cutoffIso)
+      .order("tee_time_at", { ascending: true })
+      .order("id", { ascending: true })
+      .range(offset, offset + pageSize - 1);
+    if (error) throw error;
+    const page = (data ?? []) as unknown as TeeTimeRow[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return rows;
 }
 
 let lastScrapeCache: { at: number; value: Date | null } | null = null;
