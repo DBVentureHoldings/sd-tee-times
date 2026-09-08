@@ -12,12 +12,17 @@ const nextConfig: NextConfig = {
   // The *.vercel.app host serves identical content to sdteetimes.golf — a
   // fully indexable duplicate site. Permanently redirect it to the canonical
   // domain so search engines consolidate everything onto sdteetimes.golf.
+  //
+  // /api is EXEMPT: a cross-host 308 drops the Authorization header, which
+  // silently broke the cron-job.org -> /api/cron/scrape trigger for 13 days
+  // (every tick got 401, the scraper never ran, and the site served stale
+  // data). Machine clients keep working on either host; only pages redirect.
   async redirects() {
     return [
       {
-        source: "/:path*",
+        source: "/:path((?!api/).*)",
         has: [{ type: "host", value: "sd-tee-times.vercel.app" }],
-        destination: "https://sdteetimes.golf/:path*",
+        destination: "https://sdteetimes.golf/:path",
         permanent: true, // 308
       },
     ];
