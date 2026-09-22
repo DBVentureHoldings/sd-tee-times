@@ -26,11 +26,17 @@ export function PrimeAlertBar() {
   const [msg, setMsg] = useState("");
   const honeypot = useRef<HTMLInputElement>(null);
 
-  // Suppress the general bar on course detail pages — those have their own
-  // course-specific alert form, so a second ask would be redundant.
+  // Suppress the general bar wherever a dedicated in-content form exists
+  // (course pages, homepage, /deals, /this-weekend) — one ask per page, and
+  // the in-content card is the format that actually converts.
   const pathname = usePathname();
-  const onCoursePage = !!pathname && pathname.startsWith("/course/");
-  const show = visible && !onCoursePage;
+  const hasOwnForm =
+    !!pathname &&
+    (pathname === "/" ||
+      pathname.startsWith("/course/") ||
+      pathname === "/deals" ||
+      pathname === "/this-weekend");
+  const show = visible && !hasOwnForm;
 
   useEffect(() => {
     try {

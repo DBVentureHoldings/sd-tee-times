@@ -1,4 +1,4 @@
-import { teeTimeBucket, teeTimeWeekday, type TimeBucket } from "./format";
+import { dayKey, teeTimeBucket, teeTimeWeekday, type TimeBucket } from "./format";
 import type { TeeTimeRow } from "./supabase-server";
 
 /**
@@ -43,12 +43,30 @@ export function computeCourseInsights(rows: TeeTimeRow[]): CourseInsights {
   const days = new Set<string>();
   let foursomeCount = 0;
 
+  // Price stats use only the course's dominant hole count: blending 9-hole
+  // rates into an 18-hole course's medians made the Price Guide understate
+  // real green fees (and vice versa on short courses).
+  const holesCount = new Map<number, number>();
+  for (const r of rows) {
+    holesCount.set(r.holes, (holesCount.get(r.holes) ?? 0) + 1);
+  }
+  let dominantHoles = 18;
+  let best = -1;
+  for (const [h, n] of holesCount) {
+    if (n > best) {
+      best = n;
+      dominantHoles = h;
+    }
+  }
+
   for (const r of rows) {
     const d = new Date(r.tee_time_at);
-    days.add(r.tee_time_at.slice(0, 10));
+    // Pacific day, not UTC: a 7pm PT Friday slot is Saturday in UTC and was
+    // inflating daysWithTimes.
+    days.add(dayKey(d));
     if (r.players_avail >= 4) foursomeCount++;
     const p = r.price_cents;
-    if (p == null || p <= 0) continue;
+    if (p == null || p <= 0 || r.holes !== dominantHoles) continue;
     byBucket[teeTimeBucket(d)].push(p);
     const dow = teeTimeWeekday(d);
     if (dow === 0 || dow === 6) weekend.push(p);

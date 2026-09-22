@@ -16,6 +16,7 @@ import {
 import { CoursePicker, type CourseGroup } from "./CoursePicker";
 import { DayPickerScroll } from "./DayPickerScroll";
 import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
+import { AlertCaptureForm } from "./AlertCaptureForm";
 import { SecondaryFilters } from "./SecondaryFilters";
 import { TeeTimeRowItem } from "./TeeTimeRowItem";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
@@ -436,6 +437,19 @@ export default async function Page({
           above the sticky bar so it's the first content; scrolls away as the
           filter bar pins. */}
       {isDefaultView && <TodaysDrops drops={drops} />}
+
+      {/* In-content capture directly under the drops — the in-content card is
+          the only format that has ever converted (both organic subscribers
+          came via course-page forms); the dismissible sticky bar never did. */}
+      {isDefaultView && (
+        <AlertCaptureForm
+          compact
+          source="homepage-inline"
+          title="🔥 The best SD tee times, in your inbox"
+          blurb="Prime weekend slots and real deals, emailed when they drop. Free."
+          cta="Get alerts"
+        />
+      )}
 
       {/*
         Sticky filter bar — condensed for mobile: region tabs + day chips stay

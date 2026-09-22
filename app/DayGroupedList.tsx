@@ -29,7 +29,10 @@ export function DayGroupedList({
     if (arr) arr.push(r);
     else byDay.set(k, [r]);
   }
-  const days = Array.from(byDay.keys());
+  // Callers may pass rows in any order (e.g. /deals sorts by discount), so
+  // the Map's insertion order isn't chronological — sort the day keys or the
+  // page renders Sep 9, 10, 15, 11 and the day cap keeps the wrong days.
+  const days = Array.from(byDay.keys()).sort();
   const shown = days.slice(0, maxDays);
   const restDays = days.length - shown.length;
   const restCount = days

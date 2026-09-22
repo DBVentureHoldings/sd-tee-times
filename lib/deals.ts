@@ -26,7 +26,10 @@ const MIN_ABS_DISCOUNT_CENTS = 1200; // …and at least $12 cheaper (skip trivia
 function bucketKey(row: TeeTimeRow): string | null {
   const slug = row.courses?.slug;
   if (!slug) return null;
-  return `${slug}|${teeTimeBucket(new Date(row.tee_time_at))}`;
+  // holes is part of the key: a 9-hole rate compared against an 18-hole
+  // median reads as a huge fake "deal" (the old top-10 on /deals were all
+  // this artifact — normal 9-hole prices billed as 70% off).
+  return `${slug}|${row.holes}|${teeTimeBucket(new Date(row.tee_time_at))}`;
 }
 
 export function buildDealBaselines(rows: TeeTimeRow[]): DealBaselines {

@@ -21,7 +21,12 @@ export const dynamic = "force-dynamic";
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function POST(req: Request): Promise<Response> {
-  let body: { email?: unknown; company?: unknown; course?: unknown };
+  let body: {
+    email?: unknown;
+    company?: unknown;
+    course?: unknown;
+    src?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -50,12 +55,20 @@ export async function POST(req: Request): Promise<Response> {
       ? body.course
       : undefined;
 
+  // Optional surface tag so each capture placement's conversion is measurable.
+  // Allowlisted — anything else falls back to "homepage".
+  const SRC_ALLOW = new Set(["homepage", "homepage-inline", "deals", "weekend"]);
+  const src =
+    typeof body.src === "string" && SRC_ALLOW.has(body.src)
+      ? body.src
+      : undefined;
+
   const sb = supabaseServer();
 
   // Primary: the general list. This one must succeed.
   const { error } = await sb.from("subscribers").insert({
     email,
-    source: course ? `course:${course}` : "homepage",
+    source: course ? `course:${course}` : (src ?? "homepage"),
   });
   const primaryOk =
     !error || error.code === "23505"; // 23505 = already on the list = fine
@@ -72,8 +85,15 @@ export async function POST(req: Request): Promise<Response> {
     await sb
       .from("course_alerts")
       .insert({ email, course_slug: course })
-      .then(() => {})
-      .then(undefined, () => {});
+      .then(
+        (r) => {
+          // Best-effort, but not silent: a persistent failure here means we
+          // lose the per-course intent signal without noticing.
+          if (r.error && r.error.code !== "23505")
+            console.error("course_alerts insert failed:", r.error.message);
+        },
+        () => {},
+      );
   }
 
   return Response.json({ ok: true });

@@ -6,6 +6,7 @@ import { teeTimeWeekday } from "@/lib/format";
 import { SUPPRESSED_SLUGS } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 import { DayGroupedList } from "@/app/DayGroupedList";
+import { AlertCaptureForm } from "@/app/AlertCaptureForm";
 
 /**
  * /this-weekend — crawlable landing page for "san diego tee times this
@@ -69,6 +70,14 @@ export default async function ThisWeekendPage() {
           Updated every 15 minutes.
         </p>
       </header>
+
+      <AlertCaptureForm
+        source="weekend"
+        title="🔥 Weekend tee time alerts"
+        blurb="Prime Friday–Sunday slots sell out first. Get them emailed before they're gone. Free."
+        cta="Get alerts"
+        successNote="You're set — weekend openings will hit your inbox."
+      />
 
       {rows.length > 0 ? (
         <DayGroupedList rows={rows} baselines={baselines} maxDays={3} />

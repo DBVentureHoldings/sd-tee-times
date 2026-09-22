@@ -5,6 +5,7 @@ import { buildDealBaselines, getDealInfo } from "@/lib/deals";
 import { SUPPRESSED_SLUGS } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 import { DayGroupedList } from "@/app/DayGroupedList";
+import { AlertCaptureForm } from "@/app/AlertCaptureForm";
 
 /**
  * /deals — crawlable landing page for "san diego golf deals" queries. The
@@ -78,6 +79,14 @@ export default async function DealsPage() {
           . Recomputed every 15 minutes.
         </p>
       </header>
+
+      <AlertCaptureForm
+        source="deals"
+        title="🔥 Deal alerts"
+        blurb="Get an email when a San Diego course drops a tee time well below its usual rate. Free, unsubscribe anytime."
+        cta="Send me deals"
+        successNote="Deal alerts on — we'll email you when prices drop."
+      />
 
       {dealRows.length > 0 ? (
         <DayGroupedList rows={dealRows} baselines={baselines} maxDays={4} />
