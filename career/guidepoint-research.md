@@ -93,3 +93,33 @@ This is the most decision-relevant data found.
 - [RepVue: GuidePoint Security ratings](https://www.repvue.com/companies/GuidePointSecurity)
 - [Glassdoor: GuidePoint Security reviews](https://www.glassdoor.com/Reviews/GuidePoint-Security-Reviews-E1124957.htm)
 - [Grand View Research: cybersecurity services market](https://www.grandviewresearch.com/industry-analysis/cyber-security-service-market)
+
+---
+
+## The SoCal competitive landscape (added 2026-10-01)
+
+The three firms a SoCal buyer might realistically compare.
+
+| | GuidePoint | EVOTEK | Bird Rock Systems |
+|---|---|---|---|
+| Founded | 2011 | 2014 | 2003 |
+| HQ | Reston, VA (Irvine office) | San Diego | San Diego (+ Aliso Viejo, LA) |
+| Headcount | ~1,000 to 1,150 | ~255 (sources vary, some say 51-200) | ~65 (sources vary up to 200) |
+| Reported revenue | ~$194M to $252M | ~$53M to $250M depending on source | ~$16.3M (2025) |
+| Focus | Security only | Security plus cloud, data center, mobility, digital | Security, network, cloud, privacy, compliance |
+| Ownership | PE-backed (Audax, ABS Capital) | Appears founder/management led, verify | Founder-led (James Matteo, CEO) |
+| Reach | National, regional partner model | San Diego base, broader reach | Southern California regional |
+
+**Important caveat on revenue:** solution providers report inconsistently. Some publish gross billings including product pass-through, others publish net revenue (their margin plus services). A firm showing $16M net could be moving far more in gross product volume. Never compare these numbers across firms without asking how each counts.
+
+### What actually separates them
+
+**Specialization.** GuidePoint is security only and sells primarily to the CISO. EVOTEK spans security plus infrastructure, cloud and digital, so it also sells to the CIO. Bird Rock is broad IT with a security emphasis. Narrower focus means a deeper specialist bench; broader focus means more ways into an account.
+
+**Bench depth, which is what a seller actually sells.** At roughly a thousand people, GuidePoint can put incident responders, penetration testers, compliance specialists and a virtual CISO in front of a customer. At sixty-five people, the bench is thinner, so the mix tilts toward product resale and vendor-delivered services. As a rep, bench depth determines how large and how complex a deal you can credibly chase.
+
+**Ownership and what it does to culture.** PE backing brings growth targets, process, structured enablement and a possible liquidity event, along with the pressure and the chance of a sponsor change. Founder-led firms tend to be more personal and flexible with a lower ceiling and no exit event. Neither is better; they are different bets.
+
+**Local incumbency versus national scale.** In SoCal, EVOTEK and Bird Rock are the hometown incumbents with long relationships. GuidePoint is the national specialist entering a newer territory with more purchasing power and a deeper bench. That is exactly the competitive dynamic a GuidePoint rep in SoCal would be selling against.
+
+**Geography matters personally.** GuidePoint's SoCal office is in Irvine. EVOTEK and Bird Rock are headquartered in San Diego. For someone living in San Diego with a young family, that difference is real even in a mostly remote role.
