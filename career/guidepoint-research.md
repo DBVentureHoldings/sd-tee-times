@@ -123,3 +123,78 @@ The three firms a SoCal buyer might realistically compare.
 **Local incumbency versus national scale.** In SoCal, EVOTEK and Bird Rock are the hometown incumbents with long relationships. GuidePoint is the national specialist entering a newer territory with more purchasing power and a deeper bench. That is exactly the competitive dynamic a GuidePoint rep in SoCal would be selling against.
 
 **Geography matters personally.** GuidePoint's SoCal office is in Irvine. EVOTEK and Bird Rock are headquartered in San Diego. For someone living in San Diego with a young family, that difference is real even in a mostly remote role.
+
+---
+
+## The business model and rep economics (added 2026-10-01)
+
+### How a solutions provider makes money
+
+Four streams, in ascending order of value to the firm:
+
+1. **Product resale margin.** Buy from the vendor or distributor at a partner discount, sell at a smaller discount. Margins are typically thin and vary widely by vendor, deal registration status, and volume tier. This is volume business, not profit business.
+2. **Professional services.** Assessments, implementations, penetration tests, architecture work. Margin here is substantially higher than product because it is bill rate versus consultant cost.
+3. **Managed and recurring services.** MDR, managed firewall, vCISO retainers, incident response retainers. Predictable monthly revenue, high margin, and very sticky.
+4. **Back-end vendor rebates.** Hitting volume tiers with a vendor pays rebates after the fact. Invisible to the customer and a real contributor to firm profitability, which is part of why vendor relationships are managed so carefully.
+
+### The single most important difference from vendor sales
+
+**Reps at solutions providers are almost always paid on gross profit, not revenue.**
+
+Worked example:
+- A $1,000,000 product deal at 8% margin produces $80,000 of gross profit.
+- A $200,000 services engagement at 40% margin produces $80,000 of gross profit.
+- Same commission to the rep. One fifth the revenue.
+
+Consequences:
+- Quota is usually a gross profit number, not a bookings number.
+- Services attach is the whole game, because services carry the margin.
+- Discounting comes directly out of your own compensation, so reps protect price rather than buying deals.
+- A rep who only moves product at thin margin can post large revenue and still miss quota.
+
+### Compensation data found (verify in conversation)
+
+Sources disagree, which is itself informative:
+
+- **Actual posted California ranges**, which employers must publish under state pay transparency law: Account Executive (Southwest) in San Diego and Los Angeles listed at **$50,000 to $100,000 base**. Senior Account Executive (Northwest, SF Bay Area) listed at $100,000 to $115,000 base.
+- **RepVue** reports median base around $100,000 and median OTE around $250,000, on roughly a 35/65 base-to-variable split, with about 69% of AEs hitting quota and a top reported total of about $1.67M.
+- **Indeed** reports an average AE base closer to $73,000.
+
+How to read the spread: RepVue is self-reported and skews toward engaged, higher-performing reps. Indeed averages across everyone including early-tenure. **The posted California range is the most reliable guide to what an actual offer looks like**, and a first-time AE moving up from SDR should plan around the lower-middle of that band rather than the RepVue median.
+
+Because California requires pay scales in postings, live job listings are the best available source. Check them directly rather than relying on aggregators.
+
+### How multi-year projects get built
+
+**The land.** A small, low-risk entry engagement: a security assessment, a compliance readiness review, or a vCISO retainer. Small dollars, easy for a customer to approve, and it puts your firm at the strategy layer.
+
+**The roadmap.** The assessment produces a prioritized plan, typically covering eighteen to thirty-six months. Year one might be identity and access, year two network and SASE, year three cloud and application security. The customer has now agreed, in writing, to a sequence of projects.
+
+**The structures that make revenue multi-year:**
+- **Multi-year product subscriptions.** Three-year terms are standard in security. Depending on the firm's policy, a rep may be credited gross profit on the full term at signing, which is a large part of how outsized comp numbers happen.
+- **Managed services contracts**, commonly twelve to thirty-six months, billed monthly.
+- **Incident response retainers**, paid annually for guaranteed response availability. These renew reliably because they function as insurance.
+- **vCISO retainers**, ongoing monthly.
+- **Staff augmentation**, ongoing placement.
+- **Prepaid blocks of hours**, drawn down over time.
+
+**Why customers accept multi-year terms:** better pricing, budget predictability, a locked rate against vendor increases, and avoiding another procurement cycle.
+
+### What separates successful reps
+
+- **Services attach rate** is the best single predictor. Product-only reps grind; reps who attach services clear quota on less volume.
+- **Vendor relationships that generate inbound.** Reps who vendor field teams like get handed deals.
+- **Renewal retention**, because a lost renewal is gross profit you have to replace before you grow.
+- **Multi-practice penetration.** One account buying from four practices is worth far more than four accounts buying one thing.
+- **Not becoming the cheap quote.** Reps who win on price train customers to shop them, and it compounds badly.
+
+### The book effect over three years
+
+Year one is hardest because everything is new business. Year two, renewals from year one start returning with little work attached. By year three a good rep begins each year with a base of recurring gross profit before selling anything new. That is the annuity that makes senior solution provider reps hard to recruit away.
+
+### Additional sources
+
+- [Indeed: GuidePoint AE salaries and postings](https://www.indeed.com/cmp/Guidepoint-Security/salaries/Account-Executive)
+- [RepVue: GuidePoint salaries](https://www.repvue.com/companies/GuidePointSecurity/salaries)
+- [Qobra: commission structures based on gross profit](https://www.qobra.co/blog/commission-structure-based-on-gross-profit)
+- [Chanimal: reseller margin benchmarks](https://chanimal.com/resources/pricing/reseller-margins/)
