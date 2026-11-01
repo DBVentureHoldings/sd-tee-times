@@ -115,8 +115,10 @@ export const golfNowScraper: Scraper = {
       const json = (await res.json()) as GolfNowResponse;
       const slots = json.ttResults?.teeTimes ?? [];
       for (const slot of slots) {
-        const tzOffset = slot.facility?.timeZoneOffset ?? -7;
-        const teeTimeAt = parseGolfNowTime(slot.time?.date ?? "", tzOffset);
+        const raw = slot.time?.date ?? "";
+        const tzOffset =
+          slot.facility?.timeZoneOffset ?? pacificOffsetHoursFor(raw);
+        const teeTimeAt = parseGolfNowTime(raw, tzOffset);
         if (!teeTimeAt) continue;
 
         const rate = slot.teeTimeRates?.[0];
@@ -178,6 +180,25 @@ function formatGolfNowDate(d: Date): string {
  * value is actually in the facility's local timezone. Use the facility's
  * timeZoneOffset to translate to real UTC.
  */
+/**
+ * Fallback only — GolfNow normally sends facility.timeZoneOffset per slot
+ * (verified -8.0 after the Nov 2026 DST change). If it's ever missing, derive
+ * Pacific's offset for that calendar date instead of assuming summer time.
+ */
+function pacificOffsetHoursFor(iso: string): number {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const at = m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], 20)) : new Date();
+  const name =
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Los_Angeles",
+      timeZoneName: "shortOffset",
+    })
+      .formatToParts(at)
+      .find((p) => p.type === "timeZoneName")?.value ?? "GMT-8";
+  const off = name.match(/GMT([+-]\d+)/);
+  return off ? Number(off[1]) : -8;
+}
+
 function parseGolfNowTime(iso: string, tzOffsetHours: number): Date | null {
   const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
   if (!m) return null;

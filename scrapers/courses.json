@@ -100,16 +100,17 @@
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19346",
     "scraperId": "foreUp",
     "scraperConfig": {
-      "scheduleId": "1469",
+      "scheduleId": "13308",
       "requiresAuth": true,
       "loginUrl": "https://foreupsoftware.com/index.php/booking/19347",
       "bookingClasses": [
-        "1043",
-        "925"
+        "53239",
+        "53240"
       ],
       "maxPriceCents": 10000
     },
-    "active": true
+    "active": true,
+    "_note": "Mission Bay moved to a new foreUp teesheet (Oct 2026): schedule 1469 -> 13308, classes 1043/925 -> 53239 (Standard 0-7 days) + 53240 (advance). Old IDs made foreUp return `false` every day ('slots is not iterable'). 53241 = Junior ticket, intentionally excluded."
   },
   {
     "slug": "tecolote-canyon",
