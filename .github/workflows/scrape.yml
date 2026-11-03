@@ -13,7 +13,10 @@ concurrency:
 
 jobs:
   scrape:
-    runs-on: ubuntu-latest
+    # Pinned, not ubuntu-latest: GitHub moved ubuntu-latest to 26.04 (Nov 2026)
+    # and Playwright 1.60 can't install Chromium there, so every run failed at
+    # the browser-install step. Bump only after Playwright supports the new image.
+    runs-on: ubuntu-24.04
     # Raised from 10 → 20 min: we added Chula Vista + Goat Hill + Loma Club +
     # Oaks North + Welk Fountains + Welk Oaks + Lomas Santa Fe (32 courses
     # total) and the prior 10-min budget started canceling mid-run.
