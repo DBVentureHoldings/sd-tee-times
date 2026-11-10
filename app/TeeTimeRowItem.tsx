@@ -33,8 +33,10 @@ export function TeeTimeRowItem({
 
   return (
     <li
+      // Freshness hides the row once this instant has passed (cached pages).
+      data-tee={time.getTime()}
       className={
-        "relative flex items-center gap-3 px-3 py-3 text-sm transition-colors " +
+        "relative flex items-center gap-3 px-3 py-3 text-sm transition-colors data-[tee-past]:hidden " +
         (viable ? "hover:bg-cream/40" : "opacity-50")
       }
     >

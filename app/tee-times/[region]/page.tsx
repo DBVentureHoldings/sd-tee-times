@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { fetchUpcomingTeeTimes } from "@/lib/supabase-server";
+import {
+  fetchLastScrapeAt,
+  fetchUpcomingTeeTimes,
+} from "@/lib/supabase-server";
 import { buildDealBaselines } from "@/lib/deals";
 import {
   allRegionPageSlugs,
   publicCourses,
   regionFromPageSlug,
+  regionView,
   MUNI_SLUGS,
   NC_SLUGS,
   EC_SLUGS,
@@ -15,14 +19,26 @@ import {
   type Region,
 } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
-import { DayGroupedList } from "@/app/DayGroupedList";
+import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
+import { Freshness } from "@/app/Freshness";
 
 /**
  * /tee-times/[region] — crawlable region landing pages ("north county san
  * diego tee times" etc.). The homepage's ?view= tabs canonicalize away, so
  * these static pages are what region queries can actually rank.
  */
-export const revalidate = 300;
+// ISR window. The data moves every 15 minutes, but each regeneration pulls and
+// scans the full sheet (~13k rows), so the window is what bounds this page's
+// monthly CPU on Vercel Hobby (an overage pauses the whole account for 30
+// days). Four hours is deliberately conservative: shorten it only after Vercel's
+// Usage > Active CPU shows the month tracking well under 0.05 CPU-h/day.
+// In between, <Freshness> hides times that pass and re-pulls a page served
+// older than the window, the list stretches to outlive the window, and all
+// on-page copy says "as of the last refresh". Must stay a literal.
+export const revalidate = 14400;
+
+// Only the four region slugs exist; anything else 404s without a function.
+export const dynamicParams = false;
 
 const REGION_COPY: Record<
   Region,
@@ -101,10 +117,14 @@ export default async function RegionPage({
   const copy = REGION_COPY[key];
   const slugSet = REGION_SET[key];
 
-  let rows = await fetchUpcomingTeeTimes().catch(
-    () => [] as Awaited<ReturnType<typeof fetchUpcomingTeeTimes>>,
-  );
-  rows = rows.filter(
+  // Deliberately not caught: a failed regeneration keeps the last good page,
+  // whereas a swallowed error would be cached as an empty list for a whole
+  // revalidate window.
+  const [allRows, lastScrape] = await Promise.all([
+    fetchUpcomingTeeTimes(),
+    fetchLastScrapeAt(),
+  ]);
+  const rows = allRows.filter(
     (r) =>
       r.courses?.slug &&
       slugSet.has(r.courses.slug) &&
@@ -118,8 +138,9 @@ export default async function RegionPage({
 
   return (
     <div className="space-y-6">
+      <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
       <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" className="hover:text-brand">
+        <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
         <span>/</span>
@@ -132,10 +153,19 @@ export default async function RegionPage({
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
           Every open tee time across {copy.phrase} — {copy.blurb} — in one
-          place. <strong>{rows.length}</strong> open right now across{" "}
-          <strong>{regionCourses.length} courses</strong>, updated every 15
-          minutes. Each Book button links straight to the course&apos;s own
-          booking page.
+          place. <strong>{rows.length}</strong> open across{" "}
+          <strong>{regionCourses.length} courses</strong> at the last refresh.
+          This page refreshes through the day; the{" "}
+          <Link
+            href={`/?view=${regionView(key)}`}
+            prefetch={false}
+            rel="nofollow"
+            className="font-bold text-brand underline"
+          >
+            live tee sheet for {copy.phrase}
+          </Link>{" "}
+          updates every 15 minutes. Each Book button links straight to the
+          course&apos;s own booking page.
         </p>
       </header>
 
@@ -160,29 +190,39 @@ export default async function RegionPage({
       </section>
 
       {rows.length > 0 ? (
-        <DayGroupedList rows={rows} baselines={baselines} maxDays={2} />
+        <DayGroupedList
+          rows={rows}
+          baselines={baselines}
+          maxDays={2}
+          liveForSec={revalidate}
+          updatedAt={lastScrape}
+          sheetQuery={`view=${regionView(key)}`}
+        />
       ) : (
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
-            Nothing open right now
+            Nothing open at the last refresh
           </p>
           <p className="mt-1 text-xs text-neutral-500">
-            Fresh times land every 15 minutes — check back shortly.
+            Fresh times land on the full tee sheet every 15 minutes.
           </p>
+          <div className="mt-3">
+            <UpdatedStamp at={lastScrape} />
+          </div>
         </div>
       )}
 
       <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" className="font-bold text-brand underline">
+        <Link href="/" prefetch={false} className="font-bold text-brand underline">
           Full San Diego tee sheet
         </Link>
-        <Link href="/deals" className="font-bold text-brand underline">
+        <Link href="/deals" prefetch={false} className="font-bold text-brand underline">
           Golf deals
         </Link>
-        <Link href="/twilight" className="font-bold text-brand underline">
+        <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
           Twilight
         </Link>
-        <Link href="/courses" className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses
         </Link>
       </div>

@@ -166,6 +166,54 @@ export function courseAccent(slug: string | undefined): {
   }
 }
 
+const WEEKDAY_INDEX: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+/**
+ * Pacific day / hour / weekday of an instant, memoized.
+ *
+ * Every page render asks these questions of the same rows over and over (day
+ * grouping, time-of-day buckets, prime detection, deal baselines — roughly
+ * seven Intl calls per row across ~13k rows), and Intl formatting is the
+ * single largest slice of render CPU. Tee times sit on whole minutes and
+ * repeat heavily across courses, so a small map answers nearly all of them.
+ * Off-minute instants (i.e. "now") skip the cache so it can't fill with
+ * one-off keys.
+ */
+interface PacificParts {
+  day: string;
+  hour: number;
+  weekday: number;
+}
+const PARTS_CACHE = new Map<number, PacificParts>();
+const PARTS_CACHE_MAX = 50_000;
+
+function pacificParts(d: Date): PacificParts {
+  const ms = d.getTime();
+  const cacheable = ms % 60_000 === 0;
+  if (cacheable) {
+    const hit = PARTS_CACHE.get(ms);
+    if (hit) return hit;
+  }
+  const parts: PacificParts = {
+    day: DAYKEY_FMT.format(d),
+    hour: Number(HOUR_FMT.format(d)) % 24,
+    weekday: WEEKDAY_INDEX[WEEKDAY_FMT.format(d)] ?? 0,
+  };
+  if (cacheable) {
+    if (PARTS_CACHE.size >= PARTS_CACHE_MAX) PARTS_CACHE.clear();
+    PARTS_CACHE.set(ms, parts);
+  }
+  return parts;
+}
+
 export function formatDayHeader(d: Date): string {
   return DAYHEADER_FMT.format(d);
 }
@@ -197,33 +245,20 @@ export type TimeBucket = "morning" | "midday" | "evening";
  *   evening  — 3 PM onward
  */
 export function teeTimeBucket(d: Date): TimeBucket {
-  const hourStr = HOUR_FMT.format(d);
-  const hour = Number(hourStr) % 24;
+  const { hour } = pacificParts(d);
   if (hour < 11) return "morning";
   if (hour < 15) return "midday";
   return "evening";
 }
 
-const WEEKDAY_INDEX: Record<string, number> = {
-  Sun: 0,
-  Mon: 1,
-  Tue: 2,
-  Wed: 3,
-  Thu: 4,
-  Fri: 5,
-  Sat: 6,
-};
-
 /** Day of week (0=Sun … 6=Sat) for a tee time, evaluated in Pacific time. */
 export function teeTimeWeekday(d: Date): number {
-  const s = WEEKDAY_FMT.format(d);
-  return WEEKDAY_INDEX[s] ?? 0;
+  return pacificParts(d).weekday;
 }
 
 /** Hour-of-day (0–23) for a tee time, in Pacific time. */
 export function teeTimeHour(d: Date): number {
-  const h = HOUR_FMT.format(d);
-  return Number(h) % 24;
+  return pacificParts(d).hour;
 }
 
 /**
@@ -254,6 +289,15 @@ export function formatTime(d: Date): string {
   return TIME_FMT.format(d);
 }
 
+/**
+ * Absolute date + time, e.g. "Tue, Nov 10, 3:15 PM". For text baked into
+ * cached HTML, where a bare time or a relative "5 minutes ago" would turn
+ * false as the page ages.
+ */
+export function formatStamp(d: Date): string {
+  return `${DAYCHIP_FMT.format(d)}, ${TIME_FMT.format(d)}`;
+}
+
 export function formatPrice(cents: number | null | undefined): string {
   if (cents == null) return "—";
   const dollars = cents / 100;
@@ -264,7 +308,7 @@ export function formatPrice(cents: number | null | undefined): string {
 }
 
 export function dayKey(d: Date): string {
-  return DAYKEY_FMT.format(d);
+  return pacificParts(d).day;
 }
 
 /**

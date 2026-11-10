@@ -19,8 +19,8 @@ export const metadata: Metadata = {
   },
 };
 
-// The site's course list changes rarely; rebuild hourly.
-export const revalidate = 3600;
+// No `revalidate`: the page reads only courses.json, which ships with the
+// build, so it is fully static and a new course arrives with its deploy.
 
 // Display order for the region sections. "other" catches courses with no
 // region set so every course still gets linked (crawlability).
@@ -61,7 +61,7 @@ export default function CoursesIndexPage() {
       />
 
       <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" className="hover:text-brand">
+        <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
         <span>/</span>
@@ -76,7 +76,7 @@ export default function CoursesIndexPage() {
           Every San Diego course we track, with live open tee times updated
           every 15 minutes. Pick a course for its open times and green fees, or
           see the{" "}
-          <Link href="/" className="font-bold text-brand underline">
+          <Link href="/" prefetch={false} className="font-bold text-brand underline">
             full San Diego tee sheet
           </Link>
           .
@@ -96,6 +96,9 @@ export default function CoursesIndexPage() {
                 <li key={c.slug}>
                   <Link
                     href={`/course/${c.slug}`}
+                    // 37 links on one screen: default prefetch would pull (and,
+                    // when stale, regenerate) every course page per view.
+                    prefetch={false}
                     className="flex items-center justify-between rounded-sm border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
                   >
                     <span>{c.name}</span>

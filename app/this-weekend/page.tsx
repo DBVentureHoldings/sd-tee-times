@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { fetchUpcomingTeeTimes } from "@/lib/supabase-server";
+import {
+  fetchLastScrapeAt,
+  fetchUpcomingTeeTimes,
+} from "@/lib/supabase-server";
 import { buildDealBaselines } from "@/lib/deals";
 import { teeTimeWeekday } from "@/lib/format";
 import { SUPPRESSED_SLUGS } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
-import { DayGroupedList } from "@/app/DayGroupedList";
+import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
+import { Freshness } from "@/app/Freshness";
 import { AlertCaptureForm } from "@/app/AlertCaptureForm";
 
 /**
@@ -13,7 +17,15 @@ import { AlertCaptureForm } from "@/app/AlertCaptureForm";
  * weekend" queries: every open Friday/Saturday/Sunday time in the next
  * 7 days, morning slots first-class since that's what sells out.
  */
-export const revalidate = 300;
+// ISR window. The data moves every 15 minutes, but each regeneration pulls and
+// scans the full sheet (~13k rows), so the window is what bounds this page's
+// monthly CPU on Vercel Hobby (an overage pauses the whole account for 30
+// days). Two hours is deliberately conservative: shorten it only after Vercel's
+// Usage > Active CPU shows the month tracking well under 0.05 CPU-h/day.
+// In between, <Freshness> hides times that pass and re-pulls a page served
+// older than the window, the list stretches to outlive the window, and all
+// on-page copy says "as of the last refresh". Must stay a literal.
+export const revalidate = 7200;
 
 export const metadata: Metadata = {
   title: "San Diego Tee Times This Weekend — Live Fri/Sat/Sun Availability",
@@ -34,11 +46,15 @@ export const metadata: Metadata = {
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 export default async function ThisWeekendPage() {
-  let rows = await fetchUpcomingTeeTimes().catch(
-    () => [] as Awaited<ReturnType<typeof fetchUpcomingTeeTimes>>,
-  );
+  // Deliberately not caught: a failed regeneration keeps the last good page,
+  // whereas a swallowed error would be cached as an empty list for a whole
+  // revalidate window.
+  const [allRows, lastScrape] = await Promise.all([
+    fetchUpcomingTeeTimes(),
+    fetchLastScrapeAt(),
+  ]);
   const horizon = Date.now() + WEEK_MS;
-  rows = rows.filter((r) => {
+  const rows = allRows.filter((r) => {
     if (r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)) return false;
     const d = new Date(r.tee_time_at);
     if (d.getTime() > horizon) return false;
@@ -50,8 +66,9 @@ export default async function ThisWeekendPage() {
 
   return (
     <div className="space-y-6">
+      <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
       <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" className="hover:text-brand">
+        <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
         <span>/</span>
@@ -65,9 +82,13 @@ export default async function ThisWeekendPage() {
         <p className="text-sm leading-relaxed text-neutral-700">
           Every open <strong>Friday, Saturday, and Sunday</strong> tee time
           across San Diego County in the next seven days —{" "}
-          <strong>{rows.length}</strong> open right now. Weekend mornings are
-          the first slots to vanish, so if you see one you want, book it.
-          Updated every 15 minutes.
+          <strong>{rows.length}</strong> open at the last refresh. Weekend
+          mornings are the first slots to vanish, so if you see one you want,
+          book it. This page refreshes through the day; the{" "}
+          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+            full tee sheet
+          </Link>{" "}
+          updates every 15 minutes.
         </p>
       </header>
 
@@ -80,7 +101,13 @@ export default async function ThisWeekendPage() {
       />
 
       {rows.length > 0 ? (
-        <DayGroupedList rows={rows} baselines={baselines} maxDays={3} />
+        <DayGroupedList
+          rows={rows}
+          baselines={baselines}
+          maxDays={3}
+          liveForSec={revalidate}
+          updatedAt={lastScrape}
+        />
       ) : (
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
@@ -90,20 +117,23 @@ export default async function ThisWeekendPage() {
             Cancellations reappear all week — check back, or browse weekday
             times on the full sheet.
           </p>
+          <div className="mt-3">
+            <UpdatedStamp at={lastScrape} />
+          </div>
         </div>
       )}
 
       <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" className="font-bold text-brand underline">
+        <Link href="/" prefetch={false} className="font-bold text-brand underline">
           Full San Diego tee sheet
         </Link>
-        <Link href="/deals" className="font-bold text-brand underline">
+        <Link href="/deals" prefetch={false} className="font-bold text-brand underline">
           Golf deals
         </Link>
-        <Link href="/twilight" className="font-bold text-brand underline">
+        <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
           Twilight tee times
         </Link>
-        <Link href="/courses" className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses
         </Link>
       </div>

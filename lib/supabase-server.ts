@@ -42,13 +42,13 @@ export interface TeeTimeRow {
  * multiple paginated requests to Supabase). Wrapped by the cached export
  * below so most page renders hit memory rather than the DB.
  *
- * Note: pages with `searchParams` (ours, for filters) are always treated as
- * dynamic in Next 15 App Router — so the HTML can't be CDN-cached. Caching
- * at the data layer is the next-best option: cuts page render time from
- * ~7s to ~200ms after the first warm request.
+ * Note: the filtered tee sheet (/browse) reads `searchParams`, which makes
+ * it dynamic in Next 15 App Router — so its HTML can't be CDN-cached.
+ * Caching at the data layer is the next-best option: cuts page render time
+ * from ~7s to ~200ms after the first warm request.
  */
 /** How many days forward we surface in the app. */
-const WINDOW_DAYS = 14;
+export const WINDOW_DAYS = 14;
 
 async function fetchUpcomingTeeTimesUncached(
   maxRows = 20_000,
@@ -134,15 +134,30 @@ async function fetchLastScrapeAtUncached(): Promise<Date | null> {
  * slow — but every subsequent request on that instance gets the cached
  * value until TTL expires. For a single-region low-traffic app this is
  * the right trade-off.
+ *
+ * TTL: the scrapers write every 15 minutes, so 5 minutes loses nothing and
+ * lets one burst of renders (a crawler sweeping the hubs, a visitor tapping
+ * through filters) share a single pull. Don't stretch it toward 15: this
+ * staleness stacks on top of each page's own revalidate window.
  */
-const TTL_MS = 60_000;
+const TTL_MS = 300_000;
 
 let teeCache: { at: number; rows: TeeTimeRow[] } | null = null;
 let teePromise: Promise<TeeTimeRow[]> | null = null;
 
+/**
+ * The query only returns future tee times, but a cached copy ages. Rows are
+ * sorted by tee time, so the ones that have since passed are a prefix.
+ */
+function dropPast(rows: TeeTimeRow[], now: number): TeeTimeRow[] {
+  let i = 0;
+  while (i < rows.length && new Date(rows[i].tee_time_at).getTime() <= now) i++;
+  return i === 0 ? rows : rows.slice(i);
+}
+
 export async function fetchUpcomingTeeTimes(): Promise<TeeTimeRow[]> {
   const now = Date.now();
-  if (teeCache && now - teeCache.at < TTL_MS) return teeCache.rows;
+  if (teeCache && now - teeCache.at < TTL_MS) return dropPast(teeCache.rows, now);
   // De-dupe concurrent in-flight requests: if a fetch is already running,
   // every concurrent caller awaits the same promise instead of stampeding
   // the DB.

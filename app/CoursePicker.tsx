@@ -88,6 +88,11 @@ export function CoursePicker({
           <Link
             href={resetHref}
             onClick={() => setOpen(false)}
+            // Filter URLs render on demand; prefetching ~40 of them when the
+            // menu opens would invoke the function once per course. nofollow
+            // for the same reason (crawlers that run JS and open the menu).
+            prefetch={false}
+            rel={resetHref.includes("?") ? "nofollow" : undefined}
             scroll={false}
             className={
               "flex items-center justify-between border-b-2 border-black px-3 py-2 font-display text-sm uppercase tracking-wider transition-colors " +
@@ -113,6 +118,8 @@ export function CoursePicker({
                     key={c.slug}
                     href={`/?course=${c.slug}${preserveQuery}`}
                     onClick={() => setOpen(false)}
+                    prefetch={false}
+                    rel="nofollow"
                     scroll={false}
                     className={
                       "flex items-center gap-2 border-b border-neutral-200 px-3 py-2.5 text-sm transition-colors " +

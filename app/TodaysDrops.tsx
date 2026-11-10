@@ -8,6 +8,7 @@ import {
 import type { TeeTimeRow } from "@/lib/supabase-server";
 import { SITE_URL, SITE_HOST } from "@/lib/site";
 import { ShareButton } from "./ShareButton";
+import { DayLabel } from "./Freshness";
 
 /**
  * 🔥 Today's Drops — the hero. A horizontally-scrolling strip of the rarest,
@@ -30,7 +31,7 @@ export function TodaysDrops({ drops }: { drops: Drop[] }) {
   if (drops.length === 0) return null;
 
   return (
-    <section className="space-y-2">
+    <section data-tee-group className="space-y-2 data-[tee-empty]:hidden">
       <div className="flex items-baseline justify-between">
         <h2 className="font-display text-2xl uppercase leading-none tracking-tight text-black">
           🔥 Today&apos;s Drops
@@ -45,7 +46,8 @@ export function TodaysDrops({ drops }: { drops: Drop[] }) {
           {drops.map((d) => (
             <div
               key={`${d.row.courses?.slug ?? "x"}-${d.row.tee_time_at}-${d.row.holes}`}
-              className="w-64 shrink-0"
+              data-tee={new Date(d.row.tee_time_at).getTime()}
+              className="w-64 shrink-0 data-[tee-past]:hidden"
             >
               <DropCard drop={d} />
             </div>
@@ -83,7 +85,10 @@ export function DropCard({ drop }: { drop: Drop }) {
     : SITE_URL;
 
   return (
-    <div className="relative h-full w-full">
+    <div
+      data-tee={time.getTime()}
+      className="relative h-full w-full data-[tee-past]:hidden"
+    >
       <ShareButton title="SD Tee Times" text={shareText} url={shareUrl} />
       <a
         href={row.booking_url}
@@ -116,7 +121,7 @@ export function DropCard({ drop }: { drop: Drop }) {
 
         {/* Day · time — the big focal line */}
         <div className="font-display text-3xl uppercase leading-none tracking-tight text-black tabular-nums">
-          {dayLabel}
+          <DayLabel day={day} initial={dayLabel} upper />
           <span className="mx-1.5 text-neutral-300">·</span>
           {formatTime(time)}
         </div>

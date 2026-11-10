@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { fetchCourseTeeTimes } from "@/lib/supabase-server";
 import {
-  dayKey,
-  formatDayHeader,
-  formatPrice,
-} from "@/lib/format";
+  fetchCourseTeeTimes,
+  fetchLastScrapeAt,
+} from "@/lib/supabase-server";
+import { formatPrice } from "@/lib/format";
 import { buildDealBaselines } from "@/lib/deals";
 import {
   computeCourseInsights,
   BUCKET_LABEL,
   BUCKET_SHORT,
 } from "@/lib/insights";
-import { TeeTimeRowItem } from "@/app/TeeTimeRowItem";
+import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
+import { Freshness } from "@/app/Freshness";
 import { CourseAlertForm } from "@/app/CourseAlertForm";
 import {
   getCourse,
@@ -36,8 +36,22 @@ function locationPhrase(course: CourseMeta): string {
   return `${course.city}, ${area}`;
 }
 
-// Rebuild at most once a minute so live availability stays fresh (ISR).
-export const revalidate = 60;
+// ISR window. Every page here regenerates at most once per window, and there
+// are ~37 of them being crawled around the clock, so this number times the
+// course count is a fixed monthly CPU bill on Vercel Hobby (an overage pauses
+// the whole account for 30 days). These 37 pages are most of the site's
+// function invocations, each of which can also be a cold start, so six hours
+// is deliberately conservative. It is the first window to shorten (7200 is a
+// sensible next step), but only after Vercel's Usage > Active CPU shows the
+// month tracking well under 0.05 CPU-h/day. In between, <Freshness> hides
+// times that pass and re-pulls a page served older than the window, the list
+// stretches to outlive the window, and all on-page copy says "as of the last
+// refresh". Must stay a literal.
+export const revalidate = 21600;
+
+// Only the slugs below exist. Anything else 404s from the edge instead of
+// invoking a function to discover the course isn't there.
+export const dynamicParams = false;
 
 // Pre-render a static page for every public course at build time.
 export function generateStaticParams() {
@@ -89,9 +103,13 @@ export default async function CoursePage({
   const course = getCourse(slug);
   if (!course) notFound();
 
-  const rows = await fetchCourseTeeTimes(slug).catch(
-    () => [] as Awaited<ReturnType<typeof fetchCourseTeeTimes>>,
-  );
+  // Deliberately not caught: a failed regeneration keeps the last good page,
+  // whereas a swallowed error would be cached as "no open times" for a whole
+  // revalidate window.
+  const [rows, lastScrape] = await Promise.all([
+    fetchCourseTeeTimes(slug),
+    fetchLastScrapeAt(),
+  ]);
 
   const area = locationPhrase(course);
   const prices = rows
@@ -108,16 +126,6 @@ export default async function CoursePage({
   // Per-course pricing/availability insights — the unique, data-driven
   // content that keeps 38 templated pages from reading as thin/duplicated.
   const insights = computeCourseInsights(rows);
-
-  // Group by day for a scannable, crawlable layout.
-  const byDay = new Map<string, typeof rows>();
-  for (const r of rows) {
-    const k = dayKey(new Date(r.tee_time_at));
-    const arr = byDay.get(k);
-    if (arr) arr.push(r);
-    else byDay.set(k, [r]);
-  }
-  const days = Array.from(byDay.keys());
 
   // Sibling courses in the same region for internal linking.
   const siblings = publicCourses()
@@ -173,6 +181,7 @@ export default async function CoursePage({
 
   return (
     <div className="space-y-6">
+      <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -180,11 +189,11 @@ export default async function CoursePage({
 
       {/* Breadcrumb */}
       <nav className="flex flex-wrap items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" className="hover:text-brand">
+        <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
         <span>/</span>
-        <Link href="/courses" className="hover:text-brand">
+        <Link href="/courses" prefetch={false} className="hover:text-brand">
           Courses
         </Link>
         <span>/</span>
@@ -198,10 +207,10 @@ export default async function CoursePage({
         </h1>
         {openCount > 0 ? (
           <p className="text-sm leading-relaxed text-neutral-700">
-            Live tee times for {course.name},{" "}
+            Open tee times for {course.name},{" "}
             {holesDescriptor(course) === "18-hole" ? "an" : "a"}{" "}
-            {holesDescriptor(course)} course in {area}. Right now there{" "}
-            {openCount === 1 ? "is" : "are"}{" "}
+            {holesDescriptor(course)} course in {area}. At the last refresh
+            there {openCount === 1 ? "was" : "were"}{" "}
             <strong>
               {openCount} open {openCount === 1 ? "time" : "times"}
             </strong>{" "}
@@ -211,14 +220,16 @@ export default async function CoursePage({
                 , with green fees from <strong>{priceRange}</strong>
               </>
             ) : null}
-            . Times update every 15 minutes. Find one you like and book straight
-            through the course. No login, no added fees.
+            . This page refreshes through the day; the full tee sheet updates
+            every 15 minutes. Find one you like and book straight through the
+            course. No login, no added fees.
           </p>
         ) : (
           <p className="text-sm leading-relaxed text-neutral-700">
-            No open tee times at {course.name} right now, but we check every 15
-            minutes. Browse other {regionLabel(course.region)} courses below, or
-            see the full San Diego tee sheet.
+            No open tee times at {course.name} as of the last refresh. We
+            re-check every 15 minutes: browse other{" "}
+            {regionLabel(course.region)} courses below, or see the full San
+            Diego tee sheet for the latest.
           </p>
         )}
       </header>
@@ -227,7 +238,7 @@ export default async function CoursePage({
       <dl className="grid grid-cols-3 gap-2 text-center">
         <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
           <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Open now
+            Open times
           </dt>
           <dd className="font-display text-2xl text-brand">{openCount}</dd>
         </div>
@@ -277,7 +288,7 @@ export default async function CoursePage({
           <p className="text-sm leading-relaxed text-neutral-700">
             {insights.cheapestBucket && (
               <>
-                The cheapest window at {course.name} right now is typically{" "}
+                The cheapest window at {course.name} is typically{" "}
                 <strong>
                   {BUCKET_SHORT[insights.cheapestBucket.bucket]} at ~
                   {formatPrice(insights.cheapestBucket.median)}
@@ -287,7 +298,7 @@ export default async function CoursePage({
             )}
             {insights.weekdayRange && insights.weekendRange && (
               <>
-                Weekday rounds currently run{" "}
+                Weekday rounds run{" "}
                 {formatPrice(insights.weekdayRange[0])}–
                 {formatPrice(insights.weekdayRange[1])} vs{" "}
                 {formatPrice(insights.weekendRange[0])}–
@@ -302,7 +313,8 @@ export default async function CoursePage({
                 a foursome
               </>
             )}
-            . Figures reflect live availability and refresh every 15 minutes.
+            . Figures reflect availability as of this page&apos;s last
+            refresh.
           </p>
         </section>
       )}
@@ -311,36 +323,33 @@ export default async function CoursePage({
           arrived searching for this exact course. */}
       <CourseAlertForm courseName={course.name} courseSlug={slug} />
 
-      {/* Live tee times, grouped by day */}
-      {days.length > 0 && (
-        <section className="space-y-5">
-          {days.map((d) => {
-            const dayRows = byDay.get(d) ?? [];
-            return (
-              <div key={d} className="space-y-2">
-                <h2 className="font-display text-xl uppercase tracking-tight text-black">
-                  {formatDayHeader(new Date(dayRows[0].tee_time_at))}
-                </h2>
-                <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
-                  {dayRows.map((r) => (
-                    <TeeTimeRowItem
-                      key={`${r.tee_time_at}-${r.holes}`}
-                      row={r}
-                      baselines={baselines}
-                      hideCourseName
-                    />
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
-        </section>
+      {/* Live tee times, grouped by day. Capped to the next few days: the
+          later ones are summarized in a "+N more" line and live one tap away
+          behind the CTA below, which keeps these ~37 pages cheap to rebuild. */}
+      {rows.length > 0 ? (
+        <DayGroupedList
+          rows={rows}
+          baselines={baselines}
+          maxDays={4}
+          maxRowsPerDay={40}
+          hideCourseName
+          liveForSec={revalidate}
+          updatedAt={lastScrape}
+          sheetQuery={`course=${slug}`}
+        />
+      ) : (
+        <UpdatedStamp at={lastScrape} />
       )}
 
       {/* CTA into the full app filtered to this course */}
       <div>
         <Link
           href={`/?course=${slug}`}
+          // A filter URL renders on demand; prefetching it would invoke the
+          // function on every course-page view, and nofollow keeps crawlers
+          // from walking into it from all 37 course pages.
+          prefetch={false}
+          rel="nofollow"
           className="inline-flex items-center rounded-sm border-2 border-black bg-brand px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
         >
           Open {course.name} in the full tee sheet
@@ -358,6 +367,7 @@ export default async function CoursePage({
               <li key={c.slug}>
                 <Link
                   href={`/course/${c.slug}`}
+                  prefetch={false}
                   className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
                 >
                   {c.name}
@@ -369,18 +379,27 @@ export default async function CoursePage({
       )}
 
       <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/courses" className="font-bold text-brand underline">
+        <Link
+          href="/courses"
+          prefetch={false}
+          className="font-bold text-brand underline"
+        >
           All San Diego courses
         </Link>
         {regionPage && (
           <Link
             href={`/tee-times/${regionPage}`}
+            prefetch={false}
             className="font-bold text-brand underline"
           >
             {regionLabel(course.region)} tee times
           </Link>
         )}
-        <Link href="/" className="font-bold text-brand underline">
+        <Link
+          href="/"
+          prefetch={false}
+          className="font-bold text-brand underline"
+        >
           Full San Diego tee sheet
         </Link>
       </div>

@@ -1,19 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { fetchUpcomingTeeTimes } from "@/lib/supabase-server";
+import {
+  fetchLastScrapeAt,
+  fetchUpcomingTeeTimes,
+} from "@/lib/supabase-server";
 import { buildDealBaselines, getDealInfo } from "@/lib/deals";
 import { SUPPRESSED_SLUGS } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
-import { DayGroupedList } from "@/app/DayGroupedList";
+import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
+import { Freshness } from "@/app/Freshness";
 import { AlertCaptureForm } from "@/app/AlertCaptureForm";
 
 /**
  * /deals — crawlable landing page for "san diego golf deals" queries. The
  * deal detection (price vs the course's usual rate for that time of day)
  * already powers the homepage badges; this page surfaces it as real content.
- * Static + ISR (no searchParams), so unlike the homepage it's cacheable.
+ * Static + ISR (no searchParams).
  */
-export const revalidate = 300;
+// ISR window. The data moves every 15 minutes, but each regeneration pulls and
+// scans the full sheet (~13k rows), so the window is what bounds this page's
+// monthly CPU on Vercel Hobby (an overage pauses the whole account for 30
+// days). Two hours is deliberately conservative: shorten it only after Vercel's
+// Usage > Active CPU shows the month tracking well under 0.05 CPU-h/day.
+// In between, <Freshness> hides times that pass and re-pulls a page served
+// older than the window, the list stretches to outlive the window, and all
+// on-page copy says "as of the last refresh". Must stay a literal.
+export const revalidate = 7200;
 
 export const metadata: Metadata = {
   title: "San Diego Golf Deals — Tee Times Below the Usual Price",
@@ -32,10 +44,14 @@ export const metadata: Metadata = {
 };
 
 export default async function DealsPage() {
-  let rows = await fetchUpcomingTeeTimes().catch(
-    () => [] as Awaited<ReturnType<typeof fetchUpcomingTeeTimes>>,
-  );
-  rows = rows.filter(
+  // Deliberately not caught: a failed regeneration keeps the last good page,
+  // whereas a swallowed error would be cached as an empty list for a whole
+  // revalidate window.
+  const [allRows, lastScrape] = await Promise.all([
+    fetchUpcomingTeeTimes(),
+    fetchLastScrapeAt(),
+  ]);
+  const rows = allRows.filter(
     (r) => !(r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)),
   );
 
@@ -50,8 +66,9 @@ export default async function DealsPage() {
 
   return (
     <div className="space-y-6">
+      <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
       <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" className="hover:text-brand">
+        <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
         <span>/</span>
@@ -63,10 +80,10 @@ export default async function DealsPage() {
           San Diego Golf Deals
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
-          Tee times currently priced <strong>below what that course usually
+          Tee times priced <strong>below what that course usually
           charges for the same time of day</strong> — not just cheap twilight
           slots, actual discounts against each course&apos;s own baseline.
-          Right now there {dealRows.length === 1 ? "is" : "are"}{" "}
+          At the last refresh there {dealRows.length === 1 ? "was" : "were"}{" "}
           <strong>
             {dealRows.length} {dealRows.length === 1 ? "deal" : "deals"}
           </strong>{" "}
@@ -76,7 +93,11 @@ export default async function DealsPage() {
               , the best at <strong>{bestOff}% off</strong>
             </>
           ) : null}
-          . Recomputed every 15 minutes.
+          . This page refreshes through the day; deal badges on the{" "}
+          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+            full tee sheet
+          </Link>{" "}
+          are recomputed every 15 minutes.
         </p>
       </header>
 
@@ -89,30 +110,39 @@ export default async function DealsPage() {
       />
 
       {dealRows.length > 0 ? (
-        <DayGroupedList rows={dealRows} baselines={baselines} maxDays={4} />
+        <DayGroupedList
+          rows={dealRows}
+          baselines={baselines}
+          maxDays={4}
+          liveForSec={revalidate}
+          updatedAt={lastScrape}
+        />
       ) : (
         <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
           <p className="font-display text-2xl uppercase tracking-wider">
-            No standout deals right now
+            No standout deals at the last refresh
           </p>
           <p className="mt-1 text-xs text-neutral-500">
             Deals appear when a course prices a slot well below its usual rate
             — check back soon, or browse the full tee sheet.
           </p>
+          <div className="mt-3">
+            <UpdatedStamp at={lastScrape} />
+          </div>
         </div>
       )}
 
       <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" className="font-bold text-brand underline">
+        <Link href="/" prefetch={false} className="font-bold text-brand underline">
           Full San Diego tee sheet
         </Link>
-        <Link href="/twilight" className="font-bold text-brand underline">
+        <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
           Twilight tee times
         </Link>
-        <Link href="/this-weekend" className="font-bold text-brand underline">
+        <Link href="/this-weekend" prefetch={false} className="font-bold text-brand underline">
           This weekend
         </Link>
-        <Link href="/courses" className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses
         </Link>
       </div>

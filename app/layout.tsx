@@ -67,7 +67,7 @@ export default function RootLayout({
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
             {/* Brand/logo, not the page heading — each page supplies its own
                 <h1> for SEO. Links home so it doubles as navigation. */}
-            <Link href="/" className="block min-w-0">
+            <Link href="/" prefetch={false} className="block min-w-0">
               <div className="font-display text-3xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_2px_2px_0_rgba(0,0,0,0.25)]">
                 SD <span className="text-magred">TEE</span> TIMES
               </div>
