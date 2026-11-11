@@ -8,6 +8,7 @@ import {
 import { buildDealBaselines } from "@/lib/deals";
 import {
   allRegionPageSlugs,
+  courseDisplayName,
   publicCourses,
   regionFromPageSlug,
   regionView,
@@ -40,31 +41,42 @@ export const revalidate = 14400;
 // Only the four region slugs exist; anything else 404s without a function.
 export const dynamicParams = false;
 
+// `desc` is the meta description. These pages are cached for hours (see
+// `revalidate`), so it says the data is checked every 15 minutes, not that
+// the page is live.
+const DESC_TAIL =
+  "Checked every 15 minutes; this page refreshes through the day.";
 const REGION_COPY: Record<
   Region,
-  { h1: string; phrase: string; blurb: string }
+  { h1: string; phrase: string; blurb: string; desc: string }
 > = {
   nc: {
     h1: "North County San Diego Tee Times",
     phrase: "North County San Diego",
     blurb:
       "Carlsbad, Encinitas, San Marcos, Escondido, Poway, Oceanside, and Valley Center",
+    desc: `Open tee times and prices at golf courses in North County San Diego. ${DESC_TAIL}`,
   },
   ec: {
     h1: "East County San Diego Tee Times",
     phrase: "East County San Diego",
     blurb: "El Cajon, Santee, Jamul, Ramona, and the Dehesa Valley",
+    desc: `Open tee times and prices at golf courses in East County San Diego. ${DESC_TAIL}`,
   },
   sc: {
     h1: "South County San Diego Tee Times",
-    phrase: "South Bay San Diego",
+    // Was "South Bay San Diego": the page, its H1 and its URL all say South
+    // County.
+    phrase: "South County San Diego",
     blurb: "Chula Vista, National City, and Bonita",
+    desc: `Open tee times and prices at golf courses in South County San Diego. ${DESC_TAIL}`,
   },
   muni: {
     h1: "San Diego Municipal Golf Tee Times",
     phrase: "San Diego's municipal courses",
     blurb:
       "Torrey Pines, Balboa Park, Mission Bay, Coronado, and the city courses",
+    desc: `Open tee times and prices at Torrey Pines, Balboa Park, Mission Bay and other San Diego courses. ${DESC_TAIL}`,
   },
 };
 
@@ -88,8 +100,8 @@ export async function generateMetadata({
   const key = regionFromPageSlug(region);
   if (!key) return { title: "Not found" };
   const copy = REGION_COPY[key];
-  const title = copy.h1 + " — Live Availability";
-  const description = `Every open tee time across ${copy.phrase} (${copy.blurb}), live-updated every 15 minutes with prices and one-tap booking. Free, no login.`;
+  const title = `${copy.h1} & Green Fees`;
+  const description = copy.desc;
   const url = `${SITE_URL}/tee-times/${region}`;
   return {
     title,
@@ -134,7 +146,7 @@ export default async function RegionPage({
 
   const regionCourses = publicCourses()
     .filter((c) => c.region === key)
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .sort((a, b) => courseDisplayName(a).localeCompare(courseDisplayName(b)));
 
   return (
     <div className="space-y-6">
@@ -165,7 +177,7 @@ export default async function RegionPage({
             live tee sheet for {copy.phrase}
           </Link>{" "}
           updates every 15 minutes. Each Book button links straight to the
-          course&apos;s own booking page.
+          booking page that course uses.
         </p>
       </header>
 
@@ -182,7 +194,7 @@ export default async function RegionPage({
                 prefetch={false}
                 className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
               >
-                {c.name}
+                {courseDisplayName(c)}
               </Link>
             </li>
           ))}
@@ -222,6 +234,11 @@ export default async function RegionPage({
         <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
           Twilight
         </Link>
+        {key === "muni" && (
+          <Link href="/torrey-pines-tee-times" prefetch={false} className="font-bold text-brand underline">
+            Torrey Pines booking guide
+          </Link>
+        )}
         <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses
         </Link>

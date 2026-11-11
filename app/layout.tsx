@@ -6,6 +6,7 @@ import Link from "next/link";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
 import { PrimeAlertBar } from "./PrimeAlertBar";
+import { SiteFooter } from "./SiteFooter";
 
 const displayFont = Bebas_Neue({
   weight: "400",
@@ -34,16 +35,21 @@ export const metadata: Metadata = {
     template: "%s | SD Tee Times",
   },
   description: SITE_DESCRIPTION,
+  // Only the homepage (and its filtered views, which canonicalize to it)
+  // inherits this block: every other page sets its own openGraph, which
+  // replaces this one whole, with its own url.
   openGraph: {
     title: "SD Tee Times — San Diego's open tee sheet",
     description: SITE_DESCRIPTION,
+    url: SITE_URL,
     siteName: "SD Tee Times",
     type: "website",
   },
+  // Card type only. Next fills twitter:title / twitter:description from each
+  // page's own openGraph, so the hub and region pages stop showing the
+  // homepage's title on X (they used to inherit a hard-coded one from here).
   twitter: {
     card: "summary_large_image",
-    title: "SD Tee Times — San Diego's open tee sheet",
-    description: SITE_DESCRIPTION,
   },
 };
 
@@ -81,6 +87,9 @@ export default function RootLayout({
           </div>
         </header>
         <main className="mx-auto max-w-2xl px-4 py-4">{children}</main>
+        {/* Links every hub, region page and course from every page. Static:
+            it reads only courses.json. */}
+        <SiteFooter />
         <PrimeAlertBar />
         <Analytics />
         <SpeedInsights />

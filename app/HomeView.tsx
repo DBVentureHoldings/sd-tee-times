@@ -24,6 +24,8 @@ import { DayLabel, Freshness, UpdatedAgo } from "./Freshness";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import { buildDealBaselines, getDealInfo } from "@/lib/deals";
 import { capRowsForWindow } from "@/lib/row-cap";
+import { HomeCourseDirectory, HomeFaq, HomeIntro } from "./HomeExtras";
+import { FeedbackLink } from "./SiteFooter";
 // Region / short / hidden membership is derived from scrapers/courses.json
 // (the single source of truth — see lib/courses.ts). Adding a course is a
 // one-file edit there; these Sets update automatically.
@@ -49,8 +51,10 @@ function isPrimeRow(r: TeeTimeRow): boolean {
 
 type View = "all" | "muni" | "nc" | "ec" | "sc" | "short" | "prime";
 
-// The marquee names golfers actually search for — rendered as a linked strip
-// above the footer (filtered at render time to courses with live data).
+// The marquee names golfers actually search for, rendered as a linked strip
+// under the list on filtered views. Always all of them: a course with no open
+// times right now is exactly the page that needs the link (the bare homepage
+// shows the full course directory instead).
 const POPULAR_SLUGS: Array<{ slug: string; label: string }> = [
   { slug: "torrey-pines-south", label: "Torrey Pines South" },
   { slug: "torrey-pines-north", label: "Torrey Pines North" },
@@ -153,6 +157,9 @@ export function isDefaultFilters(f: HomeFilters): boolean {
   return !f.day && f.view === "all" && !f.course && f.time === "all";
 }
 
+// The homepage's single <h1> (visually hidden; the tee sheet leads).
+const HOME_H1 = "San Diego Tee Times — Every Open Golf Tee Time in One Place";
+
 /**
  * The tee sheet itself, shared by two routes:
  *
@@ -168,8 +175,17 @@ export async function HomeView({
   filters = DEFAULT_FILTERS,
   rowCap,
   onLoadError = "render",
+  home = false,
 }: {
   filters?: HomeFilters;
+  /**
+   * True only for the bare "/" (app/page.tsx). Adds the static homepage text:
+   * a one-paragraph intro above the sheet, the course directory and the FAQ
+   * below it. /browse never passes it, so filtered views stay as light as
+   * they were. (Not the same as `isDefaultView`, which is also true for a
+   * day- or time-filtered /browse.)
+   */
+  home?: boolean;
   /**
    * Max tee-time rows rendered for the selected day; the rest sit behind a
    * "show all" link to the same day on the dynamic route. Bounds the HTML
@@ -223,7 +239,7 @@ export async function HomeView({
   }
 
   if (rows.length === 0) {
-    return (
+    const emptyBox = (
       <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
         <div className="mb-2 text-2xl">🏌️</div>
         <p className="font-display text-2xl uppercase tracking-wider">
@@ -232,6 +248,18 @@ export async function HomeView({
         <p className="mt-1 text-xs text-neutral-500">
           Fresh times land every 15 minutes — check back shortly.
         </p>
+      </div>
+    );
+    if (!home) return emptyBox;
+    // A data outage must not leave the homepage with no heading, no text and
+    // no links to the course pages.
+    return (
+      <div className="space-y-5">
+        <h1 className="sr-only">{HOME_H1}</h1>
+        <HomeIntro />
+        {emptyBox}
+        <HomeCourseDirectory />
+        <HomeFaq />
       </div>
     );
   }
@@ -543,13 +571,14 @@ export async function HomeView({
   if (timeFilter !== "all") showAllParts.push(`time=${timeFilter}`);
 
   return (
+    <>
     <div className="space-y-5">
       <Freshness generatedAt={generatedAt} staleAfterSec={STALE_AFTER_SEC} />
       {/* Primary heading for SEO. Visually hidden so the tee sheet still leads,
           but gives the homepage a single, keyword-focused <h1>. */}
-      <h1 className="sr-only">
-        San Diego Tee Times — Every Open Golf Tee Time in One Place
-      </h1>
+      <h1 className="sr-only">{HOME_H1}</h1>
+      {/* What the site is, in one short paragraph (bare homepage only). */}
+      {home && <HomeIntro />}
       {/* 🔥 Today's Drops — the hero, only on the clean default view. Sits
           above the sticky bar so it's the first content; scrolls away as the
           filter bar pins. */}
@@ -679,29 +708,8 @@ export async function HomeView({
         )}
       </section>
 
-      {/* Popular courses — internal links from the busiest page to the course
-          landing pages (the strongest "this page matters" signal we can send
-          crawlers, and a quick jump for repeat visitors). */}
-      <section className="space-y-2 border-t-2 border-black pt-4">
-        <h2 className="font-display text-lg uppercase tracking-tight text-black">
-          Popular courses
-        </h2>
-        <ul className="flex flex-wrap gap-2">
-          {POPULAR_SLUGS.filter((p) => courseStats.has(p.slug)).map((p) => (
-            <li key={p.slug}>
-              <Link
-                href={`/course/${p.slug}`}
-                prefetch={false}
-                className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
-              >
-                {p.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <footer className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+      {/* When the data was last scraped, directly under the list it dates. */}
+      <div className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
         <div>
           {lastScrape ? (
             <UpdatedAgo
@@ -712,6 +720,8 @@ export async function HomeView({
             "No data yet"
           )}
         </div>
+        {/* The other ways into the sheet. Region pages and every course are
+            in the site-wide footer (app/SiteFooter.tsx). */}
         <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
           <Link href="/deals" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
             Deals
@@ -722,38 +732,50 @@ export async function HomeView({
           <Link href="/this-weekend" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
             This Weekend
           </Link>
-          <Link href="/tee-times/north-county" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            North County
-          </Link>
-          <Link href="/tee-times/east-county" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            East County
-          </Link>
-          <Link href="/tee-times/south-county" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            South County
-          </Link>
-          <Link href="/tee-times/san-diego-munis" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            SD Munis
+          <Link href="/courses" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
+            All courses
           </Link>
         </div>
+        {/* The feedback link, where it has always been on the tee sheet. */}
         <div>
-          <Link
-            href="/courses"
-            prefetch={false}
-            className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand"
-          >
-            Browse all San Diego courses
-          </Link>
+          <FeedbackLink className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand" />
         </div>
-        <div>
-          <a
-            href="mailto:Daniel@globaldronehq.com?subject=SD%20Tee%20Times%20feedback&body=What%20did%20you%20like%20or%20what%20sucks%3F%20%28brutal%20honesty%20welcome%29%0A%0A"
-            className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand"
-          >
-            Got feedback? Hit me up
-          </a>
-        </div>
-      </footer>
+      </div>
+
+      {!home && (
+        // Filtered views: a short strip of the most-searched courses (the
+        // site footer links the rest).
+        <section className="space-y-2 border-t-2 border-black pt-4">
+          <h2 className="font-display text-lg uppercase tracking-tight text-black">
+            Popular courses
+          </h2>
+          <ul className="flex flex-wrap gap-2">
+            {POPULAR_SLUGS.map((p) => (
+              <li key={p.slug}>
+                <Link
+                  href={`/course/${p.slug}`}
+                  prefetch={false}
+                  className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
+                >
+                  {p.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
+    {home && (
+      // Bare homepage: every public course linked, grouped by area, then the
+      // FAQ. Below the tee sheet so the times still lead, and outside the
+      // sheet's wrapper so the sticky filter bar (which sticks for as long as
+      // its parent is on screen) scrolls away instead of covering this text.
+      <div className="mt-5 space-y-5">
+        <HomeCourseDirectory />
+        <HomeFaq />
+      </div>
+    )}
+    </>
   );
 }
 

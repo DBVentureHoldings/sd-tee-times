@@ -29,13 +29,14 @@ export const revalidate = 7200;
 
 export const metadata: Metadata = {
   title: "San Diego Golf Deals — Tee Times Below the Usual Price",
+  // No "live": this page is cached for hours (see `revalidate`).
   description:
-    "Live San Diego tee times priced below what each course usually charges for that time of day. Recomputed every 15 minutes across 35+ courses. Free, no login.",
+    "San Diego tee times priced below what each course usually charges at that time of day. Checked every 15 minutes; this page refreshes through the day.",
   alternates: { canonical: `${SITE_URL}/deals` },
   openGraph: {
     title: "San Diego Golf Deals — Tee Times Below the Usual Price",
     description:
-      "Live tee times priced below each course's usual rate. Updated every 15 minutes.",
+      "Tee times priced below each course's usual rate. Checked every 15 minutes.",
     url: `${SITE_URL}/deals`,
     siteName: "SD Tee Times",
     type: "website",
@@ -141,6 +142,9 @@ export default async function DealsPage() {
         </Link>
         <Link href="/this-weekend" prefetch={false} className="font-bold text-brand underline">
           This weekend
+        </Link>
+        <Link href="/cheap-golf-san-diego" prefetch={false} className="font-bold text-brand underline">
+          Cheap golf
         </Link>
         <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses

@@ -3,6 +3,7 @@
     "_note": "Class map (from page 19347 SCHEDULES): 3181=Non Resident 0-90d, 3201=Resident 8-90d (price includes the city's advance-booking premium, e.g. $163), 1135=Resident 0-7d (usually sold out — the Torrey scramble), 14483/14533=Resident Back 9 weekend classes. Non-res listed FIRST so resident prices win the same-slot dedupe (later entries overwrite). maxPriceCents raised 15000→45000: the old $150 cap was censoring 100% of real inventory once the 8-90d resident price passed $150; 45000 is only a junk-rate sanity ceiling now.",
     "slug": "torrey-pines-north",
     "name": "Torrey Pines — North",
+    "seoName": "Torrey Pines North Course",
     "city": "La Jolla",
     "region": "muni",
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
@@ -23,12 +24,76 @@
       ],
       "maxPriceCents": 45000
     },
-    "active": true
+    "active": true,
+    "pairSlug": "torrey-pines-south",
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "operator": "City of San Diego (owner and operator)",
+      "access": "Torrey Pines is a municipal course owned and maintained by the City of San Diego, with two 18-hole courses, North and South. It is open to the public. City of San Diego residents with a Resident ID Card get a booking window with no fee and lower green fees.",
+      "holes": 18,
+      "par": 72,
+      "address": "11480 North Torrey Pines Road, La Jolla, CA 92037",
+      "phone": "(858) 452-3226",
+      "phoneNote": "golf shop",
+      "officialUrl": "https://www.sandiego.gov/torrey-pines",
+      "bookingInfoUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information",
+      "feesUrl": "https://www.sandiego.gov/torrey-pines/course-fees",
+      "residentCardUrl": "https://www.sandiego.gov/park-and-recreation/golf",
+      "bookingFacts": [
+        "Tee times are released online at 7:00 PM every day.",
+        "City of San Diego residents with a valid Resident ID Card can book 0 to 7 days ahead with no booking fee.",
+        "Residents can book 8 to 90 days ahead for a $32 non-refundable booking fee per player.",
+        "Non-residents can book 0 to 90 days ahead for a $50 non-refundable, non-transferable booking fee per player.",
+        "The booking fee is charged per player per tee time and does not count toward green fees. Green fees are paid on the day of play.",
+        "Each reservation holder is limited to two tee times a day, for up to eight players.",
+        "All tee times are quoted at the non-resident rate. Show a valid Resident ID Card at check-in to get the resident rate.",
+        "Tee times are non-transferable and cannot be rescheduled. The player of record must be present and play.",
+        "Check in at least 30 minutes before your tee time or you risk losing it.",
+        "No tee time? You can join a virtual waitlist on the day of play once you are at the course. Names are called in order as cancellations and no-shows open up.",
+        "To qualify for a Resident ID Card you must live in or own a residence in the City of San Diego. The city sells and renews the card online."
+      ],
+      "fees": {
+        "caption": "2026 green fees (rates effective Jan. 1, 2026; cart not included)",
+        "columns": [
+          "",
+          "City resident",
+          "Non-resident"
+        ],
+        "rows": [
+          [
+            "Weekdays (Mon to Thu), 18 holes",
+            "$51",
+            "$163"
+          ],
+          [
+            "Weekends (Fri to Sun) and holidays, 18 holes",
+            "$68",
+            "$204"
+          ],
+          [
+            "Twilight, weekdays",
+            "$33",
+            "$97"
+          ],
+          [
+            "Twilight, weekends and holidays",
+            "$39",
+            "$123"
+          ]
+        ],
+        "note": "These are the city's 2026 rates. Check the city's fee page for current rates before you go.",
+        "validThrough": "2026-12-31"
+      },
+      "sourceName": "City of San Diego golf pages",
+      "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Class map: 3088=Non Resident 0-90d, 3195=Resident 8-90d (includes advance premium, e.g. $258), 888=Resident 0-7d (usually sold out). Non-res first so resident prices win dedupe. Cap raised 15000→45000 (same reason as North — the $150 cap was filtering out all real inventory).",
     "slug": "torrey-pines-south",
     "name": "Torrey Pines — South",
+    "seoName": "Torrey Pines South Course",
     "city": "La Jolla",
     "region": "muni",
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19347",
@@ -47,11 +112,75 @@
       ],
       "maxPriceCents": 45000
     },
-    "active": true
+    "active": true,
+    "pairSlug": "torrey-pines-north",
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "operator": "City of San Diego (owner and operator)",
+      "access": "Torrey Pines is a municipal course owned and maintained by the City of San Diego, with two 18-hole courses, North and South. It is open to the public. City of San Diego residents with a Resident ID Card get a booking window with no fee and lower green fees. The South Course hosted the U.S. Open in 2008 and 2021.",
+      "holes": 18,
+      "par": 72,
+      "address": "11480 North Torrey Pines Road, La Jolla, CA 92037",
+      "phone": "(858) 452-3226",
+      "phoneNote": "golf shop",
+      "officialUrl": "https://www.sandiego.gov/torrey-pines",
+      "bookingInfoUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information",
+      "feesUrl": "https://www.sandiego.gov/torrey-pines/course-fees",
+      "residentCardUrl": "https://www.sandiego.gov/park-and-recreation/golf",
+      "bookingFacts": [
+        "Tee times are released online at 7:00 PM every day.",
+        "City of San Diego residents with a valid Resident ID Card can book 0 to 7 days ahead with no booking fee.",
+        "Residents can book 8 to 90 days ahead for a $32 non-refundable booking fee per player.",
+        "Non-residents can book 0 to 90 days ahead for a $50 non-refundable, non-transferable booking fee per player.",
+        "The booking fee is charged per player per tee time and does not count toward green fees. Green fees are paid on the day of play.",
+        "Each reservation holder is limited to two tee times a day, for up to eight players.",
+        "All tee times are quoted at the non-resident rate. Show a valid Resident ID Card at check-in to get the resident rate.",
+        "Tee times are non-transferable and cannot be rescheduled. The player of record must be present and play.",
+        "Check in at least 30 minutes before your tee time or you risk losing it.",
+        "No tee time? You can join a virtual waitlist on the day of play once you are at the course. Names are called in order as cancellations and no-shows open up.",
+        "To qualify for a Resident ID Card you must live in or own a residence in the City of San Diego. The city sells and renews the card online."
+      ],
+      "fees": {
+        "caption": "2026 green fees (rates effective Jan. 1, 2026; cart not included)",
+        "columns": [
+          "",
+          "City resident",
+          "Non-resident"
+        ],
+        "rows": [
+          [
+            "Weekdays (Mon to Thu), 18 holes",
+            "$73",
+            "$258"
+          ],
+          [
+            "Weekends (Fri to Sun) and holidays, 18 holes",
+            "$90",
+            "$322"
+          ],
+          [
+            "Twilight, weekdays",
+            "$44",
+            "$156"
+          ],
+          [
+            "Twilight, weekends and holidays",
+            "$54",
+            "$194"
+          ]
+        ],
+        "note": "These are the city's 2026 rates. Check the city's fee page for current rates before you go.",
+        "validThrough": "2026-12-31"
+      },
+      "sourceName": "City of San Diego golf pages",
+      "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "balboa-park",
     "name": "Balboa Park GC",
+    "seoName": "Balboa Park Golf Course",
     "city": "San Diego",
     "region": "muni",
     "bookingUrl": "https://foreupsoftware.com/index.php/booking/19348",
@@ -66,12 +195,34 @@
       ],
       "maxPriceCents": 10000
     },
-    "active": true
+    "active": true,
+    "pairSlug": "balboa-park-9",
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "operator": "City of San Diego Parks and Recreation Department",
+      "holes": 18,
+      "par": 72,
+      "address": "2600 Golf Course Drive, San Diego, CA 92102",
+      "phone": "(619) 235-1184",
+      "officialUrl": "https://www.sandiego.gov/park-and-recreation/golf/bpgolf",
+      "residentCardUrl": "https://www.sandiego.gov/park-and-recreation/golf",
+      "bookingFacts": [
+        "Tee times are released online at 7:00 PM every day.",
+        "Booking 0 to 7 days ahead has no booking fee, for residents and non-residents alike.",
+        "Booking 8 to 90 days ahead costs a $10 non-refundable booking fee per player.",
+        "Each reservation holder is limited to two tee times a day, for up to eight players.",
+        "Show a valid City of San Diego Resident ID Card at check-in to get the resident rate."
+      ],
+      "sourceName": "City of San Diego golf pages",
+      "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf/bpgolf",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Balboa's 9-hole course — separate foreUp teesheet (1490, from page 19348's SCHEDULES). Class 929 is the one that returns 9-hole slots (51735 comes back empty for this schedule). Verified: 19 slots @ $32 on a day+3 probe.",
     "slug": "balboa-park-9",
     "name": "Balboa Park — 9 Hole",
+    "seoName": "Balboa Park Golf Course (9-Hole Course)",
     "city": "San Diego",
     "region": "muni",
     "short": true,
@@ -89,11 +240,34 @@
       ],
       "maxPriceCents": 10000
     },
-    "active": true
+    "active": true,
+    "pairSlug": "balboa-park",
+    "courseType": "executive",
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "operator": "City of San Diego Parks and Recreation Department",
+      "about": "The city describes it as a nine-hole executive course at Balboa Park Golf Course.",
+      "holes": 9,
+      "par": 32,
+      "parNote": "regular tees",
+      "address": "2600 Golf Course Drive, San Diego, CA 92102",
+      "phone": "(619) 235-1184",
+      "officialUrl": "https://www.sandiego.gov/park-and-recreation/golf/bpgolf",
+      "residentCardUrl": "https://www.sandiego.gov/park-and-recreation/golf",
+      "bookingFacts": [
+        "Tee times are released online at 7:00 PM every day.",
+        "Booking 0 to 7 days ahead has no booking fee, for residents and non-residents alike.",
+        "Booking 8 to 90 days ahead costs a $10 non-refundable booking fee per player."
+      ],
+      "sourceName": "City of San Diego golf pages",
+      "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf/bpgolf",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "mission-bay",
     "name": "Mission Bay GC",
+    "seoName": "Mission Bay Golf Course",
     "city": "San Diego",
     "region": "muni",
     "short": true,
@@ -110,7 +284,28 @@
       "maxPriceCents": 10000
     },
     "active": true,
-    "_note": "Mission Bay moved to a new foreUp teesheet (Oct 2026): schedule 1469 -> 13308, classes 1043/925 -> 53239 (Standard 0-7 days) + 53240 (advance). Old IDs made foreUp return `false` every day ('slots is not iterable'). 53241 = Junior ticket, intentionally excluded."
+    "_note": "Mission Bay moved to a new foreUp teesheet (Oct 2026): schedule 1469 -> 13308, classes 1043/925 -> 53239 (Standard 0-7 days) + 53240 (advance). Old IDs made foreUp return `false` every day ('slots is not iterable'). 53241 = Junior ticket, intentionally excluded.",
+    "courseType": "executive",
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "operator": "City of San Diego Parks and Recreation Department",
+      "about": "The city describes it as an 18-hole, par 58 executive course with four par-four holes and 14 par-three holes, measuring 2,719 yards. Its full name is Mission Bay Golf Course and Practice Center, and its front nine is lit for evening rounds.",
+      "holes": 18,
+      "par": 58,
+      "address": "2702 North Mission Bay Drive, San Diego, CA 92109",
+      "phone": "858-581-7880",
+      "phoneNote": "administration office",
+      "officialUrl": "https://www.sandiego.gov/park-and-recreation/golf/mbgolf",
+      "residentCardUrl": "https://www.sandiego.gov/park-and-recreation/golf",
+      "bookingFacts": [
+        "Tee times are released online at 7:00 PM every day.",
+        "Booking 0 to 7 days ahead has no booking fee, for residents and non-residents alike.",
+        "Booking 8 to 90 days ahead costs a $10 non-refundable booking fee per player."
+      ],
+      "sourceName": "City of San Diego golf pages",
+      "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf/mbgolf",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "tecolote-canyon",
@@ -124,6 +319,7 @@
   {
     "slug": "coronado-muni",
     "name": "Coronado Municipal GC",
+    "seoName": "Coronado Golf Course",
     "city": "Coronado",
     "region": "muni",
     "bookingUrl": "https://coronado-gc-3-14-be.book.teeitup.com/",
@@ -133,11 +329,27 @@
       "facilityId": 10985,
       "clubUrl": "https://coronado-gc-3-14-be.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "operator": "City of Coronado (owner)",
+      "holes": 18,
+      "par": 72,
+      "address": "2000 Visalia Row, Coronado, CA 92118",
+      "phone": "(619) 522-6590",
+      "officialUrl": "https://www.golfcoronado.com/",
+      "bookingFacts": [
+        "Tee times can be reserved up to 14 days in advance.",
+        "Reservations 3 to 14 days out can be booked online for a non-refundable advance fee of $25 per player, which does not apply toward green fees.",
+        "Tee times two days out are available only in person or by phone, first come first served, with no charge."
+      ],
+      "sourceUrl": "https://www.golfcoronado.com/course-info/course-information",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "rams-hill",
     "name": "Rams Hill Golf Club",
+    "seoName": "Rams Hill Golf Course",
     "city": "Borrego Springs",
     "bookingUrl": "https://rams-hill-golf-club.book.teeitup.com/",
     "scraperId": "teeitup",
@@ -147,7 +359,16 @@
       "clubUrl": "https://rams-hill-golf-club.book.teeitup.com/"
     },
     "active": true,
-    "alertExclude": true
+    "alertExclude": true,
+    "facts": {
+      "about": "Rams Hill describes itself as a public, Tom Fazio-designed championship course in Borrego Springs.",
+      "holes": 18,
+      "address": "1881 Rams Hill Road, Borrego Springs, CA",
+      "phone": "(760) 767-3500",
+      "officialUrl": "https://ramshill.com/",
+      "sourceUrl": "https://ramshill.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "riverwalk",
@@ -160,7 +381,17 @@
       "facilityId": 171,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/171-riverwalk-golf-club/search"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "operator": "KemperSports (manager)",
+      "holes": 18,
+      "par": 72,
+      "address": "1150 Fashion Valley Road, San Diego, CA 92108",
+      "phone": "619-296-4653",
+      "officialUrl": "https://riverwalkgc.com/",
+      "sourceUrl": "https://riverwalkgc.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Native Oaks (Valley Center, North County) — par-72 18-hole (formerly Woods Valley GC), Troon-managed. Native site books via EZLinks (Cloudflare-blocked) + Troon; GolfNow facility 1815 is the scrapable path.",
@@ -174,11 +405,21 @@
       "facilityId": 1815,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/1815-native-oaks-golf-club/search"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "par": 72,
+      "address": "14616 Woods Valley Road, Valley Center, CA 92082",
+      "phone": "(760) 751-3007",
+      "officialUrl": "https://www.nativeoaksgolfclub.com/",
+      "sourceUrl": "https://www.nativeoaksgolfclub.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "mission-trails",
     "name": "Mission Trails GC",
+    "seoName": "Mission Trails Golf Course",
     "city": "San Diego",
     "region": "muni",
     "bookingUrl": "https://mission-trails-golf-course.book.teeitup.com/",
@@ -188,7 +429,16 @@
       "facilityId": 221,
       "clubUrl": "https://mission-trails-golf-course.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "par": 71,
+      "address": "7380 Golfcrest Place, San Diego, CA",
+      "phone": "(619) 460-5400",
+      "officialUrl": "https://www.missiontrailsgc.com/",
+      "sourceUrl": "https://www.missiontrailsgc.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]",
@@ -228,6 +478,7 @@
     "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]",
     "slug": "encinitas-ranch",
     "name": "Encinitas Ranch GC",
+    "seoName": "Encinitas Ranch Golf Course",
     "city": "Encinitas",
     "region": "nc",
     "bookingUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime",
@@ -239,7 +490,17 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "operator": "JC Golf (manager)",
+      "holes": 18,
+      "par": 72,
+      "address": "1275 Quail Gardens Drive, Encinitas, CA 92024",
+      "phone": "760-944-1936",
+      "officialUrl": "https://www.encinitasranchgolf.com/",
+      "sourceUrl": "https://www.encinitasranchgolf.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]",
@@ -290,12 +551,21 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "address": "3742 Flowerwood Lane, Fallbrook, CA 92028",
+      "phone": "(760) 451-3737",
+      "officialUrl": "https://www.thegolfclubofcalifornia.com/",
+      "sourceUrl": "https://www.thegolfclubofcalifornia.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Singing Hills at Sycuan (El Cajon, Dehesa Valley) — 54-hole resort, East County. Native booking is EZLinks (Cloudflare-blocked); GolfNow facility 3532 is the scrapable path, same pattern as Native Oaks. Willow Glen = the championship 18.",
     "slug": "singing-hills-willow-glen",
     "name": "Singing Hills — Willow Glen (Sycuan)",
+    "seoName": "Singing Hills Willow Glen Golf Course",
     "city": "El Cajon",
     "region": "ec",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/3532-singing-hills-golf-club-willow-glen/search",
@@ -304,12 +574,24 @@
       "facilityId": 3532,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/3532-singing-hills-golf-club-willow-glen/search"
     },
-    "active": true
+    "active": true,
+    "pairSlug": "singing-hills-oak-glen",
+    "facts": {
+      "holes": 18,
+      "par": 72,
+      "address": "3007 Dehesa Rd, El Cajon, CA 92019",
+      "phone": "1-800-457-5568",
+      "phoneNote": "toll-free",
+      "officialUrl": "https://www.singinghillsgolfclub.com/golf/",
+      "sourceUrl": "https://www.singinghillsgolfclub.com/golf/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Singing Hills at Sycuan — Oak Glen, the second full 18 (gentler, flatter terrain). GolfNow facility 3533.",
     "slug": "singing-hills-oak-glen",
     "name": "Singing Hills — Oak Glen (Sycuan)",
+    "seoName": "Singing Hills Oak Glen Golf Course",
     "city": "El Cajon",
     "region": "ec",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/3533-singing-hills-golf-club-oak-glen/search",
@@ -318,11 +600,23 @@
       "facilityId": 3533,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/3533-singing-hills-golf-club-oak-glen/search"
     },
-    "active": true
+    "active": true,
+    "pairSlug": "singing-hills-willow-glen",
+    "facts": {
+      "holes": 18,
+      "par": 72,
+      "address": "3007 Dehesa Rd, El Cajon, CA 92019",
+      "phone": "1-800-457-5568",
+      "phoneNote": "toll-free",
+      "officialUrl": "https://www.singinghillsgolfclub.com/golf/",
+      "sourceUrl": "https://www.singinghillsgolfclub.com/golf/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "steele-canyon",
     "name": "Steele Canyon",
+    "seoName": "Steele Canyon Golf Club",
     "city": "Jamul",
     "region": "ec",
     "bookingUrl": "https://steele-canyon-golf-course.book.teeitup.com/",
@@ -332,7 +626,16 @@
       "facilityId": 176,
       "clubUrl": "https://steele-canyon-golf-course.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "about": "Steele Canyon is a 27-hole Gary Player design with three nines: the Canyon, Ranch and Vineyard courses.",
+      "holes": 27,
+      "address": "3199 Stonefield Drive, Jamul, CA 91935",
+      "phone": "(619) 441-6900",
+      "officialUrl": "https://www.steelecanyon.com/",
+      "sourceUrl": "https://www.steelecanyon.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "salt-creek",
@@ -354,7 +657,16 @@
       "courseUuid": "c08cd930-d4ee-47d1-92f4-f41c714cd85a",
       "clubUrl": "https://www.chronogolf.com/club/19596"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "operator": "Western Golf Properties (manager)",
+      "holes": 18,
+      "address": "3121 Willow Glen Drive, El Cajon, CA 92019",
+      "phone": "619-442-9891",
+      "officialUrl": "https://cottonwoodgolf.com/",
+      "sourceUrl": "https://cottonwoodgolf.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Switched from GolfNow to native TeeItUp. National City is a 9-hole walking muni — single '9 Walking' rate (~$15), priced via greenFeeWalking. No resident rate, but native booking is the cleaner, fee-free experience.",
@@ -369,7 +681,18 @@
       "facilityId": 3056,
       "clubUrl": "https://national-city-golf-course.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "courseType": "9-hole",
+    "facts": {
+      "about": "The official site describes a 9-hole layout with a par of 34 and a total yardage of 2,197 yards.",
+      "holes": 9,
+      "par": 34,
+      "address": "1439 Sweetwater Road, National City, CA 91950",
+      "phone": "(619) 474-1400",
+      "officialUrl": "https://www.nationalcitygc.com/",
+      "sourceUrl": "https://www.nationalcitygc.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "colina-park",
@@ -382,7 +705,17 @@
       "facilityId": 10641,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/10641-colina-park-golf-course/search"
     },
-    "active": true
+    "active": true,
+    "courseType": "par-3",
+    "facts": {
+      "about": "Colina Park is an 18-hole, par-3 course in City Heights, open to the public seven days a week, with every hole under 110 yards. The course site says it has been home to Pro Kids, First Tee - San Diego since 1994 and that 100% of its revenue supports that nonprofit.",
+      "holes": 18,
+      "address": "4085 52nd Street, San Diego, CA 92105",
+      "phone": "619-255-4425",
+      "officialUrl": "https://www.colinaparkgolf.com/",
+      "sourceUrl": "https://www.colinaparkgolf.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "[INACTIVE: GolfNow facility 2084 consistently returns HTTP 500 (fails from a clean residential IP too, so it's GolfNow's bug, not IP reputation). Bonita is primarily a phone-booking course, so it may have no reliable online GolfNow inventory. Deactivated to stop the recurring 5xx error; revisit if GolfNow fixes the facility or another source appears.]",
@@ -402,6 +735,7 @@
   {
     "slug": "admiral-baker-north",
     "name": "Admiral Baker — North",
+    "seoName": "Admiral Baker Golf Course North",
     "city": "San Diego",
     "region": "muni",
     "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=28&begintime=07%3A00+am",
@@ -413,11 +747,30 @@
       "secondaryCode": "28",
       "courseNameFilter": "Admiral Baker North"
     },
-    "active": true
+    "active": true,
+    "pairSlug": "admiral-baker-south",
+    "facts": {
+      "operator": "Navy MWR (Morale, Welfare and Recreation)",
+      "access": "Admiral Baker Golf Course is run by Navy MWR and has two 18-hole championship courses. The Navy's page says it serves MWR patrons and welcomes the public as guests.",
+      "holes": 18,
+      "address": "2400 Admiral Baker Rd., San Diego, CA 92120",
+      "phone": "619-487-0090",
+      "officialUrl": "https://sandiego.navylifesw.com/golf",
+      "bookingFacts": [
+        "Golfers with military affiliation get priority tee times up to 10 days in advance.",
+        "General public guests can book tee times six days in advance.",
+        "Tee times are booked online through the Navy's golf booking site or the Admiral Baker Golf app.",
+        "For questions about tee time access, call the course at 619-487-0090."
+      ],
+      "sourceName": "Navy MWR golf page",
+      "sourceUrl": "https://sandiego.navylifesw.com/golf",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "admiral-baker-south",
     "name": "Admiral Baker — South",
+    "seoName": "Admiral Baker Golf Course South",
     "city": "San Diego",
     "region": "muni",
     "bookingUrl": "https://myffr.navyaims.com/navywest/webtrac/web/search.html?interfaceparameter=webtrac_southwest&module=GR&secondarycode=29&begintime=07%3A00+am",
@@ -429,7 +782,25 @@
       "secondaryCode": "29",
       "courseNameFilter": "Admiral Baker South"
     },
-    "active": true
+    "active": true,
+    "pairSlug": "admiral-baker-north",
+    "facts": {
+      "operator": "Navy MWR (Morale, Welfare and Recreation)",
+      "access": "Admiral Baker Golf Course is run by Navy MWR and has two 18-hole championship courses. The Navy's page says it serves MWR patrons and welcomes the public as guests.",
+      "holes": 18,
+      "address": "2400 Admiral Baker Rd., San Diego, CA 92120",
+      "phone": "619-487-0090",
+      "officialUrl": "https://sandiego.navylifesw.com/golf",
+      "bookingFacts": [
+        "Golfers with military affiliation get priority tee times up to 10 days in advance.",
+        "General public guests can book tee times six days in advance.",
+        "Tee times are booked online through the Navy's golf booking site or the Admiral Baker Golf app.",
+        "For questions about tee time access, call the course at 619-487-0090."
+      ],
+      "sourceName": "Navy MWR golf page",
+      "sourceUrl": "https://sandiego.navylifesw.com/golf",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Arrowood books on GolfDistrict (arrowood.golfdistrict.com). GolfNow lists the facility but no inventory is published there. Needs a GolfDistrict scraper to scrape — leaving inactive for now.",
@@ -453,7 +824,16 @@
       "facilityId": 4078,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/4078-mt-woodson-golf-club/search"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "par": 70,
+      "address": "16422 N. Woodson Dr., Ramona, CA 92065",
+      "phone": "760-788-3555",
+      "officialUrl": "https://www.mtwoodsongolfclub.com/",
+      "sourceUrl": "https://www.mtwoodsongolfclub.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "san-vicente",
@@ -480,7 +860,16 @@
       "facilityId": 242,
       "clubUrl": "https://the-vineyard-at-escondido.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "par": 70,
+      "address": "925 San Pasqual Road, Escondido, CA 92025",
+      "phone": "(760) 735-9545",
+      "officialUrl": "https://www.vineyardatescondido.com/",
+      "sourceUrl": "https://www.vineyardatescondido.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "maderas",
@@ -493,7 +882,15 @@
       "facilityId": 3069,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/3069-maderas-golf-club/search"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "address": "17750 Old Coach Road, Poway, CA 92064",
+      "phone": "(858) 451-8100",
+      "officialUrl": "https://www.maderasgolf.com/",
+      "sourceUrl": "https://www.maderasgolf.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "links-at-lakehouse",
@@ -512,6 +909,7 @@
     "_note": "Switched from GolfNow to the course's native TeeItUp booking (eastlake-country-club.book.teeitup.golf, facilityId 245). GolfNow only exposed the $150 Standard Rate; the native TeeItUp feed also carries the 'San Diego County Resident' rate (~$69-99), which preferRate selects.",
     "slug": "enagic-chula-vista",
     "name": "Enagic Golf Club at EastLake",
+    "seoName": "Enagic Golf Club at Eastlake",
     "city": "Chula Vista",
     "region": "sc",
     "bookingUrl": "https://eastlake-country-club.book.teeitup.golf/",
@@ -522,7 +920,17 @@
       "clubUrl": "https://eastlake-country-club.book.teeitup.golf/",
       "preferRate": "county resident"
     },
-    "active": true
+    "active": true,
+    "rateLabel": "San Diego County resident rate",
+    "facts": {
+      "holes": 18,
+      "par": 72,
+      "address": "2375 Clubhouse Drive, Chula Vista, CA",
+      "phone": "619-482-5757",
+      "officialUrl": "https://www.enagicgolfclub.com/",
+      "sourceUrl": "https://www.enagicgolfclub.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "slug": "chula-vista-muni",
@@ -534,12 +942,22 @@
     "scraperConfig": {
       "bookingViewSlug": "jbfdabab"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "par": 73,
+      "address": "4475 Bonita Road, Bonita, CA 91902",
+      "phone": "619-479-4141",
+      "officialUrl": "https://chulavistagc.com/",
+      "sourceUrl": "https://chulavistagc.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Par-65 executive in Oceanside. Booking via foreUp; scheduleId + bookingClass intercepted from the SPA's XHR.",
     "slug": "goat-hill-park",
     "name": "Goat Hill Park",
+    "seoName": "Goat Hill Park Golf Course",
     "city": "Oceanside",
     "region": "nc",
     "short": true,
@@ -551,7 +969,17 @@
         "7870"
       ]
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "about": "Goat Hill Park calls itself a short course: an 18-hole, par 65 layout that sits between an executive course and a regulation course.",
+      "holes": 18,
+      "par": 65,
+      "address": "2323 Goat Hill Drive, Oceanside, CA",
+      "phone": "760-433-8590",
+      "officialUrl": "https://www.goathillpark.com/",
+      "sourceUrl": "https://www.goathillpark.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Par-27 9-hole par-3 in Point Loma. Booking via foreUp; scheduleId 614 was in the URL path, bookingClass intercepted. 9-hole only (the scraper defaults to 18 and would return 0 otherwise).",
@@ -571,7 +999,17 @@
         9
       ]
     },
-    "active": true
+    "active": true,
+    "courseType": "par-3",
+    "facts": {
+      "about": "The Loma Club describes itself as a public 9-hole, par-3 course in Liberty Station.",
+      "holes": 9,
+      "address": "2960 Truxtun Rd, San Diego, CA 92106",
+      "phone": "619-222-4653",
+      "officialUrl": "https://www.thelomaclub.com/",
+      "sourceUrl": "https://www.thelomaclub.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "[INACTIVE: jcgpub3 CPS tenant serves a stronger Cloudflare challenge that stealth cannot clear from datacenter IPs (persistent \"Just a moment...\"). The 4 jcgpub29 CPS courses work; jcgpub3 needs a residential proxy.]",
@@ -642,6 +1080,7 @@
     "_note": "Par-3 executive in Solana Beach. Uses teeitup; facilityId 1241 from the booking URL's ?course=1241 param.",
     "slug": "lomas-santa-fe-executive",
     "name": "Lomas Santa Fe Executive",
+    "seoName": "Lomas Santa Fe Executive Golf Course",
     "city": "Solana Beach",
     "region": "nc",
     "short": true,
@@ -652,7 +1091,17 @@
       "facilityId": 1241,
       "clubUrl": "https://lomas-santa-fe-executive-golf-course.book.teeitup.com/"
     },
-    "active": true
+    "active": true,
+    "courseType": "executive",
+    "facts": {
+      "about": "The official site describes an 18-hole, 2,431-yard executive course designed by William Bell in 1973.",
+      "holes": 18,
+      "address": "1580 Sun Valley Road, Solana Beach, CA 92075",
+      "phone": "(858) 755-0195",
+      "officialUrl": "https://www.lomassantafegc.com/",
+      "sourceUrl": "https://www.lomassantafegc.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Carlton Oaks (Santee, East County) — native site embeds TeeItUp (carlton-oaks-golf-club.book-v2.teeitup.golf, facilityId 2129). Verified: 74 tee times, 'Online Rate' $60-65. The junk 'Hot Deal $500' rate is ignored by our Online-Rate-first pick.",
@@ -667,7 +1116,15 @@
       "facilityId": 2129,
       "clubUrl": "https://carlton-oaks-golf-club.book-v2.teeitup.golf/"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "holes": 18,
+      "address": "9200 Inwood Dr, Santee, CA",
+      "phone": "619-448-4242",
+      "officialUrl": "https://www.carltonoaksgolf.com/",
+      "sourceUrl": "https://www.carltonoaksgolf.com/",
+      "checkedOn": "2026-11-10"
+    }
   },
   {
     "_note": "Reidy Creek (Escondido) — par-3/executive, CourseCo-managed. Native booking on the Total-e Integrated 'Unify' platform; gateway courseco-gateway.totaleintegrated.net, courseId REIDY_CREEK. Open JSON API (no Cloudflare, no auth). Verified: 40 tee times, $47/pp.",
@@ -689,6 +1146,7 @@
     "_note": "Park Hyatt Aviara Golf Club — premier Carlsbad resort course (Arnold Palmer design, Troon-managed). Books publicly via GolfNow facility 4082. Verified live (52 tee times returned on test).",
     "slug": "aviara",
     "name": "Park Hyatt Aviara Golf Club",
+    "seoName": "Aviara Golf Club",
     "city": "Carlsbad",
     "region": "nc",
     "bookingUrl": "https://www.golfnow.com/tee-times/facility/4082-aviara-golf-club/search",
@@ -697,6 +1155,16 @@
       "facilityId": 4082,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/4082-aviara-golf-club/search"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "about": "The resort's golf page says the Arnold Palmer-designed 18-hole course offers public tee times.",
+      "holes": 18,
+      "par": 72,
+      "address": "7447 Batiquitos Drive, Carlsbad, CA 92011",
+      "phone": "760-603-6900",
+      "officialUrl": "https://parkhyattaviara.com/golf/",
+      "sourceUrl": "https://parkhyattaviara.com/golf/",
+      "checkedOn": "2026-11-10"
+    }
   }
 ]

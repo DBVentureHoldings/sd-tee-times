@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { publicCourses, regionLabel, type Region } from "@/lib/courses";
+import { courseDisplayName, publicCourses, type Region } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "San Diego Golf Courses — Tee Times for Every Course",
   description:
-    "Browse every San Diego golf course we track, from Torrey Pines and Balboa to the North County and East County courses. Live open tee times, green fees, and one-tap booking. Free, no login.",
+    "Every San Diego golf course we track, from Torrey Pines and Balboa Park to North County and East County. Open tee times and green fees for each. Free, no login.",
   alternates: { canonical: `${SITE_URL}/courses` },
   openGraph: {
     title: "San Diego Golf Courses — Tee Times for Every Course",
     description:
-      "Live open tee times for every San Diego golf course we track. Free, no login.",
+      "Open tee times for every San Diego golf course we track. Free, no login.",
     url: `${SITE_URL}/courses`,
     siteName: "SD Tee Times",
     type: "website",
@@ -33,7 +33,9 @@ const SECTIONS: Array<{ key: Region | "other"; label: string }> = [
 ];
 
 export default function CoursesIndexPage() {
-  const courses = publicCourses().sort((a, b) => a.name.localeCompare(b.name));
+  const courses = publicCourses().sort((a, b) =>
+    courseDisplayName(a).localeCompare(courseDisplayName(b)),
+  );
   const inRegion = (key: Region | "other") =>
     courses.filter((c) =>
       key === "other" ? !c.region : c.region === key,
@@ -73,8 +75,8 @@ export default function CoursesIndexPage() {
           San Diego Golf Courses
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
-          Every San Diego course we track, with live open tee times updated
-          every 15 minutes. Pick a course for its open times and green fees, or
+          Every San Diego course we track, with open tee times checked every
+          15 minutes. Pick a course for its open times and green fees, or
           see the{" "}
           <Link href="/" prefetch={false} className="font-bold text-brand underline">
             full San Diego tee sheet
@@ -101,10 +103,15 @@ export default function CoursesIndexPage() {
                     prefetch={false}
                     className="flex items-center justify-between rounded-sm border-2 border-black bg-white px-3 py-2.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
                   >
-                    <span>{c.name}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-neutral-400">
-                      {regionLabel(c.region)}
-                    </span>
+                    <span>{courseDisplayName(c)}</span>
+                    {/* The course's own city. The region label printed
+                        "San Diego" for Rams Hill (Borrego Springs) and only
+                        repeated the section heading for the rest. */}
+                    {c.city && (
+                      <span className="shrink-0 pl-2 text-[10px] uppercase tracking-widest text-neutral-400">
+                        {c.city}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}

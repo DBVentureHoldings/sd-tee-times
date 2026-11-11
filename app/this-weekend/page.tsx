@@ -28,14 +28,15 @@ import { AlertCaptureForm } from "@/app/AlertCaptureForm";
 export const revalidate = 7200;
 
 export const metadata: Metadata = {
-  title: "San Diego Tee Times This Weekend — Live Fri/Sat/Sun Availability",
+  // No "live": this page is cached for hours (see `revalidate`).
+  title: "San Diego Tee Times This Weekend: Fri, Sat, Sun",
   description:
-    "Every open tee time this Friday, Saturday, and Sunday across 35+ San Diego golf courses. The weekend slots that sell out first, live-updated every 15 minutes.",
+    "Open tee times this Friday, Saturday and Sunday at 35+ San Diego golf courses. Checked every 15 minutes; this page refreshes through the day.",
   alternates: { canonical: `${SITE_URL}/this-weekend` },
   openGraph: {
     title: "San Diego Tee Times This Weekend",
     description:
-      "Every open Fri/Sat/Sun tee time across San Diego, live. Updated every 15 minutes.",
+      "Open Friday, Saturday and Sunday tee times across San Diego. Checked every 15 minutes.",
     url: `${SITE_URL}/this-weekend`,
     siteName: "SD Tee Times",
     type: "website",

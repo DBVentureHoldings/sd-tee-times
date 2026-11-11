@@ -28,5 +28,6 @@ const HOME_ROW_CAP = 150;
 // which is what took the site over the Hobby CPU allowance. Filtered URLs are
 // rewritten to /browse in next.config.ts before they reach this page.
 export default function Page() {
-  return <HomeView rowCap={HOME_ROW_CAP} onLoadError="throw" />;
+  // `home` adds the static intro, course directory and FAQ (bare "/" only).
+  return <HomeView rowCap={HOME_ROW_CAP} onLoadError="throw" home />;
 }

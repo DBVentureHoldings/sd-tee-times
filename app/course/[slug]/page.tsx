@@ -5,7 +5,7 @@ import {
   fetchCourseTeeTimes,
   fetchLastScrapeAt,
 } from "@/lib/supabase-server";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, formatPriceRange } from "@/lib/format";
 import { buildDealBaselines } from "@/lib/deals";
 import {
   computeCourseInsights,
@@ -15,8 +15,13 @@ import {
 import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
 import { CourseAlertForm } from "@/app/CourseAlertForm";
+import { CourseFacts } from "@/app/CourseFacts";
 import {
+  courseArea,
+  courseDisplayName,
+  courseKindPhrase,
   getCourse,
+  isShortFormat,
   publicCourses,
   regionArea,
   regionLabel,
@@ -31,10 +36,16 @@ import { SITE_URL } from "@/lib/site";
  */
 function locationPhrase(course: CourseMeta): string {
   const area = regionArea(course.region);
-  if (!course.city || course.city === area) return area;
+  // `includes`, not `===`: a San Diego course in the North County region
+  // (Rancho Bernardo Inn) used to read "San Diego, North County San Diego".
+  if (!course.city || area.includes(course.city)) return area;
   if (area === "San Diego") return `${course.city}, San Diego County`;
   return `${course.city}, ${area}`;
 }
+
+// The root layout's title template appends this to a bare page title.
+const BRAND_SUFFIX = " | SD Tee Times";
+const TITLE_MAX = 62;
 
 // ISR window. Every page here regenerates at most once per window, and there
 // are ~37 of them being crawled around the clock, so this number times the
@@ -67,13 +78,23 @@ export async function generateMetadata({
   const course = getCourse(slug);
   if (!course) return { title: "Course not found | SD Tee Times" };
 
-  // Bare title — the layout's "%s | SD Tee Times" template appends the brand.
-  const title = `${course.name} Tee Times — Live Availability & Prices`;
-  const description = `See every open tee time at ${course.name} in ${locationPhrase(course)}. Live availability updated every 15 minutes, green fees, and one-tap booking. Free, no login.`;
+  // Bare title: the layout's "%s | SD Tee Times" template appends the brand.
+  // No "live": this page is cached for hours (see `revalidate`), so the copy
+  // says what is true, that the data is checked every 15 minutes.
+  const n = courseDisplayName(course);
+  const title = `${n} Tee Times & Green Fees`;
+  // Search results cut a title off at roughly 60 characters. When the brand
+  // suffix would push a long course name past that, drop the suffix; when
+  // the name alone is still too long, drop "& Green Fees" as well.
+  const pageTitle: Metadata["title"] =
+    `${title}${BRAND_SUFFIX}`.length <= TITLE_MAX
+      ? title
+      : { absolute: title.length <= TITLE_MAX ? title : `${n} Tee Times` };
+  const description = `Open tee times and green fees at ${n} in ${course.city ?? "San Diego"}. Checked every 15 minutes; this page refreshes through the day.`;
   const url = `${SITE_URL}/course/${slug}`;
 
   return {
-    title,
+    title: pageTitle,
     description,
     alternates: { canonical: url },
     openGraph: {
@@ -88,10 +109,6 @@ export async function generateMetadata({
     },
     twitter: { card: "summary_large_image", title, description },
   };
-}
-
-function holesDescriptor(course: CourseMeta): string {
-  return course.short ? "short / executive" : "18-hole";
 }
 
 export default async function CoursePage({
@@ -111,12 +128,12 @@ export default async function CoursePage({
     fetchLastScrapeAt(),
   ]);
 
+  // Official full name where we have one ("Torrey Pines South Course");
+  // `course.name` is the short tee-sheet label and stays out of page copy.
+  const n = courseDisplayName(course);
   const area = locationPhrase(course);
-  const prices = rows
-    .map((r) => r.price_cents)
-    .filter((p): p is number => typeof p === "number" && p > 0);
-  const minPrice = prices.length ? Math.min(...prices) : null;
-  const maxPrice = prices.length ? Math.max(...prices) : null;
+  // "an 18-hole course" / "a 9-hole course" / null when the format is unknown.
+  const kindPhrase = courseKindPhrase(course);
   const openCount = rows.length;
 
   // Deal baselines from this course's own rows (baselines are keyed per
@@ -127,19 +144,41 @@ export default async function CoursePage({
   // content that keeps 38 templated pages from reading as thin/duplicated.
   const insights = computeCourseInsights(rows);
 
-  // Sibling courses in the same region for internal linking.
-  const siblings = publicCourses()
-    .filter((c) => c.slug !== slug && c.region === course.region)
-    .sort((a, b) => a.name.localeCompare(b.name))
-    .slice(0, 8);
+  // Sibling courses for internal linking: every other course in the same
+  // area (no cap), with the other course at the same facility first (Torrey
+  // North/South, Admiral Baker North/South).
+  const areaGroup = courseArea(course);
+  const pair = course.pairSlug ? getCourse(course.pairSlug) : undefined;
+  const siblings = [
+    ...(pair ? [pair] : []),
+    ...(areaGroup?.courses ?? []).filter(
+      (c) => c.slug !== slug && c.slug !== pair?.slug,
+    ),
+  ];
+  const areaHeading = areaGroup?.heading ?? "San Diego";
 
   const regionPage = regionPageSlug(course.region);
-  const priceRange =
-    minPrice != null && maxPrice != null
-      ? minPrice === maxPrice
-        ? formatPrice(minPrice)
-        : `${formatPrice(minPrice)}–${formatPrice(maxPrice)}`
+  // Header prices are for the hole count most open times are listed at, so
+  // a 9-hole rate never sets the low end of an 18-hole course's range. The
+  // label names that count only when it is the course's real format (the
+  // verified hole count, or 9 at a 9-hole course). Some booking pages tag
+  // twilight times at an 18-hole course as "9 holes": Torrey Pines North was
+  // printing the city's 18-hole twilight rates as "9-hole green fees". When
+  // the two disagree the label is plain "green fees".
+  const knownHoles =
+    course.courseType === "9-hole" ? 9 : (course.facts?.holes ?? null);
+  const feeHoles =
+    insights.dominantHoles != null && insights.dominantHoles === knownHoles
+      ? insights.dominantHoles
       : null;
+  const priceRange = insights.priceRange
+    ? formatPriceRange(insights.priceRange[0], insights.priceRange[1])
+    : null;
+  const priceProse = insights.priceRange
+    ? insights.priceRange[0] === insights.priceRange[1]
+      ? `at ${formatPrice(insights.priceRange[0])}`
+      : `from ${formatPrice(insights.priceRange[0])} to ${formatPrice(insights.priceRange[1])}`
+    : null;
 
   // Structured data: identify the course + a breadcrumb trail.
   const jsonLd = {
@@ -147,7 +186,7 @@ export default async function CoursePage({
     "@graph": [
       {
         "@type": "GolfCourse",
-        name: course.name,
+        name: n,
         url: `${SITE_URL}/course/${slug}`,
         address: {
           "@type": "PostalAddress",
@@ -171,7 +210,7 @@ export default async function CoursePage({
           {
             "@type": "ListItem",
             position: 3,
-            name: `${course.name} Tee Times`,
+            name: `${n} Tee Times`,
             item: `${SITE_URL}/course/${slug}`,
           },
         ],
@@ -197,42 +236,53 @@ export default async function CoursePage({
           Courses
         </Link>
         <span>/</span>
-        <span className="text-neutral-700">{course.name}</span>
+        <span className="text-neutral-700">{n}</span>
       </nav>
 
       {/* Heading + intro */}
       <header className="space-y-2">
         <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
-          {course.name} Tee Times
+          {n} Tee Times
         </h1>
-        {openCount > 0 ? (
+        {openCount > 0 && (
           <p className="text-sm leading-relaxed text-neutral-700">
-            Open tee times for {course.name},{" "}
-            {holesDescriptor(course) === "18-hole" ? "an" : "a"}{" "}
-            {holesDescriptor(course)} course in {area}. At the last refresh
-            there {openCount === 1 ? "was" : "were"}{" "}
+            Open tee times for {n}
+            {kindPhrase ? `, ${kindPhrase}` : ""} in {area}. At the last
+            refresh there {openCount === 1 ? "was" : "were"}{" "}
             <strong>
               {openCount} open {openCount === 1 ? "time" : "times"}
             </strong>{" "}
             over the next two weeks
-            {priceRange ? (
+            {priceProse ? (
               <>
-                , with green fees from <strong>{priceRange}</strong>
+                , with {feeHoles ? `${feeHoles}-hole ` : ""}green fees{" "}
+                <strong>{priceProse}</strong>
               </>
             ) : null}
             . This page refreshes through the day; the full tee sheet updates
-            every 15 minutes. Find one you like and book straight through the
-            course. No login, no added fees.
-          </p>
-        ) : (
-          <p className="text-sm leading-relaxed text-neutral-700">
-            No open tee times at {course.name} as of the last refresh. We
-            re-check every 15 minutes: browse other{" "}
-            {regionLabel(course.region)} courses below, or see the full San
-            Diego tee sheet for the latest.
+            every 15 minutes. Find one you like and tap Book to go to the
+            booking page the course uses. No login here, and we add no fees.
+            {course.rateLabel ? ` Price note: ${course.rateLabel}.` : ""}
           </p>
         )}
       </header>
+
+      {/* With nothing open (the usual state at Torrey Pines and Admiral
+          Baker), the booking rules lead and the empty state follows them.
+          With times open the facts sit below the list instead, so the tee
+          times still come first. */}
+      {openCount === 0 && (
+        <>
+          <CourseFacts course={course} />
+          <p className="text-sm leading-relaxed text-neutral-700">
+            No open tee times at {n} as of the last refresh. We re-check
+            every 15 minutes
+            {siblings.length > 0
+              ? `: browse other ${areaHeading} courses below, or see the full San Diego tee sheet for the latest.`
+              : ". See the full San Diego tee sheet for the latest."}
+          </p>
+        </>
+      )}
 
       {/* Quick facts */}
       <dl className="grid grid-cols-3 gap-2 text-center">
@@ -244,7 +294,7 @@ export default async function CoursePage({
         </div>
         <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
           <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Green fees
+            {feeHoles && priceRange ? `${feeHoles}-hole fees` : "Green fees"}
           </dt>
           <dd className="font-display text-2xl text-black">
             {priceRange ?? "—"}
@@ -266,7 +316,7 @@ export default async function CoursePage({
       {Object.keys(insights.bucketMedians).length > 0 && (
         <section className="space-y-2">
           <h2 className="font-display text-xl uppercase tracking-tight text-black">
-            {course.name} Price Guide
+            {n} Green Fees &amp; Price Guide
           </h2>
           <div className="grid grid-cols-3 gap-2 text-center">
             {(Object.entries(insights.bucketMedians) as Array<
@@ -288,7 +338,7 @@ export default async function CoursePage({
           <p className="text-sm leading-relaxed text-neutral-700">
             {insights.cheapestBucket && (
               <>
-                The cheapest window at {course.name} is typically{" "}
+                The cheapest window at {n} is typically{" "}
                 <strong>
                   {BUCKET_SHORT[insights.cheapestBucket.bucket]} at ~
                   {formatPrice(insights.cheapestBucket.median)}
@@ -299,10 +349,16 @@ export default async function CoursePage({
             {insights.weekdayRange && insights.weekendRange && (
               <>
                 Weekday rounds run{" "}
-                {formatPrice(insights.weekdayRange[0])}–
-                {formatPrice(insights.weekdayRange[1])} vs{" "}
-                {formatPrice(insights.weekendRange[0])}–
-                {formatPrice(insights.weekendRange[1])} on weekends.{" "}
+                {formatPriceRange(
+                  insights.weekdayRange[0],
+                  insights.weekdayRange[1],
+                )}{" "}
+                vs{" "}
+                {formatPriceRange(
+                  insights.weekendRange[0],
+                  insights.weekendRange[1],
+                )}{" "}
+                on weekends.{" "}
               </>
             )}
             Open times span {insights.daysWithTimes} of the next 14 days
@@ -321,7 +377,7 @@ export default async function CoursePage({
 
       {/* Course-specific alert signup — highest-intent ask for a visitor who
           arrived searching for this exact course. */}
-      <CourseAlertForm courseName={course.name} courseSlug={slug} />
+      <CourseAlertForm courseName={n} courseSlug={slug} />
 
       {/* Live tee times, grouped by day. Capped to the next few days: the
           later ones are summarized in a "+N more" line and live one tap away
@@ -352,15 +408,19 @@ export default async function CoursePage({
           rel="nofollow"
           className="inline-flex items-center rounded-sm border-2 border-black bg-brand px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
         >
-          Open {course.name} in the full tee sheet
+          Open this course on the full tee sheet
         </Link>
       </div>
+
+      {/* Static course facts (booking rules, address, phone, official
+          links). Above the empty state when nothing is open; here otherwise. */}
+      {openCount > 0 && <CourseFacts course={course} />}
 
       {/* Internal links: siblings + browse all */}
       {siblings.length > 0 && (
         <section className="space-y-2 border-t-2 border-black pt-4">
           <h2 className="font-display text-lg uppercase tracking-tight text-black">
-            More {regionLabel(course.region)} courses
+            More {areaHeading} courses
           </h2>
           <ul className="flex flex-wrap gap-2">
             {siblings.map((c) => (
@@ -370,7 +430,7 @@ export default async function CoursePage({
                   prefetch={false}
                   className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
                 >
-                  {c.name}
+                  {courseDisplayName(c)}
                 </Link>
               </li>
             ))}
@@ -393,6 +453,24 @@ export default async function CoursePage({
             className="font-bold text-brand underline"
           >
             {regionLabel(course.region)} tee times
+          </Link>
+        )}
+        {course.slug.startsWith("torrey-pines-") && (
+          <Link
+            href="/torrey-pines-tee-times"
+            prefetch={false}
+            className="font-bold text-brand underline"
+          >
+            Torrey Pines booking guide
+          </Link>
+        )}
+        {isShortFormat(course) && (
+          <Link
+            href="/par-3-golf-san-diego"
+            prefetch={false}
+            className="font-bold text-brand underline"
+          >
+            Par-3 and short courses
           </Link>
         )}
         <Link

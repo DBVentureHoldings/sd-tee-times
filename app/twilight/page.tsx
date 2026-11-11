@@ -27,13 +27,14 @@ export const revalidate = 7200;
 
 export const metadata: Metadata = {
   title: "Twilight Golf in San Diego — Evening Tee Times & Rates",
+  // No "live": this page is cached for hours (see `revalidate`).
   description:
-    "Every open twilight and evening tee time (after 3pm) across 35+ San Diego golf courses, with live rates. The cheapest way to play the county's best courses. Updated every 15 minutes.",
+    "Open twilight tee times (after 3pm) at 35+ San Diego golf courses, with prices. Checked every 15 minutes; this page refreshes through the day.",
   alternates: { canonical: `${SITE_URL}/twilight` },
   openGraph: {
     title: "Twilight Golf in San Diego — Evening Tee Times & Rates",
     description:
-      "Every open after-3pm tee time across San Diego, live. Updated every 15 minutes.",
+      "Open after-3pm tee times across San Diego, with prices. Checked every 15 minutes.",
     url: `${SITE_URL}/twilight`,
     siteName: "SD Tee Times",
     type: "website",
@@ -93,7 +94,7 @@ export default async function TwilightPage() {
             full tee sheet
           </Link>{" "}
           updates every 15 minutes. Each Book button goes straight to the
-          course&apos;s own booking page.
+          booking page that course uses.
         </p>
       </header>
 
@@ -129,6 +130,9 @@ export default async function TwilightPage() {
         </Link>
         <Link href="/this-weekend" prefetch={false} className="font-bold text-brand underline">
           This weekend
+        </Link>
+        <Link href="/cheap-golf-san-diego" prefetch={false} className="font-bold text-brand underline">
+          Cheap golf
         </Link>
         <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
           All courses

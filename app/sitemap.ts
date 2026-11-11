@@ -34,6 +34,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.9,
   }));
 
+  // Guide pages. The two price guides are rebuilt once a day from our own
+  // tee-time data; the Torrey Pines guide is hand-written and changes only
+  // with a deploy.
+  const guides = [
+    { path: "cheap-golf-san-diego", changeFrequency: "daily" as const, priority: 0.8 },
+    { path: "par-3-golf-san-diego", changeFrequency: "daily" as const, priority: 0.8 },
+    { path: "torrey-pines-tee-times", changeFrequency: "monthly" as const, priority: 0.7 },
+  ].map((g) => ({
+    url: `${SITE_URL}/${g.path}`,
+    lastModified,
+    changeFrequency: g.changeFrequency,
+    priority: g.priority,
+  }));
+
+  // Static information pages. They change only with a deploy.
+  const info = ["about", "privacy"].map((p) => ({
+    url: `${SITE_URL}/${p}`,
+    lastModified,
+    changeFrequency: "yearly" as const,
+    priority: 0.3,
+  }));
+
   return [
     {
       url: SITE_URL,
@@ -49,6 +71,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...specials,
     ...regions,
+    ...guides,
     ...courses,
+    ...info,
   ];
 }

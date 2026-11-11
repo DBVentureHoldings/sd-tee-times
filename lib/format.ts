@@ -307,6 +307,14 @@ export function formatPrice(cents: number | null | undefined): string {
   return Number.isInteger(dollars) ? `$${dollars}` : `$${dollars.toFixed(2)}`;
 }
 
+/**
+ * "$43" when both ends match, "$43–$61" otherwise. A range whose ends are
+ * equal used to print as "$43–$43".
+ */
+export function formatPriceRange(lo: number, hi: number): string {
+  return lo === hi ? formatPrice(lo) : `${formatPrice(lo)}–${formatPrice(hi)}`;
+}
+
 export function dayKey(d: Date): string {
   return pacificParts(d).day;
 }

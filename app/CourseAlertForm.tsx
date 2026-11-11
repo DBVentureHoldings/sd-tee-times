@@ -69,8 +69,8 @@ export function CourseAlertForm({
             🔥 Get alerts for {courseName}
           </h2>
           <p className="mt-1 text-xs text-cream/80">
-            Weekend mornings here go fast. Get an email the moment a{" "}
-            {courseName} time opens up. Free.
+            Weekend mornings here go fast. Get an email the moment a tee time
+            opens up at {courseName}. Free.
           </p>
           <form onSubmit={onSubmit} className="mt-3 flex gap-2">
             <input
