@@ -1,3 +1,4 @@
+import type React from "react";
 import Link from "next/link";
 import {
   courseDisplayName,
@@ -15,16 +16,56 @@ import { GUIDE_LINKS } from "./SiteFooter";
  * homepage's regeneration cost. Every <Link> is prefetch={false}.
  */
 
-/** One short paragraph: what the site is. Sits above the tee sheet. */
+/**
+ * What the site is, set as a clubhouse notice pinned above the tee sheet:
+ * cream card stock, a double rule, a green masthead strip and a few ruled
+ * lines. Kept short so the tee sheet still starts near the top on a phone.
+ * Plain text in the HTML, so crawlers read it like the old paragraph.
+ */
 export function HomeIntro() {
   const count = publicCourses().length;
+  const items: Array<[string, React.ReactNode]> = [
+    ["Courses", <>{count} across San Diego County</>],
+    ["Days", <>Today, tomorrow and this weekend</>],
+    ["Checked", <>About every 15 minutes</>],
+    ["To book", <>Tap Book for that course&apos;s booking page</>],
+  ];
   return (
-    <p id="home-intro" className="text-xs leading-snug text-neutral-700">
-      SD Tee Times is a free San Diego tee time finder. See open tee times and
-      prices at {count} golf courses for today, tomorrow and this weekend. We
-      check each course about every 15 minutes, and Book opens that
-      course&apos;s booking page.
-    </p>
+    <section
+      id="home-intro"
+      aria-label="About SD Tee Times"
+      className="rounded-sm border-2 border-black bg-cream p-[3px] shadow-[3px_3px_0_0_rgba(0,0,0,0.85)]"
+    >
+      <div className="border border-black/70">
+        <div className="flex items-center justify-between gap-2 bg-brand px-3 py-1 text-cream">
+          <span className="font-display text-sm uppercase tracking-[0.18em]">
+            Clubhouse Notice
+          </span>
+          <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-cream/75">
+            Free &middot; No login
+          </span>
+        </div>
+        <div className="px-3 pb-2 pt-2">
+          <p className="text-[13px] font-semibold leading-snug text-black">
+            SD Tee Times is a free San Diego tee time finder: every open tee
+            time and price, on one sheet.
+          </p>
+          <dl className="mt-1.5 text-xs leading-snug">
+            {items.map(([label, value]) => (
+              <div
+                key={label}
+                className="flex items-baseline gap-2 border-t border-dashed border-black/25 py-1"
+              >
+                <dt className="w-16 shrink-0 font-display text-[11px] uppercase tracking-[0.12em] text-magred">
+                  {label}
+                </dt>
+                <dd className="text-neutral-800">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </div>
+    </section>
   );
 }
 
