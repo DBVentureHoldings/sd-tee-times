@@ -1,17 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { courseDisplayName, publicCourses, type Region } from "@/lib/courses";
+import {
+  courseDisplayName,
+  coverageAreaPhrase,
+  publicCourses,
+  type Region,
+} from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "San Diego Golf Courses — Tee Times for Every Course",
+  title: "San Diego Golf Courses: Tee Times for Every Course",
   description:
-    "Every San Diego golf course we track, from Torrey Pines and Balboa Park to North County and East County. Open tee times and green fees for each. Free, no login.",
+    "Every golf course we track, from Torrey Pines and Balboa Park to North County, East County and the Temecula Valley. Open tee times and green fees for each. Free, no login.",
   alternates: { canonical: `${SITE_URL}/courses` },
   openGraph: {
-    title: "San Diego Golf Courses — Tee Times for Every Course",
+    title: "San Diego Golf Courses: Tee Times for Every Course",
     description:
-      "Open tee times for every San Diego golf course we track. Free, no login.",
+      "Open tee times for every golf course we track in San Diego County and the Temecula Valley. Free, no login.",
     url: `${SITE_URL}/courses`,
     siteName: "SD Tee Times",
     type: "website",
@@ -25,10 +30,13 @@ export const metadata: Metadata = {
 // Display order for the region sections. "other" catches courses with no
 // region set so every course still gets linked (crawlability).
 const SECTIONS: Array<{ key: Region | "other"; label: string }> = [
-  { key: "muni", label: "San Diego Municipal Courses" },
+  // Not "Municipal": this group also holds Navy-run and privately managed
+  // courses. Same heading as the footer and the homepage directory.
+  { key: "muni", label: "San Diego and Coronado" },
   { key: "nc", label: "North County" },
   { key: "ec", label: "East County" },
   { key: "sc", label: "South County" },
+  { key: "tv", label: "Temecula Valley (Riverside County)" },
   { key: "other", label: "More Courses" },
 ];
 
@@ -75,11 +83,18 @@ export default function CoursesIndexPage() {
           San Diego Golf Courses
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
-          Every San Diego course we track, with open tee times checked every
-          15 minutes. Pick a course for its open times and green fees, or
-          see the{" "}
+          Every course we track in {coverageAreaPhrase()}. Pick a course
+          for its open times and green fees, browse{" "}
+          <Link
+            href="/north-county-san-diego-golf-courses"
+            prefetch={false}
+            className="font-bold text-brand underline"
+          >
+            North County courses by city
+          </Link>
+          , or see the{" "}
           <Link href="/" prefetch={false} className="font-bold text-brand underline">
-            full San Diego tee sheet
+            full tee sheet
           </Link>
           .
         </p>

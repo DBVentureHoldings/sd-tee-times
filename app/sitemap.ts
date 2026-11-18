@@ -9,9 +9,9 @@ import { SITE_URL } from "@/lib/site";
  */
 export default function sitemap(): MetadataRoute.Sitemap {
   // lastModified is the only freshness signal Google actually honors
-  // (changeFrequency/priority are widely ignored). The sitemap route is
-  // regenerated on deploy + revalidation, and page content changes every
-  // scrape, so "now" is an honest lastmod.
+  // (changeFrequency/priority are widely ignored). This route is fully
+  // static, so the value is the build time: every URL carries the date of
+  // the last deploy and it moves only when the site is redeployed.
   const lastModified = new Date();
   const courses = publicCourses().map((c) => ({
     url: `${SITE_URL}/course/${c.slug}`,
@@ -35,9 +35,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Guide pages. The two price guides are rebuilt once a day from our own
-  // tee-time data; the Torrey Pines guide is hand-written and changes only
-  // with a deploy.
+  // tee-time data; the North County directory and the Torrey Pines guide are
+  // static and change only with a deploy.
   const guides = [
+    { path: "north-county-san-diego-golf-courses", changeFrequency: "monthly" as const, priority: 0.8 },
     { path: "cheap-golf-san-diego", changeFrequency: "daily" as const, priority: 0.8 },
     { path: "par-3-golf-san-diego", changeFrequency: "daily" as const, priority: 0.8 },
     { path: "torrey-pines-tee-times", changeFrequency: "monthly" as const, priority: 0.7 },

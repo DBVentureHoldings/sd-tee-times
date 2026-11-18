@@ -6,7 +6,7 @@ import {
 } from "@/lib/supabase-server";
 import { buildDealBaselines } from "@/lib/deals";
 import { teeTimeWeekday } from "@/lib/format";
-import { SUPPRESSED_SLUGS } from "@/lib/courses";
+import { SUPPRESSED_SLUGS, TV_SLUGS, courseCounts } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
@@ -31,12 +31,12 @@ export const metadata: Metadata = {
   // No "live": this page is cached for hours (see `revalidate`).
   title: "San Diego Tee Times This Weekend: Fri, Sat, Sun",
   description:
-    "Open tee times this Friday, Saturday and Sunday at 35+ San Diego golf courses. Checked every 15 minutes; this page refreshes through the day.",
+    `Open tee times this Friday, Saturday and Sunday at ${courseCounts().sanDiego} golf courses in San Diego County, with the prices we last saw.`,
   alternates: { canonical: `${SITE_URL}/this-weekend` },
   openGraph: {
     title: "San Diego Tee Times This Weekend",
     description:
-      "Open Friday, Saturday and Sunday tee times across San Diego. Checked every 15 minutes.",
+      "Open Friday, Saturday and Sunday tee times across San Diego County.",
     url: `${SITE_URL}/this-weekend`,
     siteName: "SD Tee Times",
     type: "website",
@@ -57,6 +57,8 @@ export default async function ThisWeekendPage() {
   const horizon = Date.now() + WEEK_MS;
   const rows = allRows.filter((r) => {
     if (r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)) return false;
+    // Titled "San Diego": Riverside County courses are on /tee-times/temecula.
+    if (r.courses?.slug && TV_SLUGS.has(r.courses.slug)) return false;
     const d = new Date(r.tee_time_at);
     if (d.getTime() > horizon) return false;
     const dow = teeTimeWeekday(d);
@@ -82,14 +84,23 @@ export default async function ThisWeekendPage() {
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
           Every open <strong>Friday, Saturday, and Sunday</strong> tee time
-          across San Diego County in the next seven days —{" "}
+          across San Diego County in the next seven days:{" "}
           <strong>{rows.length}</strong> open at the last refresh. Weekend
           mornings are the first slots to vanish, so if you see one you want,
-          book it. This page refreshes through the day; the{" "}
+          book it. Times and prices are as of the Updated line under the
+          list; the{" "}
           <Link href="/" prefetch={false} className="font-bold text-brand underline">
             full tee sheet
           </Link>{" "}
-          updates every 15 minutes.
+          has every day.
+        </p>
+        <p className="text-sm leading-relaxed text-neutral-700">
+          This page covers San Diego County. Temecula and Murrieta are on
+          the{" "}
+          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+            Temecula tee times
+          </Link>{" "}
+          page.
         </p>
       </header>
 

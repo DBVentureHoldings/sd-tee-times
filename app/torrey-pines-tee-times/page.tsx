@@ -332,7 +332,7 @@ export default function TorreyPinesGuidePage() {
       <section className="space-y-2">
         <h2 className={h2}>See what is open</h2>
         <p className={p}>
-          We check both courses about every 15 minutes and list any open tee
+          We check both courses through the day and list any open tee
           times we find, with the price. The prices we show for Torrey Pines
           are the non-resident rate.
         </p>

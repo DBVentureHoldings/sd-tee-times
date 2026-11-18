@@ -1,11 +1,34 @@
 import type React from "react";
 import Link from "next/link";
 import {
+  courseCounts,
   courseDisplayName,
   coursesByArea,
-  publicCourses,
+  coverageAreaPhrase,
 } from "@/lib/courses";
 import { GUIDE_LINKS } from "./SiteFooter";
+import { SITE_URL } from "@/lib/site";
+
+// WebSite + Organization for the homepage only. Name and URL, nothing else:
+// no search action (the site has no search URL) and no contact details.
+const SITE_LD = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      name: "SD Tee Times",
+      url: SITE_URL,
+      publisher: { "@id": `${SITE_URL}/#org` },
+    },
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#org`,
+      name: "SD Tee Times",
+      url: SITE_URL,
+    },
+  ],
+});
 
 /**
  * Static text for the bare homepage ("/") only: a one-paragraph intro above
@@ -23,11 +46,11 @@ import { GUIDE_LINKS } from "./SiteFooter";
  * Plain text in the HTML, so crawlers read it like the old paragraph.
  */
 export function HomeIntro() {
-  const count = publicCourses().length;
+  const count = courseCounts().total;
   const items: Array<[string, React.ReactNode]> = [
-    ["Courses", <>{count} across San Diego County</>],
+    ["Courses", <>{count} across {coverageAreaPhrase()}</>],
     ["Days", <>Today, tomorrow and this weekend</>],
-    ["Checked", <>About every 15 minutes</>],
+    ["Updated", <>The time of our last check is on the sheet</>],
     ["To book", <>Tap Book for that course&apos;s booking page</>],
   ];
   return (
@@ -36,6 +59,10 @@ export function HomeIntro() {
       aria-label="About SD Tee Times"
       className="rounded-sm border-2 border-black bg-cream p-[3px] shadow-[3px_3px_0_0_rgba(0,0,0,0.85)]"
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: SITE_LD }}
+      />
       <div className="border border-black/70">
         <div className="flex items-center justify-between gap-2 bg-brand px-3 py-1 text-cream">
           <span className="font-display text-sm uppercase tracking-[0.18em]">
@@ -78,7 +105,7 @@ export function HomeCourseDirectory() {
       className="space-y-3 border-t-2 border-black pt-4"
     >
       <h2 className="font-display text-xl uppercase tracking-tight text-black">
-        San Diego golf courses we track
+        Golf courses we track
       </h2>
       {areas.map((area) => (
         <div key={area.key} className="space-y-1">
@@ -133,9 +160,10 @@ const faqLink = "font-semibold text-brand underline";
 
 /**
  * Short, visible FAQ. Keep each answer true to the code it describes:
- *  - "every 15 minutes" is the scraper schedule; "about every half hour" is
- *    `revalidate` in app/page.tsx (1800); "a few times a day" is the course
- *    pages' window in app/course/[slug]/page.tsx (21600).
+ *  - No check interval is promised: the scrape schedule can be paused, and
+ *    every page prints when its data was last updated. "About every half
+ *    hour" is `revalidate` in app/page.tsx (1800); "a few times a day" is
+ *    the course pages' window in app/course/[slug]/page.tsx (21600).
  *  - Prime is isPrimeTeeTime() in lib/format.ts (Fri/Sat/Sun, 7 to 11 AM,
  *    2+ players) at courses not flagged `short`.
  *  - Deal is lib/deals.ts: DEAL_RATIO 0.78 (22% below the median) and
@@ -146,7 +174,10 @@ const faqLink = "font-semibold text-brand underline";
  * No FAQPage JSON-LD on purpose: it earns no rich result for a site like this
  * and would add weight to the most-served page.
  */
-function faqItems(count: number): Array<{ q: string; a: React.ReactNode }> {
+function faqItems(counts: {
+  total: number;
+  temecula: number;
+}): Array<{ q: string; a: React.ReactNode }> {
   return [
     {
       q: "Is SD Tee Times free?",
@@ -154,11 +185,11 @@ function faqItems(count: number): Array<{ q: string; a: React.ReactNode }> {
     },
     {
       q: "How often are tee times updated?",
-      a: "We check each course about every 15 minutes. This page is rebuilt about every half hour and course pages a few times a day, so a time can be gone by the time you tap Book.",
+      a: "Each page shows when its tee times were last updated. This page is rebuilt about every half hour and course pages a few times a day, so a time can be gone by the time you tap Book.",
     },
     {
       q: "Which courses are listed?",
-      a: `${count} courses in San Diego County, from Torrey Pines and Balboa Park to North County, East County and South County. The full list is above.`,
+      a: `${counts.total} courses in ${coverageAreaPhrase()}, from Torrey Pines and Balboa Park to North County, East County and South County${counts.temecula > 0 ? ", plus Temecula and Murrieta" : ""}. The full list is above.`,
     },
     {
       q: "How do Torrey Pines tee times work?",
@@ -207,7 +238,7 @@ function faqItems(count: number): Array<{ q: string; a: React.ReactNode }> {
 }
 
 export function HomeFaq() {
-  const items = faqItems(publicCourses().length);
+  const items = faqItems(courseCounts());
   return (
     <section id="home-faq" className="space-y-3 border-t-2 border-black pt-4">
       <h2 className="font-display text-xl uppercase tracking-tight text-black">

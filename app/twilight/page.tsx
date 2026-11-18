@@ -6,7 +6,7 @@ import {
 } from "@/lib/supabase-server";
 import { buildDealBaselines } from "@/lib/deals";
 import { teeTimeBucket, formatPrice } from "@/lib/format";
-import { SUPPRESSED_SLUGS } from "@/lib/courses";
+import { SUPPRESSED_SLUGS, TV_SLUGS, courseCounts } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
@@ -29,12 +29,12 @@ export const metadata: Metadata = {
   title: "Twilight Golf in San Diego — Evening Tee Times & Rates",
   // No "live": this page is cached for hours (see `revalidate`).
   description:
-    "Open twilight tee times (after 3pm) at 35+ San Diego golf courses, with prices. Checked every 15 minutes; this page refreshes through the day.",
+    `Open twilight tee times (after 3pm) at ${courseCounts().sanDiego} golf courses in San Diego County, with the prices we last saw.`,
   alternates: { canonical: `${SITE_URL}/twilight` },
   openGraph: {
     title: "Twilight Golf in San Diego — Evening Tee Times & Rates",
     description:
-      "Open after-3pm tee times across San Diego, with prices. Checked every 15 minutes.",
+      "Open after-3pm tee times across San Diego County, with the prices we last saw.",
     url: `${SITE_URL}/twilight`,
     siteName: "SD Tee Times",
     type: "website",
@@ -53,6 +53,9 @@ export default async function TwilightPage() {
   const rows = allRows.filter(
     (r) =>
       !(r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)) &&
+      // The page is titled "in San Diego": Riverside County courses have
+      // their own page (/tee-times/temecula).
+      !(r.courses?.slug && TV_SLUGS.has(r.courses.slug)) &&
       teeTimeBucket(new Date(r.tee_time_at)) === "evening",
   );
 
@@ -80,7 +83,7 @@ export default async function TwilightPage() {
         </h1>
         <p className="text-sm leading-relaxed text-neutral-700">
           Every open <strong>after-3pm tee time</strong> across San Diego
-          County — usually the cheapest way onto any course. At the last
+          County, usually the cheapest way onto any course. At the last
           refresh there {rows.length === 1 ? "was" : "were"}{" "}
           <strong>{rows.length} twilight
           {rows.length === 1 ? " time" : " times"}</strong> open
@@ -89,12 +92,20 @@ export default async function TwilightPage() {
               , starting from <strong>{formatPrice(cheapest)}</strong>
             </>
           ) : null}
-          . This page refreshes through the day; the{" "}
+          . Times and prices are as of the Updated line under the list; the{" "}
           <Link href="/" prefetch={false} className="font-bold text-brand underline">
             full tee sheet
           </Link>{" "}
-          updates every 15 minutes. Each Book button goes straight to the
+          has every time of day. Each Book button goes straight to the
           booking page that course uses.
+        </p>
+        <p className="text-sm leading-relaxed text-neutral-700">
+          This page covers San Diego County. Temecula and Murrieta are on
+          the{" "}
+          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+            Temecula tee times
+          </Link>{" "}
+          page.
         </p>
       </header>
 
@@ -113,7 +124,7 @@ export default async function TwilightPage() {
             No twilight times at the last refresh
           </p>
           <p className="mt-1 text-xs text-neutral-500">
-            Fresh times land on the full tee sheet every 15 minutes.
+            Check the full tee sheet for other times of day.
           </p>
           <div className="mt-3">
             <UpdatedStamp at={lastScrape} />

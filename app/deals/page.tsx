@@ -5,7 +5,7 @@ import {
   fetchUpcomingTeeTimes,
 } from "@/lib/supabase-server";
 import { buildDealBaselines, getDealInfo } from "@/lib/deals";
-import { SUPPRESSED_SLUGS } from "@/lib/courses";
+import { SUPPRESSED_SLUGS, TV_SLUGS } from "@/lib/courses";
 import { SITE_URL } from "@/lib/site";
 import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
@@ -31,12 +31,12 @@ export const metadata: Metadata = {
   title: "San Diego Golf Deals — Tee Times Below the Usual Price",
   // No "live": this page is cached for hours (see `revalidate`).
   description:
-    "San Diego tee times priced below what each course usually charges at that time of day. Checked every 15 minutes; this page refreshes through the day.",
+    "San Diego County tee times priced below what each course usually charges at that time of day, from our last check.",
   alternates: { canonical: `${SITE_URL}/deals` },
   openGraph: {
     title: "San Diego Golf Deals — Tee Times Below the Usual Price",
     description:
-      "Tee times priced below each course's usual rate. Checked every 15 minutes.",
+      "San Diego County tee times priced below each course's usual rate.",
     url: `${SITE_URL}/deals`,
     siteName: "SD Tee Times",
     type: "website",
@@ -53,7 +53,11 @@ export default async function DealsPage() {
     fetchLastScrapeAt(),
   ]);
   const rows = allRows.filter(
-    (r) => !(r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)),
+    (r) =>
+      !(r.courses?.slug && SUPPRESSED_SLUGS.has(r.courses.slug)) &&
+      // Titled "San Diego": Riverside County courses are on
+      // /tee-times/temecula.
+      !(r.courses?.slug && TV_SLUGS.has(r.courses.slug)),
   );
 
   const baselines = buildDealBaselines(rows);
@@ -88,17 +92,26 @@ export default async function DealsPage() {
           <strong>
             {dealRows.length} {dealRows.length === 1 ? "deal" : "deals"}
           </strong>{" "}
-          across San Diego
+          across the San Diego County courses we track
           {bestOff ? (
             <>
               , the best at <strong>{bestOff}% off</strong>
             </>
           ) : null}
-          . This page refreshes through the day; deal badges on the{" "}
+          . Times and prices are as of the Updated line under the list.
+          The{" "}
           <Link href="/" prefetch={false} className="font-bold text-brand underline">
             full tee sheet
           </Link>{" "}
-          are recomputed every 15 minutes.
+          marks deals too.
+        </p>
+        <p className="text-sm leading-relaxed text-neutral-700">
+          This page covers San Diego County. Temecula and Murrieta are on
+          the{" "}
+          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+            Temecula tee times
+          </Link>{" "}
+          page.
         </p>
       </header>
 

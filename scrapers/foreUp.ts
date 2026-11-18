@@ -91,6 +91,40 @@ async function getCookie(loginUrl: string): Promise<string> {
   return cachedCookie;
 }
 
+/**
+ * Anonymous session for courses that need no login. Loading the public
+ * booking page (exactly what a browser does first) sets a session cookie.
+ * Without it the times API still answers, but leaves out today's tee times
+ * in roughly the next four hours, so the sheet looked emptier than the
+ * course's own page. One plain GET per booking page per run; if it fails we
+ * carry on without the cookie and get the shorter list, as before.
+ */
+const anonCookies = new Map<string, string>();
+
+async function getAnonCookie(pageUrl: string, userAgent: string): Promise<string> {
+  const key = pageUrl.split("#")[0];
+  const hit = anonCookies.get(key);
+  if (hit !== undefined) return hit;
+  let cookie = "";
+  try {
+    const res = await fetch(key, {
+      headers: { "user-agent": userAgent, accept: "text/html" },
+      // A hung booking page must not stall the job; the cookie is optional.
+      signal: AbortSignal.timeout(10_000),
+    });
+    await res.arrayBuffer();
+    cookie = res.headers
+      .getSetCookie()
+      .map((c) => c.split(";")[0])
+      .filter(Boolean)
+      .join("; ");
+  } catch {
+    cookie = "";
+  }
+  anonCookies.set(key, cookie);
+  return cookie;
+}
+
 export const foreUpScraper: Scraper = {
   id: "foreUp",
 
@@ -104,6 +138,12 @@ export const foreUpScraper: Scraper = {
       requiresAuth?: boolean;
       loginUrl?: string;
       maxPriceCents?: number;
+      /**
+       * Leave out tee times that start after sunset. For a course whose sheet
+       * keeps selling slots into the dark (Oceanside lists them to 6:50 pm in
+       * November), so they don't show as cheap, playable twilight rounds.
+       */
+      dropAfterSunset?: boolean;
     };
 
     const classes: Array<string | number> = Array.isArray(cfg.bookingClasses)
@@ -146,6 +186,12 @@ export const foreUpScraper: Scraper = {
 
     if (cfg.requiresAuth) {
       headers.cookie = await getCookie(cfg.loginUrl ?? ctx.course.bookingUrl);
+    } else {
+      const anon = await getAnonCookie(
+        ctx.course.bookingUrl,
+        headers["user-agent"],
+      );
+      if (anon) headers.cookie = anon;
     }
 
     const results: ScrapedTeeTime[] = [];
@@ -218,20 +264,69 @@ export const foreUpScraper: Scraper = {
     // price points. Anything above the cap is non-resident inventory we
     // can't book at the resident rate.
     const cap = cfg.maxPriceCents;
+    let kept = results;
     if (typeof cap === "number") {
-      return results.filter((r) =>
+      kept = kept.filter((r) =>
         r.priceCents == null ? true : r.priceCents <= cap,
       );
     }
-    return results;
+    if (cfg.dropAfterSunset) {
+      kept = kept.filter(
+        (r) => r.teeTimeAt.getTime() <= sunsetUtcMs(r.teeTimeAt),
+      );
+    }
+    return kept;
   },
 };
+
+/**
+ * Approximate sunset (within a couple of minutes) for San Diego County on the
+ * day of `at`, as a UTC timestamp. Standard sunrise-equation math; one fixed
+ * point (33.0 N, 117.1 W) is close enough for every course we list.
+ */
+function sunsetUtcMs(at: Date): number {
+  const rad = Math.PI / 180;
+  const lat = 33.0;
+  const lonEast = -117.1;
+  // Julian date of the tee time, then the solar transit nearest local noon.
+  const jd = at.getTime() / 86_400_000 + 2440587.5;
+  const n = Math.round(jd - 2451545.0 + 0.0008 + lonEast / 360);
+  const jStar = n - lonEast / 360;
+  const m = (357.5291 + 0.98560028 * jStar) % 360;
+  const c =
+    1.9148 * Math.sin(m * rad) +
+    0.02 * Math.sin(2 * m * rad) +
+    0.0003 * Math.sin(3 * m * rad);
+  const lambda = (m + c + 180 + 102.9372) % 360;
+  const jTransit =
+    2451545.0 +
+    jStar +
+    0.0053 * Math.sin(m * rad) -
+    0.0069 * Math.sin(2 * lambda * rad);
+  const sinDec = Math.sin(lambda * rad) * Math.sin(23.4397 * rad);
+  const cosDec = Math.cos(Math.asin(sinDec));
+  const cosW =
+    (Math.sin(-0.833 * rad) - Math.sin(lat * rad) * sinDec) /
+    (Math.cos(lat * rad) * cosDec);
+  const w = Math.acos(Math.max(-1, Math.min(1, cosW))) / rad;
+  const jSet = jTransit + w / 360;
+  return (jSet - 2440587.5) * 86_400_000;
+}
 
 interface ForeUpSlot {
   time: string;
   available_spots?: number;
-  allowed_group_sizes?: number[];
+  // The API sends these as strings ("2", "3", "4"); parse before use.
+  allowed_group_sizes?: Array<number | string>;
   green_fee?: number;
+}
+
+/** Group sizes the slot can be booked for, as numbers, smallest first. */
+function groupSizes(slot: ForeUpSlot): number[] {
+  return (slot.allowed_group_sizes ?? [])
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n > 0)
+    .sort((a, b) => a - b);
 }
 
 function parseSlots(
@@ -243,10 +338,13 @@ function parseSlots(
   for (const slot of slots) {
     const teeTimeAt = parseForeUpTime(slot.time);
     if (!teeTimeAt) continue;
+    const sizes = groupSizes(slot);
     out.push({
       teeTimeAt,
-      playersMax:
-        slot.allowed_group_sizes?.[slot.allowed_group_sizes.length - 1] ?? 4,
+      // Smallest group the course takes online (e.g. Redhawk: 2 to 4), so a
+      // single golfer isn't shown a time they can't book.
+      playersMin: sizes.length > 0 ? sizes[0] : 1,
+      playersMax: sizes.length > 0 ? sizes[sizes.length - 1] : 4,
       playersAvail: slot.available_spots ?? 4,
       priceCents:
         typeof slot.green_fee === "number"

@@ -59,8 +59,10 @@ async function fetchUpcomingTeeTimesUncached(
   const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const cutoffIso = cutoff.toISOString();
 
-  // Supabase caps each response at 1000 rows. We have ~9700 upcoming rows
-  // in a 14-day window, so we need ~10 round-trips. The previous version
+  // Supabase caps each response at 1000 rows. We have ~12,500 upcoming rows
+  // in a 14-day window (Nov 2026, 46 courses), so we need ~13 round-trips.
+  // Rows past maxRows (20,000) are silently dropped, so watch the count
+  // before adding many more courses. The previous version
   // did them sequentially in a for-loop — each ~500ms → ~5s total render
   // time. This version first asks for an exact count, then fires all
   // page requests concurrently. Each page still takes ~500ms but they
@@ -124,7 +126,7 @@ async function fetchLastScrapeAtUncached(): Promise<Date | null> {
  *
  * We previously used Next's `unstable_cache`, but Vercel's Data Cache on
  * Hobby tier silently refuses entries over 2MB. The serialized form of
- * ~9700 tee-time rows kept blowing past that threshold (visible in logs
+ * ~9700 tee-time rows (now ~12,500) kept blowing past that threshold (visible in logs
  * as "Failed to set Next.js data cache… items over 2MB cannot be
  * cached"), so EVERY visitor was re-paying the full DB roundtrip.
  *

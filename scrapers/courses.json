@@ -455,7 +455,17 @@
       "websiteId": "ffa867bc-759e-4609-970e-08d8ddc92179",
       "clubUrl": "https://jcgpub29.cps.golf/onlineresweb/search-teetime"
     },
-    "active": true
+    "active": true,
+    "facts": {
+      "about": "The resort describes an 18-hole championship course designed in 1963.",
+      "holes": 18,
+      "address": "17550 Bernardo Oaks Drive, San Diego, CA 92128",
+      "phone": "(855) 574-5356",
+      "phoneNote": "resort main line",
+      "officialUrl": "https://www.ranchobernardoinn.com/rancho-bernardo-inn-golf",
+      "sourceUrl": "https://www.ranchobernardoinn.com/rancho-bernardo-inn-golf",
+      "checkedOn": "2026-11-18"
+    }
   },
   {
     "_note": "[Reactivated: stealth browser (playwright-extra + stealth) defeats cps.golf Cloudflare.]",
@@ -903,7 +913,19 @@
       "facilityId": 4958,
       "clubUrl": "https://www.golfnow.com/tee-times/facility/4958-the-links-at-lakehouse/search"
     },
-    "active": true
+    "active": true,
+    "pairSlug": "exec-at-lakehouse",
+    "facts": {
+      "about": "Lakehouse Resort has two 18-hole courses. The resort describes The Links as a semi-private, par-71 course of 6,400 yards.",
+      "holes": 18,
+      "par": 71,
+      "address": "1025 La Bonita Drive, San Marcos, CA 92078",
+      "phone": "760-744-1310",
+      "phoneNote": "resort",
+      "officialUrl": "https://www.thelakehouseresort.com/san-marcos-golf",
+      "sourceUrl": "https://www.thelakehouseresort.com/san-marcos-golf",
+      "checkedOn": "2026-11-18"
+    }
   },
   {
     "_note": "Switched from GolfNow to the course's native TeeItUp booking (eastlake-country-club.book.teeitup.golf, facilityId 245). GolfNow only exposed the $150 Standard Rate; the native TeeItUp feed also carries the 'San Diego County Resident' rate (~$69-99), which preferRate selects.",
@@ -1165,6 +1187,254 @@
       "officialUrl": "https://parkhyattaviara.com/golf/",
       "sourceUrl": "https://parkhyattaviara.com/golf/",
       "checkedOn": "2026-11-10"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Oceanside's city course. foreUp booking 19162, schedule 1202. Class 607 is 'Non-Resident' (no login); 606 'OCEANSIDE Resident' is cheaper but needs resident ID at check-in, so we list the non-resident price. The sheet lists slots until 18:50 year-round; dropAfterSunset leaves out the ones that start after sunset.",
+    "slug": "oceanside-golf-course",
+    "name": "Oceanside Golf Course",
+    "city": "Oceanside",
+    "region": "nc",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/19162/1202#/teetimes",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "1202",
+      "bookingClasses": [
+        "607"
+      ],
+      "dropAfterSunset": true
+    },
+    "active": true,
+    "rateLabel": "quoted at the non-resident rate",
+    "facts": {
+      "access": "The course says its 18 holes are open to the public, with special consideration for Oceanside residents.",
+      "holes": 18,
+      "address": "825 Douglas Drive, Oceanside, CA 92058",
+      "phone": "760-433-1360",
+      "officialUrl": "https://www.playoceansidegolf.com/",
+      "feesUrl": "https://www.playoceansidegolf.com/rates",
+      "bookingInfoUrl": "https://foreupsoftware.com/index.php/booking/19162/1202",
+      "bookingFacts": [
+        "Tee times are prepaid: the course's booking page says you pay when you book.",
+        "The online price is the green fee only. The cart fee is collected at check-in.",
+        "Resident and senior rates need ID at check-in."
+      ],
+      "sourceUrl": "https://www.playoceansidegolf.com/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Resort course in Fallbrook. Native sheet is pala-mesa-resort.book.teeitup.com (facility 1301), but that platform is rate-limited from CI and only the first three such courses in this file get data, so this uses the same inventory on GolfNow facility 1301.",
+    "slug": "pala-mesa",
+    "name": "Pala Mesa Resort",
+    "seoName": "Pala Mesa Resort Golf Course",
+    "city": "Fallbrook",
+    "region": "nc",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/1301-pala-mesa-resort-golf-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 1301,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/1301-pala-mesa-resort-golf-course/search"
+    },
+    "active": true,
+    "facts": {
+      "about": "The resort, open since 1961, describes an 18-hole, par 72 championship course in the foothills of north San Diego County.",
+      "holes": 18,
+      "par": 72,
+      "address": "2001 Old Hwy 395, Fallbrook, CA 92028",
+      "phone": "760-728-5881",
+      "phoneNote": "resort main line",
+      "officialUrl": "https://palamesa.com/golf/the-course/",
+      "feesUrl": "https://palamesa.com/golf/tee-times-rates/",
+      "sourceUrl": "https://palamesa.com/golf/the-course/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Formerly Meadow Lake GC. Official site books through Chronogolf (courseUuid 095820a4-e5d2-4bea-9281-a748e7371124), whose club page says to call the pro shop and lists pre-dawn slots; GolfNow facility 2198 carries the same sheet from 6:00 and matched Chronogolf rack prices on 2026-11-18. Hole count and par are not stated on the official pages we could read, so they are left out.",
+    "slug": "boulder-oaks",
+    "name": "Boulder Oaks Golf Club",
+    "city": "Escondido",
+    "region": "nc",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/2198-boulder-oaks-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 2198,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/2198-boulder-oaks-golf-club/search"
+    },
+    "active": true,
+    "facts": {
+      "address": "10333 Meadow Glen Way E, Escondido, CA 92026",
+      "phone": "(760) 749-1620",
+      "officialUrl": "https://boulderoaksgolfclub.com/",
+      "sourceUrl": "https://boulderoaksgolfclub.com/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. The executive course at Lakehouse Resort (Lake San Marcos), sibling of links-at-lakehouse. Resort books on its own cart system; GolfNow facility 4959 is the scrapable path.",
+    "slug": "exec-at-lakehouse",
+    "name": "The Exec at Lakehouse",
+    "city": "San Marcos",
+    "region": "nc",
+    "short": true,
+    "courseType": "executive",
+    "pairSlug": "links-at-lakehouse",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/4959-the-exec-at-lakehouse/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 4959,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/4959-the-exec-at-lakehouse/search"
+    },
+    "active": true,
+    "facts": {
+      "about": "Lakehouse Resort has two 18-hole courses. The resort describes The Executive Course as a par-58 at 2,700 yards that can be walked or ridden.",
+      "holes": 18,
+      "par": 58,
+      "phone": "760-744-1310",
+      "phoneNote": "resort",
+      "officialUrl": "https://www.thelakehouseresort.com/san-marcos-golf",
+      "sourceUrl": "https://www.thelakehouseresort.com/san-marcos-golf",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. 18-hole par-3 in Carlsbad. The course's own sheet is Club Caddie (view gjedabab on apimanager-cc11), which costs about 145 s per scrape, so this uses GolfNow facility 9421 instead. Most slots are sold for 2 to 4 players (GolfNow playerRule TwoThreeFour), which the scraper stores as players_min 2.",
+    "slug": "rancho-carlsbad",
+    "name": "Rancho Carlsbad Golf Course",
+    "city": "Carlsbad",
+    "region": "nc",
+    "short": true,
+    "courseType": "par-3",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/9421-rancho-carlsbad-golf-course/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 9421,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/9421-rancho-carlsbad-golf-course/search"
+    },
+    "active": true,
+    "facts": {
+      "about": "The course describes itself as an 18-hole par-3 course and driving range in Carlsbad, a place to work on the short game and finish a round in under 3 hours.",
+      "holes": 18,
+      "address": "5200 El Camino Real, Carlsbad, CA 92010",
+      "phone": "(760) 438-1772",
+      "officialUrl": "https://ranchocarlsbadgolf.com/",
+      "sourceUrl": "https://ranchocarlsbadgolf.com/rates-course-info/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Temecula (Riverside County). foreUp booking 22694, schedule 11655, class 50675 'Public' (no login, 30-day window); 50676 'Members' needs a login and is skipped.",
+    "slug": "redhawk",
+    "name": "Redhawk Golf Course",
+    "city": "Temecula",
+    "region": "tv",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/22694/11655#/teetimes",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "11655",
+      "bookingClasses": [
+        "50675"
+      ]
+    },
+    "active": true,
+    "facts": {
+      "about": "Redhawk calls itself a public golf course with dramatic elevation changes and an island green. Its site lists 18 holes, par 72 and 7,071 yards.",
+      "holes": 18,
+      "par": 72,
+      "address": "45100 Redhawk Pkwy, Temecula, CA 92592",
+      "phone": "951-302-3850",
+      "officialUrl": "https://redhawkgolfcourse.com/",
+      "sourceUrl": "https://redhawkgolfcourse.com/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Murrieta (Riverside County). foreUp booking 22974, schedule 12493. booking_class must be 52216 (the tee-sheet class id behind 'Public Play'); the page-level id 130 returns an empty list. Schedules 13072-13082 are simulator bays.",
+    "slug": "rancho-california",
+    "name": "Golf Club at Rancho California",
+    "seoName": "The Golf Club at Rancho California",
+    "city": "Murrieta",
+    "region": "tv",
+    "bookingUrl": "https://foreupsoftware.com/index.php/booking/22974/12493#/teetimes",
+    "scraperId": "foreUp",
+    "scraperConfig": {
+      "scheduleId": "12493",
+      "bookingClasses": [
+        "52216"
+      ]
+    },
+    "active": true,
+    "facts": {
+      "about": "The club describes an 18-hole, par 72 course of 7,036 yards from the tips, open for play since 1971.",
+      "holes": 18,
+      "par": 72,
+      "address": "39500 Robert Trent Jones Pkwy, Murrieta, CA 92563",
+      "phone": "951-677-7446",
+      "officialUrl": "https://thegolfclubatranchocalifornia.com/",
+      "bookingInfoUrl": "https://thegolfclubatranchocalifornia.com/book-a-tee-time/",
+      "bookingFacts": [
+        "A credit card is required to book, and the club asks for 24 hours' notice to cancel."
+      ],
+      "sourceUrl": "https://thegolfclubatranchocalifornia.com/about-us/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Temecula (Riverside County), the former Temeku Hills course. Native sheet is the-legends-golf-club.play.teeitup.golf (facility 1244), rate-limited from CI; GolfNow facility 1244 carries the same sheet. Facts are from sourceUrl, except the phone number and the cancel rule, which are from bookingInfoUrl (/tee-times/).",
+    "slug": "legends-temecula",
+    "name": "The Legends Golf Club",
+    "city": "Temecula",
+    "region": "tv",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/1244-the-legends-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 1244,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/1244-the-legends-golf-club/search"
+    },
+    "active": true,
+    "facts": {
+      "about": "The club describes 18 holes in Temecula wine country with five lakes. It took over the former Temeku Hills course in 2011.",
+      "holes": 18,
+      "address": "41687 Temeku Drive, Temecula, CA 92591",
+      "phone": "951-694-9998",
+      "officialUrl": "https://thelegendsgc.com/",
+      "feesUrl": "https://thelegendsgc.com/golf/rates/",
+      "bookingInfoUrl": "https://thelegendsgc.com/tee-times/",
+      "bookingFacts": [
+        "The club asks for 24 hours' notice to cancel a reserved tee time."
+      ],
+      "sourceUrl": "https://thelegendsgc.com/",
+      "checkedOn": "2026-11-18"
+    }
+  },
+  {
+    "_note": "Added 2026-11-18. Temecula (Riverside County). The course's own public sheet is a CPS tenant (jcgpub35) behind a browser check that fails from CI, so this uses GolfNow facility 1298. GolfNow prices can differ from the course's own public rate.",
+    "slug": "cross-creek",
+    "name": "Cross Creek Golf Club",
+    "city": "Temecula",
+    "region": "tv",
+    "bookingUrl": "https://www.golfnow.com/tee-times/facility/1298-crosscreek-golf-club/search",
+    "scraperId": "golfnow",
+    "scraperConfig": {
+      "facilityId": 1298,
+      "clubUrl": "https://www.golfnow.com/tee-times/facility/1298-crosscreek-golf-club/search"
+    },
+    "active": true,
+    "facts": {
+      "about": "The course's scorecard shows 18 holes, par 71 and 6,780 yards from the Black tees.",
+      "holes": 18,
+      "par": 71,
+      "address": "43860 Glen Meadows Road, Temecula, CA 92590",
+      "phone": "951-506-3402",
+      "officialUrl": "https://www.crosscreekgolfclub.com/",
+      "bookingInfoUrl": "https://www.crosscreekgolfclub.com/tee-times",
+      "bookingFacts": [
+        "The course's own site books public players 0 to 7 days ahead.",
+        "It also sells prepaid, non-refundable public tee times up to 60 days ahead."
+      ],
+      "sourceUrl": "https://www.crosscreekgolfclub.com/course/scorecard",
+      "checkedOn": "2026-11-18"
     }
   }
 ]

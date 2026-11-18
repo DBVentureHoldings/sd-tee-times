@@ -27,7 +27,7 @@ export interface CourseConfig {
    * scrapers ignore these; they live here so courses.json is a single source
    * of truth for both the scrapers and the app.
    */
-  region?: "muni" | "nc" | "ec" | "sc";
+  region?: "muni" | "nc" | "ec" | "sc" | "tv";
   /** Short / par-3 / executive course — excluded from Prime + the drops hero. */
   short?: boolean;
   /** Hidden from the UI (scraper blocked; stale rows must never surface). */

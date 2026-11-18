@@ -31,6 +31,7 @@ export function DayGroupedList({
   baselines,
   maxDays = 3,
   maxRowsPerDay = 60,
+  stretch = 5,
   hideCourseName = false,
   liveForSec,
   updatedAt,
@@ -41,6 +42,8 @@ export function DayGroupedList({
   maxDays?: number;
   /** Rows per day before the window stretch described above. */
   maxRowsPerDay?: number;
+  /** How far a busy day may stretch past maxRowsPerDay (multiplier). */
+  stretch?: number;
   /** Single-course pages: don't repeat the course name on every row. */
   hideCourseName?: boolean;
   /** How long this render stays cached: the page's `revalidate`. */
@@ -81,7 +84,7 @@ export function DayGroupedList({
         const all = byDay.get(d) ?? [];
         const dayRows = capRowsForWindow(all, {
           min: maxRowsPerDay,
-          max: maxRowsPerDay * 5,
+          max: maxRowsPerDay * stretch,
           liveForSec,
           keepLive: Math.ceil(maxRowsPerDay / 3),
           now,

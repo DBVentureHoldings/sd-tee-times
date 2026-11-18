@@ -33,6 +33,10 @@ const HUB_LINKS: Array<{ href: string; label: string }> = [
  * the same list (app/HomeExtras.tsx).
  */
 export const GUIDE_LINKS: Array<{ href: string; label: string }> = [
+  {
+    href: "/north-county-san-diego-golf-courses",
+    label: "North County courses by city",
+  },
   { href: "/cheap-golf-san-diego", label: "Cheap golf" },
   { href: "/par-3-golf-san-diego", label: "Par-3 and short courses" },
   { href: "/torrey-pines-tee-times", label: "Torrey Pines booking guide" },
@@ -102,7 +106,7 @@ export function SiteFooter() {
 
         <nav aria-label="Golf courses" className="space-y-3">
           <h2 className="font-display text-base uppercase tracking-wide text-black">
-            San Diego golf courses
+            Golf courses
           </h2>
           {areas.map((area) => (
             <div key={area.key}>

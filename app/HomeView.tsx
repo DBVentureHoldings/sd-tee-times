@@ -34,6 +34,7 @@ import {
   NC_SLUGS,
   EC_SLUGS,
   SC_SLUGS,
+  TV_SLUGS,
   SHORT_SLUGS,
   SUPPRESSED_SLUGS,
   getCourse,
@@ -49,7 +50,7 @@ function isPrimeRow(r: TeeTimeRow): boolean {
   return isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail);
 }
 
-type View = "all" | "muni" | "nc" | "ec" | "sc" | "short" | "prime";
+type View = "all" | "muni" | "nc" | "ec" | "sc" | "tv" | "short" | "prime";
 
 // The marquee names golfers actually search for, rendered as a linked strip
 // under the list on filtered views. Always all of them: a course with no open
@@ -115,7 +116,9 @@ export function parseHomeFilters(raw: HomeSearchParams): HomeFilters {
           ? "ec"
           : sp.view === "sc"
             ? "sc"
-            : sp.view === "short" || sp.view === "par3"
+            : sp.view === "tv"
+              ? "tv"
+              : sp.view === "short" || sp.view === "par3"
               ? "short" // accept legacy ?view=par3 URLs from before the rename
               : sp.view === "prime"
                 ? "prime"
@@ -246,7 +249,7 @@ export async function HomeView({
           The Tee Sheet Is Empty
         </p>
         <p className="mt-1 text-xs text-neutral-500">
-          Fresh times land every 15 minutes — check back shortly.
+          Nothing open at our last check. Check back shortly.
         </p>
       </div>
     );
@@ -278,9 +281,11 @@ export async function HomeView({
           ? EC_SLUGS
           : view === "sc"
             ? SC_SLUGS
-            : view === "short"
-              ? SHORT_SLUGS
-              : null;
+            : view === "tv"
+              ? TV_SLUGS
+              : view === "short"
+                ? SHORT_SLUGS
+                : null;
   const viewFilteredRows =
     view === "prime"
       ? rows.filter(isPrimeRow)
@@ -315,6 +320,7 @@ export async function HomeView({
         !NC_SLUGS.has(s) &&
         !EC_SLUGS.has(s) &&
         !SC_SLUGS.has(s) &&
+        !TV_SLUGS.has(s) &&
         !SHORT_SLUGS.has(s),
     )
     .map(([slug, { name, count }]) => ({ slug, name, count }))
@@ -324,6 +330,7 @@ export async function HomeView({
     { label: "North County", courses: entriesFor(NC_SLUGS) },
     { label: "East County", courses: entriesFor(EC_SLUGS) },
     { label: "South County", courses: entriesFor(SC_SLUGS) },
+    { label: "Temecula Valley", courses: entriesFor(TV_SLUGS) },
     { label: "Short Courses", courses: entriesFor(SHORT_SLUGS) },
     { label: "Other", courses: otherEntries },
   ].filter((g) => g.courses.length > 0);
@@ -347,6 +354,9 @@ export async function HomeView({
   ).length;
   const scTotal = rows.filter(
     (r) => r.courses?.slug && SC_SLUGS.has(r.courses.slug),
+  ).length;
+  const tvTotal = rows.filter(
+    (r) => r.courses?.slug && TV_SLUGS.has(r.courses.slug),
   ).length;
   const shortTotal = rows.filter(
     (r) => r.courses?.slug && SHORT_SLUGS.has(r.courses.slug),
@@ -491,8 +501,10 @@ export async function HomeView({
             ? "East County"
             : view === "sc"
               ? "South County"
-              : view === "short"
-                ? "short courses"
+              : view === "tv"
+                ? "the Temecula Valley"
+                : view === "short"
+                  ? "short courses"
                 : view === "prime"
                   ? "prime weekend-morning times"
                   : "tee times";
@@ -507,6 +519,7 @@ export async function HomeView({
           totalNc={ncTotal}
           totalEast={ecTotal}
           totalSc={scTotal}
+          totalTv={tvTotal}
           totalShort={shortTotal}
           totalPrime={primeTotal}
           dimmed={Boolean(course)}
@@ -569,6 +582,8 @@ export async function HomeView({
   if (view !== "all") showAllParts.push(`view=${view}`);
   if (course) showAllParts.push(`course=${course}`);
   if (timeFilter !== "all") showAllParts.push(`time=${timeFilter}`);
+  // all=1 lifts /browse's row cap (app/browse/page.tsx).
+  showAllParts.push("all=1");
 
   return (
     <>
@@ -612,6 +627,7 @@ export async function HomeView({
           totalNc={ncTotal}
           totalEast={ecTotal}
           totalSc={scTotal}
+          totalTv={tvTotal}
           totalShort={shortTotal}
           totalPrime={primeTotal}
           dimmed={Boolean(course)}
@@ -788,6 +804,7 @@ function ViewTabs({
   totalNc,
   totalEast,
   totalSc,
+  totalTv,
   totalShort,
   totalPrime,
   dimmed = false,
@@ -808,6 +825,7 @@ function ViewTabs({
   totalNc: number;
   totalEast: number;
   totalSc: number;
+  totalTv: number;
   totalShort: number;
   totalPrime: number;
   /** When a specific course is filtered, the tabs become inert "go back to region" buttons. */
@@ -822,6 +840,7 @@ function ViewTabs({
     { key: "nc", label: "North County", count: totalNc },
     { key: "ec", label: "East County", count: totalEast },
     { key: "sc", label: "South County", count: totalSc },
+    { key: "tv", label: "Temecula", count: totalTv },
     { key: "short", label: "Short Courses", count: totalShort },
   ];
   return (

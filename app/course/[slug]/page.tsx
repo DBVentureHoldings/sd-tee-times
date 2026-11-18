@@ -18,6 +18,7 @@ import { CourseAlertForm } from "@/app/CourseAlertForm";
 import { CourseFacts } from "@/app/CourseFacts";
 import {
   courseArea,
+  courseBookingLink,
   courseDisplayName,
   courseKindPhrase,
   getCourse,
@@ -41,6 +42,34 @@ function locationPhrase(course: CourseMeta): string {
   if (!course.city || area.includes(course.city)) return area;
   if (area === "San Diego") return `${course.city}, San Diego County`;
   return `${course.city}, ${area}`;
+}
+
+/**
+ * Course names shared with better-known courses elsewhere (Twin Oaks in
+ * Missouri and Illinois, Redhawk in Idaho and Nevada). Their <title> carries
+ * the city so the search result is plainly the right one.
+ */
+const TITLE_NEEDS_CITY = new Set([
+  "twin-oaks",
+  "redhawk",
+  "cross-creek",
+  "legends-temecula",
+]);
+
+/**
+ * Street line and ZIP from a stored address ("17750 Old Coach Road, Poway,
+ * CA 92064"), for the GolfCourse JSON-LD. Only split when the address has
+ * the usual "street, city, state" shape; otherwise nothing is emitted.
+ */
+function addressParts(address: string | undefined): {
+  streetAddress?: string;
+  postalCode?: string;
+} {
+  if (!address) return {};
+  const parts = address.split(",").map((x) => x.trim());
+  if (parts.length < 3 || !/^\d/.test(parts[0])) return {};
+  const zip = /\b(\d{5})$/.exec(address)?.[1];
+  return { streetAddress: parts[0], ...(zip ? { postalCode: zip } : {}) };
 }
 
 // The root layout's title template appends this to a bare page title.
@@ -79,10 +108,12 @@ export async function generateMetadata({
   if (!course) return { title: "Course not found | SD Tee Times" };
 
   // Bare title: the layout's "%s | SD Tee Times" template appends the brand.
-  // No "live": this page is cached for hours (see `revalidate`), so the copy
-  // says what is true, that the data is checked every 15 minutes.
+  // No "live" and no check interval: this page is cached for hours (see
+  // `revalidate`) and prints when its data was last updated.
   const n = courseDisplayName(course);
-  const title = `${n} Tee Times & Green Fees`;
+  const titleName =
+    TITLE_NEEDS_CITY.has(slug) && course.city ? `${n} (${course.city})` : n;
+  const title = `${titleName} Tee Times & Green Fees`;
   // Search results cut a title off at roughly 60 characters. When the brand
   // suffix would push a long course name past that, drop the suffix; when
   // the name alone is still too long, drop "& Green Fees" as well.
@@ -90,7 +121,7 @@ export async function generateMetadata({
     `${title}${BRAND_SUFFIX}`.length <= TITLE_MAX
       ? title
       : { absolute: title.length <= TITLE_MAX ? title : `${n} Tee Times` };
-  const description = `Open tee times and green fees at ${n} in ${course.city ?? "San Diego"}. Checked every 15 minutes; this page refreshes through the day.`;
+  const description = `Open tee times and prices we last saw at ${n} in ${course.city ?? "San Diego"}${course.facts ? ", with course details and a link to book" : ""}.`;
   const url = `${SITE_URL}/course/${slug}`;
 
   return {
@@ -158,6 +189,7 @@ export default async function CoursePage({
   const areaHeading = areaGroup?.heading ?? "San Diego";
 
   const regionPage = regionPageSlug(course.region);
+  const bookingLink = courseBookingLink(course);
   // Header prices are for the hole count most open times are listed at, so
   // a 9-hole rate never sets the low end of an 18-hole course's range. The
   // label names that count only when it is the course's real format (the
@@ -192,10 +224,16 @@ export default async function CoursePage({
           "@type": "PostalAddress",
           // Real locality (e.g. "Poway") — was regionLabel(), which emitted
           // non-places like "SD Munis" into structured data.
+          ...addressParts(course.facts?.address),
           addressLocality: course.city ?? "San Diego",
           addressRegion: "CA",
           addressCountry: "US",
         },
+        // Only what the facts block holds (read from the official site).
+        ...(course.facts?.phone ? { telephone: course.facts.phone } : {}),
+        ...(course.facts?.officialUrl
+          ? { sameAs: course.facts.officialUrl }
+          : {}),
       },
       {
         "@type": "BreadcrumbList",
@@ -259,9 +297,9 @@ export default async function CoursePage({
                 <strong>{priceProse}</strong>
               </>
             ) : null}
-            . This page refreshes through the day; the full tee sheet updates
-            every 15 minutes. Find one you like and tap Book to go to the
-            booking page the course uses. No login here, and we add no fees.
+            . Times and prices are as of the Updated line under the list. Tap
+            Book to go to the booking page the course uses. No login here,
+            and we add no fees; a booking page can add its own at checkout.
             {course.rateLabel ? ` Price note: ${course.rateLabel}.` : ""}
           </p>
         )}
@@ -274,13 +312,27 @@ export default async function CoursePage({
       {openCount === 0 && (
         <>
           <CourseFacts course={course} />
+          {/* Zero rows means either nothing is open or we could not read
+              the course's booking page; the page cannot tell which, so it
+              says so and always offers the way to book. */}
           <p className="text-sm leading-relaxed text-neutral-700">
-            No open tee times at {n} as of the last refresh. We re-check
-            every 15 minutes
+            We have no open tee times to show for {n}. Either nothing was
+            open when we last checked, or we could not read the course&apos;s
+            booking page. Check the booking page for what is open now
             {siblings.length > 0
-              ? `: browse other ${areaHeading} courses below, or see the full San Diego tee sheet for the latest.`
-              : ". See the full San Diego tee sheet for the latest."}
+              ? `, or browse other ${areaHeading} courses below.`
+              : "."}
           </p>
+          <div>
+            <a
+              href={bookingLink}
+              target="_blank"
+              rel="noopener"
+              className="inline-flex items-center rounded-sm border-2 border-black bg-brand px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
+            >
+              Go to the course booking page
+            </a>
+          </div>
         </>
       )}
 
@@ -397,8 +449,10 @@ export default async function CoursePage({
         <UpdatedStamp at={lastScrape} />
       )}
 
-      {/* CTA into the full app filtered to this course */}
-      <div>
+      {/* CTA into the full app filtered to this course. Only with rows: on
+          an empty page the booking-page button above is the useful one. */}
+      {openCount > 0 && (
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <Link
           href={`/?course=${slug}`}
           // A filter URL renders on demand; prefetching it would invoke the
@@ -410,7 +464,16 @@ export default async function CoursePage({
         >
           Open this course on the full tee sheet
         </Link>
+        <a
+          href={bookingLink}
+          target="_blank"
+          rel="noopener"
+          className="text-sm font-bold text-brand underline"
+        >
+          Course booking page
+        </a>
       </div>
+      )}
 
       {/* Static course facts (booking rules, address, phone, official
           links). Above the empty state when nothing is open; here otherwise. */}
@@ -444,7 +507,7 @@ export default async function CoursePage({
           prefetch={false}
           className="font-bold text-brand underline"
         >
-          All San Diego courses
+          All courses
         </Link>
         {regionPage && (
           <Link
@@ -464,7 +527,16 @@ export default async function CoursePage({
             Torrey Pines booking guide
           </Link>
         )}
-        {isShortFormat(course) && (
+        {(course.region === "nc" || course.region === "tv") && (
+          <Link
+            href="/north-county-san-diego-golf-courses"
+            prefetch={false}
+            className="font-bold text-brand underline"
+          >
+            North County golf courses by city
+          </Link>
+        )}
+        {isShortFormat(course) && course.region !== "tv" && (
           <Link
             href="/par-3-golf-san-diego"
             prefetch={false}
@@ -478,7 +550,7 @@ export default async function CoursePage({
           prefetch={false}
           className="font-bold text-brand underline"
         >
-          Full San Diego tee sheet
+          Full tee sheet
         </Link>
       </div>
     </div>

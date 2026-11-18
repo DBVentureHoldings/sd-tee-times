@@ -13,7 +13,10 @@ import coursesJson from "@/scrapers/courses.json";
  * silently half-added it.)
  */
 
-export type Region = "muni" | "nc" | "ec" | "sc";
+// "tv" is the Temecula Valley: Temecula and Murrieta, in Riverside County,
+// just over the line from North County. Every other region is in San Diego
+// County, so copy that says "San Diego County" must not be applied to it.
+export type Region = "muni" | "nc" | "ec" | "sc" | "tv";
 
 export interface CourseMeta {
   slug: string;
@@ -193,12 +196,20 @@ export interface CourseArea {
   courses: CourseMeta[];
 }
 
-const AREA_ORDER: Array<Region | "other"> = ["muni", "nc", "ec", "sc", "other"];
+const AREA_ORDER: Array<Region | "other"> = [
+  "muni",
+  "nc",
+  "ec",
+  "sc",
+  "tv",
+  "other",
+];
 const AREA_HEADING: Record<Region | "other", string> = {
   muni: "San Diego and Coronado",
   nc: "North County",
   ec: "East County",
   sc: "South County",
+  tv: "Temecula Valley",
   other: "Elsewhere in San Diego County",
 };
 
@@ -237,6 +248,7 @@ const REGION_LABEL: Record<Region, string> = {
   nc: "North County",
   ec: "East County",
   sc: "South County",
+  tv: "Temecula Valley",
 };
 
 // Human phrase for prose/SEO copy, e.g. "in North County San Diego".
@@ -245,6 +257,7 @@ const REGION_AREA: Record<Region, string> = {
   nc: "North County San Diego",
   ec: "East County San Diego",
   sc: "South County San Diego",
+  tv: "the Temecula Valley",
 };
 
 export function regionLabel(region: Region | undefined): string {
@@ -261,6 +274,7 @@ export function regionView(region: Region | undefined): string | undefined {
   if (region === "nc") return "nc";
   if (region === "ec") return "ec";
   if (region === "sc") return "sc";
+  if (region === "tv") return "tv";
   return undefined;
 }
 
@@ -274,6 +288,7 @@ const REGION_PAGE_SLUG: Record<Region, string> = {
   nc: "north-county",
   ec: "east-county",
   sc: "south-county",
+  tv: "temecula",
 };
 
 export function regionPageSlug(region: Region | undefined): string | undefined {
@@ -295,6 +310,41 @@ export const MUNI_SLUGS = slugsWhere((c) => c.region === "muni");
 export const NC_SLUGS = slugsWhere((c) => c.region === "nc");
 export const EC_SLUGS = slugsWhere((c) => c.region === "ec");
 export const SC_SLUGS = slugsWhere((c) => c.region === "sc");
+export const TV_SLUGS = slugsWhere((c) => c.region === "tv");
+
+/**
+ * Public-course counts for copy. Derived from the data so "N courses" never
+ * goes stale, and split by county because the Temecula Valley courses are in
+ * Riverside County: a sentence about "San Diego County" must use the San
+ * Diego figure, not the total.
+ */
+export function isSanDiegoCounty(c: CourseMeta): boolean {
+  return c.region !== "tv";
+}
+
+export function sanDiegoCountyCourses(): CourseMeta[] {
+  return publicCourses().filter(isSanDiegoCounty);
+}
+
+export function courseCounts(): {
+  total: number;
+  sanDiego: number;
+  temecula: number;
+} {
+  const all = publicCourses();
+  const temecula = all.filter((c) => c.region === "tv").length;
+  return { total: all.length, sanDiego: all.length - temecula, temecula };
+}
+
+/**
+ * "46 golf courses in San Diego County and the Temecula Valley", or just
+ * "... in San Diego County" while no Temecula course is public.
+ */
+export function coverageAreaPhrase(): string {
+  return courseCounts().temecula > 0
+    ? "San Diego County and the Temecula Valley"
+    : "San Diego County";
+}
 
 // "Short Courses" tab — orthogonal to region (a course can be a muni AND
 // short, e.g. Mission Bay / The Loma Club).
@@ -308,3 +358,66 @@ export const SHORT_SLUGS = slugsWhere((c) => c.short === true);
 export const SUPPRESSED_SLUGS = slugsWhere(
   (c) => c.hidden === true || c.active === false,
 );
+
+/**
+ * City sections for the region hubs and the by-city directory. `id` is the
+ * anchor (#carlsbad). Sections sort by city name, courses by display name.
+ *
+ * One label is hand-set: Rancho Bernardo Inn's city is "San Diego", which on
+ * a North County page reads as the wrong place, so its section is headed by
+ * the neighbourhood in the course's own name.
+ */
+export interface CityGroup {
+  id: string;
+  label: string;
+  courses: CourseMeta[];
+}
+
+function cityLabel(c: CourseMeta): string {
+  if (c.region === "nc" && c.city === "San Diego") return "Rancho Bernardo";
+  return c.city ?? "Other";
+}
+
+export function coursesByCity(courses: CourseMeta[]): CityGroup[] {
+  const groups = new Map<string, CourseMeta[]>();
+  for (const c of courses) {
+    const label = cityLabel(c);
+    const list = groups.get(label);
+    if (list) list.push(c);
+    else groups.set(label, [c]);
+  }
+  return Array.from(groups.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([label, list]) => ({
+      id: label.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+      label,
+      courses: list.sort((a, b) =>
+        courseDisplayName(a).localeCompare(courseDisplayName(b)),
+      ),
+    }));
+}
+
+/**
+ * "18 holes, par 72" / "Executive course, 18 holes, par 58" / "Par-3 course,
+ * 18 holes". Only the hand-set format and the verified hole count and par;
+ * an empty string when none of them is known.
+ */
+export function courseSpecLine(c: CourseMeta): string {
+  const holes = c.courseType === "9-hole" ? 9 : c.facts?.holes;
+  return [
+    courseTypeLabel(c),
+    holes ? `${holes} holes` : undefined,
+    c.facts?.par ? `par ${c.facts.par}` : undefined,
+  ]
+    .filter(Boolean)
+    .join(", ");
+}
+
+/**
+ * Where to send someone to book when we have no tee time row to link: the
+ * course's own booking page where we recorded one, else the booking page our
+ * Book buttons use.
+ */
+export function courseBookingLink(c: CourseMeta): string {
+  return c.facts?.bookingInfoUrl ?? c.bookingUrl;
+}

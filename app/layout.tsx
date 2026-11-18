@@ -5,6 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Link from "next/link";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
+import { courseCounts, coverageAreaPhrase } from "@/lib/courses";
 import { PrimeAlertBar } from "./PrimeAlertBar";
 import { SiteFooter } from "./SiteFooter";
 
@@ -21,8 +22,7 @@ const sansFont = Inter({
   display: "swap",
 });
 
-const SITE_DESCRIPTION =
-  "Every open tee time across San Diego — 35+ courses, free, no login, updated every 15 minutes.";
+const SITE_DESCRIPTION = `Open tee times at ${courseCounts().total} golf courses in ${coverageAreaPhrase()}. Free, no login.`;
 
 export const metadata: Metadata = {
   // metadataBase makes the auto-generated og:image URL absolute. Domain
@@ -31,7 +31,8 @@ export const metadata: Metadata = {
   // "San Diego Tee Times" (the actual search phrase) leads the homepage
   // title; child pages that set their own title slot into the template.
   title: {
-    default: "San Diego Tee Times — Every Open Golf Tee Time, Live | SD Tee Times",
+    // No "live": the homepage is cached for half an hour.
+    default: "San Diego Tee Times: Every Open Golf Tee Time | SD Tee Times",
     template: "%s | SD Tee Times",
   },
   description: SITE_DESCRIPTION,

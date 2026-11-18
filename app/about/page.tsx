@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { publicCourses } from "@/lib/courses";
+import { courseCounts, coverageAreaPhrase } from "@/lib/courses";
 import { breadcrumbLd, pageMeta } from "@/lib/seo";
 import { FeedbackLink } from "@/app/SiteFooter";
 
@@ -23,7 +23,7 @@ const p = "text-sm leading-relaxed text-neutral-700";
 const link = "font-bold text-brand underline";
 
 export default function AboutPage() {
-  const count = publicCourses().length;
+  const count = courseCounts().total;
   const jsonLd = breadcrumbLd([
     { name: "Home", path: "/" },
     { name: "About", path: "/about" },
@@ -49,7 +49,7 @@ export default function AboutPage() {
         </h1>
         <p className={p}>
           SD Tee Times is a free San Diego tee time finder. It puts the open
-          tee times at {count} golf courses across San Diego County on one
+          tee times at {count} golf courses across {coverageAreaPhrase()} on one
           page, so you do not have to check each course&apos;s booking site one
           by one.
         </p>
@@ -58,8 +58,8 @@ export default function AboutPage() {
       <section className="space-y-2">
         <h2 className={h2}>How it works</h2>
         <p className={p}>
-          About every 15 minutes we read the tee sheet each course publishes
-          for online booking and add what is open to{" "}
+          Through the day we read the tee sheet each course publishes for
+          online booking and add what is open to{" "}
           <Link href="/" prefetch={false} className={link}>
             the tee sheet
           </Link>

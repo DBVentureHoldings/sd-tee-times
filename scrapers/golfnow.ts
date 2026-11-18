@@ -122,13 +122,22 @@ export const golfNowScraper: Scraper = {
         if (!teeTimeAt) continue;
 
         const rate = slot.teeTimeRates?.[0];
-        const greenFee = rate?.singlePlayerPrice?.greensFees?.value;
-        const playersAvail = playerRuleToSpots(rate?.playerRule);
+        // The price GolfNow's own page prints for this slot. For most rates
+        // it equals greensFees; for prepaid "pay now" rates greensFees is the
+        // pre-discount figure and the page shows the lower display rate, so
+        // read that first to match what the golfer sees after clicking Book.
+        const greenFee =
+          rate?.singlePlayerPrice?.feeMessagingDisplayRates?.greensFees
+            ?.value ?? rate?.singlePlayerPrice?.greensFees?.value;
+        const { avail: playersAvail, min: playersMin } = playerRuleToSpots(
+          rate?.playerRule,
+        );
 
         results.push({
           teeTimeAt,
           playersMax: 4,
           playersAvail,
+          playersMin,
           priceCents:
             typeof greenFee === "number" ? Math.round(greenFee * 100) : undefined,
           bookingUrl: slot.detailUrl
@@ -152,19 +161,21 @@ export const golfNowScraper: Scraper = {
   },
 };
 
-function playerRuleToSpots(rule?: string): number {
-  switch (rule) {
-    case "One":
-      return 1;
-    case "OneTwo":
-      return 2;
-    case "OneTwoThree":
-      return 3;
-    case "Any":
-      return 4;
-    default:
-      return 4;
-  }
+/**
+ * GolfNow's playerRule names the group sizes a slot can be booked for:
+ * "One", "OneTwo", "OneTwoThree", "TwoThreeFour", "Any", ... The largest size
+ * is how many spots are open; the smallest is the minimum group (some courses
+ * do not sell singles online, e.g. "TwoThreeFour" is shown as "2-4").
+ */
+function playerRuleToSpots(rule?: string): { avail: number; min: number } {
+  if (!rule || rule === "Any") return { avail: 4, min: 1 };
+  const sizes: number[] = [];
+  if (rule.includes("One")) sizes.push(1);
+  if (rule.includes("Two")) sizes.push(2);
+  if (rule.includes("Three")) sizes.push(3);
+  if (rule.includes("Four")) sizes.push(4);
+  if (sizes.length === 0) return { avail: 4, min: 1 };
+  return { avail: Math.max(...sizes), min: Math.min(...sizes) };
 }
 
 function formatGolfNowDate(d: Date): string {
@@ -217,6 +228,9 @@ interface GolfNowSlot {
   teeTimeRates?: Array<{
     holeCount?: number;
     playerRule?: string;
-    singlePlayerPrice?: { greensFees?: { value?: number } };
+    singlePlayerPrice?: {
+      greensFees?: { value?: number };
+      feeMessagingDisplayRates?: { greensFees?: { value?: number } };
+    };
   }>;
 }

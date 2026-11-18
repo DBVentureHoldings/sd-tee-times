@@ -7,7 +7,7 @@ import {
 import {
   courseDisplayName,
   isShortFormat,
-  publicCourses,
+  sanDiegoCountyCourses,
 } from "@/lib/courses";
 import { MIN_DAYS, MIN_SAMPLES } from "@/lib/insights";
 import { buildPriceRows, formatAbout, formatAsOf } from "@/lib/price-guide";
@@ -60,7 +60,9 @@ export default async function CheapGolfPage() {
     fetchLastScrapeAt(),
   ]);
 
-  const courses = publicCourses();
+  // San Diego County only: the page is titled "in San Diego", so the
+  // Temecula Valley courses (Riverside County) are not ranked here.
+  const courses = sanDiegoCountyCourses();
   const priceRows = buildPriceRows(allRows, courses);
   const priced = priceRows.filter((r) => r.weekday.median != null);
   const thin = priceRows.filter((r) => r.weekday.median == null);
@@ -133,6 +135,18 @@ export default async function CheapGolfPage() {
         <p className="text-xs text-neutral-500">
           Prices as of {asOf}, from open tee times over the following 14 days.
           This page is rebuilt once a day.
+        </p>
+        <p className={p}>
+          Temecula and Murrieta courses are in Riverside County, so they are
+          not ranked here. Their typical prices are on the{" "}
+          <Link href="/tee-times/temecula" prefetch={false} className={link}>
+            Temecula tee times
+          </Link>{" "}
+          page, and North County courses are listed by city on the{" "}
+          <Link href="/tee-times/north-county" prefetch={false} className={link}>
+            North County tee times
+          </Link>{" "}
+          page.
         </p>
       </header>
 
@@ -328,8 +342,8 @@ export default async function CheapGolfPage() {
         <h2 className={h2}>How these prices are worked out</h2>
         <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-700">
           <li>
-            We check each course about every 15 minutes and record the price
-            it lists for each open tee time over the next 14 days. A typical
+            We record the price each course lists for each open tee time
+            over the next 14 days. A typical
             price is the middle one (the median) of those listed prices, per
             player. It is not an official rate.
           </li>

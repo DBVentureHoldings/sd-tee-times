@@ -7,7 +7,7 @@ import {
 import {
   courseDisplayName,
   isShortFormat,
-  publicCourses,
+  sanDiegoCountyCourses,
   type CourseMeta,
   type CourseType,
 } from "@/lib/courses";
@@ -155,7 +155,8 @@ export default async function ShortCoursesPage() {
     fetchLastScrapeAt(),
   ]);
 
-  const shortCourses = publicCourses().filter(isShortFormat);
+  // San Diego County only, to match the page title and intro.
+  const shortCourses = sanDiegoCountyCourses().filter(isShortFormat);
   const priceRows = buildPriceRows(allRows, shortCourses);
   const rows18 = priceRows.filter((r) => r.holes === 18);
   const rows9 = priceRows.filter((r) => r.holes === 9);
@@ -227,7 +228,16 @@ export default async function ShortCoursesPage() {
         </p>
         <p className={p}>
           This is not every short course in the county, only the ones whose
-          tee times we track.
+          tee times we track. The North County ones are also listed by city
+          on the{" "}
+          <Link
+            href="/north-county-san-diego-golf-courses#short-courses"
+            prefetch={false}
+            className={link}
+          >
+            North County golf courses
+          </Link>{" "}
+          page.
         </p>
       </header>
 
