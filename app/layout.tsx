@@ -83,18 +83,23 @@ export default function RootLayout({
                 San Diego&apos;s open tee sheet
               </p>
             </Link>
-            {/* Tip jar. Short label on phones so the logo keeps its room. */}
+            {/* Tip jar. */}
             <a
               href={DONATE_URL}
               target="_blank"
               rel="noopener"
               data-track="Donate"
               data-track-from="header"
-              className="shrink-0 rounded-sm border-2 border-black bg-cream px-2.5 py-1.5 font-display text-sm uppercase leading-none tracking-wider text-brand shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
+              className="shrink-0 rounded-sm border-2 border-black bg-cream px-2 py-1 font-display text-sm sm:px-2.5 sm:py-1.5 uppercase leading-none tracking-wider text-brand shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
             >
-              <span aria-hidden="true">☕ </span>
-              <span className="hidden sm:inline">Buy me a coffee</span>
-              <span className="sm:hidden">Coffee</span>
+              {/* Full wording on every screen: a bare "Coffee" on phones read
+                  like a "find coffee" feature. Phones wrap it onto two lines. */}
+              <span className="flex items-center gap-1.5">
+                <span aria-hidden="true" className="text-base sm:text-sm">☕</span>
+                <span className="text-left text-xs leading-[1.05] sm:text-sm sm:leading-none">
+                  Buy me<br className="sm:hidden" /> a coffee
+                </span>
+              </span>
             </a>
           </div>
         </header>
