@@ -612,8 +612,8 @@ export async function HomeView({
           compact
           source="homepage-inline"
           title="🔥 The best SD tee times, in your inbox"
-          blurb="Prime weekend slots and real deals, emailed when they drop. Free."
-          cta="Get alerts"
+          blurb="Once a week, before the weekend: the best weekend tee times and real deals across San Diego. Free."
+          cta="Email me"
         />
       )}
 

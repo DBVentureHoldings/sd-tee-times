@@ -9,7 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "scrape": "tsx --env-file=.env scrapers/_runner.ts",
-    "inspect:foreup": "tsx --env-file=.env scrapers/inspect-foreup.ts"
+    "inspect:foreup": "tsx --env-file=.env scrapers/inspect-foreup.ts",
+    "email:preview": "tsx --env-file=.env scrapers/send-emails.ts --mode=preview"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

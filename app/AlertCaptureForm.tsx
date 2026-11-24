@@ -14,10 +14,10 @@ import { useRef, useState } from "react";
 export function AlertCaptureForm({
   title,
   blurb,
-  cta = "Notify me",
+  cta = "Email me",
   source,
   compact = false,
-  successNote = "We'll email you the good stuff. No spam, unsubscribe anytime.",
+  successNote = "One email a week, before the weekend. Unsubscribe anytime.",
 }: {
   title: string;
   blurb: string;
@@ -55,11 +55,11 @@ export function AlertCaptureForm({
       if (res.ok && j.ok) setState("done");
       else {
         setState("error");
-        setMsg(j.error ?? "Something went wrong — try again.");
+        setMsg(j.error ?? "Something went wrong. Try again.");
       }
     } catch {
       setState("error");
-      setMsg("Network hiccup — try again.");
+      setMsg("Network hiccup. Try again.");
     }
   }
 
@@ -101,7 +101,7 @@ export function AlertCaptureForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@email.com"
-          aria-label="Email for tee-time alerts"
+          aria-label="Email for the weekly tee times email"
           className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-3 py-2.5 text-sm text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
         />
         <button

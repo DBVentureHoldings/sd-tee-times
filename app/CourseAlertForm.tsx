@@ -44,11 +44,11 @@ export function CourseAlertForm({
       if (res.ok && j.ok) setState("done");
       else {
         setState("error");
-        setMsg(j.error ?? "Something went wrong — try again.");
+        setMsg(j.error ?? "Something went wrong. Try again.");
       }
     } catch {
       setState("error");
-      setMsg("Network hiccup — try again.");
+      setMsg("Network hiccup. Try again.");
     }
   }
 
@@ -60,17 +60,18 @@ export function CourseAlertForm({
             ✓ You&apos;re on the list
           </div>
           <p className="mt-1 text-xs text-cream/80">
-            We&apos;ll ping you when {courseName} opens up.
+            Look for a short email from Daniel. Then once a week, before
+            the weekend, you&apos;ll get the open times at {courseName}.
           </p>
         </div>
       ) : (
         <>
           <h2 className="font-display text-xl uppercase leading-tight tracking-tight">
-            🔥 Get alerts for {courseName}
+            🔥 Weekend times at {courseName}
           </h2>
           <p className="mt-1 text-xs text-cream/80">
-            Weekend mornings here go fast. Get an email the moment a tee time
-            opens up at {courseName}. Free.
+            Weekend mornings here go fast. Get one email a week, before the
+            weekend, with the open tee times at {courseName}. Free.
           </p>
           <form onSubmit={onSubmit} className="mt-3 flex gap-2">
             <input
@@ -89,7 +90,7 @@ export function CourseAlertForm({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
-              aria-label={`Email for ${courseName} tee-time alerts`}
+              aria-label={`Email for the weekly ${courseName} tee times email`}
               className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-3 py-2.5 text-sm text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
             />
             <button
@@ -97,7 +98,7 @@ export function CourseAlertForm({
               disabled={state === "loading"}
               className="shrink-0 rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
             >
-              {state === "loading" ? "…" : "Notify me"}
+              {state === "loading" ? "…" : "Email me"}
             </button>
           </form>
           {state === "error" && (

@@ -28,14 +28,16 @@ export function PrimeAlertBar() {
 
   // Suppress the general bar wherever a dedicated in-content form exists
   // (course pages, homepage, /deals, /this-weekend) — one ask per page, and
-  // the in-content card is the format that actually converts.
+  // the in-content card is the format that actually converts. Also hidden on
+  // /unsubscribe: asking for an email there would be absurd.
   const pathname = usePathname();
   const hasOwnForm =
     !!pathname &&
     (pathname === "/" ||
       pathname.startsWith("/course/") ||
       pathname === "/deals" ||
-      pathname === "/this-weekend");
+      pathname === "/this-weekend" ||
+      pathname === "/unsubscribe");
   const show = visible && !hasOwnForm;
 
   useEffect(() => {
@@ -116,7 +118,7 @@ export function PrimeAlertBar() {
               🔥
             </span>
             <span className="hidden shrink-0 font-display text-sm uppercase tracking-wider text-cream sm:inline">
-              Prime alerts
+              Weekend tee times
             </span>
             <form
               onSubmit={onSubmit}
@@ -139,7 +141,7 @@ export function PrimeAlertBar() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com"
-                aria-label="Email for prime tee-time alerts"
+                aria-label="Email for the weekly tee times email"
                 className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-2.5 py-1.5 text-sm text-black placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-black"
               />
               <button
@@ -147,7 +149,7 @@ export function PrimeAlertBar() {
                 disabled={state === "loading"}
                 className="shrink-0 rounded-sm border-2 border-black bg-magred px-3 py-1.5 font-display text-sm uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)] disabled:opacity-60"
               >
-                {state === "loading" ? "…" : "Get alerts"}
+                {state === "loading" ? "…" : "Email me"}
               </button>
             </form>
           </>

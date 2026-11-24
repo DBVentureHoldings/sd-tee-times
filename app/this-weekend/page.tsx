@@ -106,10 +106,10 @@ export default async function ThisWeekendPage() {
 
       <AlertCaptureForm
         source="weekend"
-        title="🔥 Weekend tee time alerts"
-        blurb="Prime Friday–Sunday slots sell out first. Get them emailed before they're gone. Free."
-        cta="Get alerts"
-        successNote="You're set — weekend openings will hit your inbox."
+        title="🔥 Weekend tee times by email"
+        blurb="Prime Friday to Sunday slots sell out first. Get the best ones by email once a week, before the weekend. Free."
+        cta="Email me"
+        successNote="You're set. Look for it before the weekend."
       />
 
       {rows.length > 0 ? (
