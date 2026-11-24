@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
@@ -89,6 +90,7 @@ export function PrimeAlertBar() {
       };
       if (res.ok && j.ok) {
         setState("done");
+        track("Signup", { source: "alert-bar" });
         persistDismiss(); // don't show again once they're in
         setTimeout(() => setVisible(false), 2200);
       } else {

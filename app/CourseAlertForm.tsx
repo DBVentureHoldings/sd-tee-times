@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 
 import { useRef, useState } from "react";
 
@@ -41,7 +42,10 @@ export function CourseAlertForm({
         ok?: boolean;
         error?: string;
       };
-      if (res.ok && j.ok) setState("done");
+      if (res.ok && j.ok) {
+        setState("done");
+        track("Signup", { source: `course:${courseSlug}` });
+      }
       else {
         setState("error");
         setMsg(j.error ?? "Something went wrong — try again.");

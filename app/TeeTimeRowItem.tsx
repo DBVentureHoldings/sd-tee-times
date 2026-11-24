@@ -6,6 +6,7 @@ import {
   shortCourseName,
 } from "@/lib/format";
 import { getDealInfo, type DealBaselines } from "@/lib/deals";
+import { courseAreaLabel } from "@/lib/courses";
 import type { TeeTimeRow } from "@/lib/supabase-server";
 
 /**
@@ -126,6 +127,9 @@ export function TeeTimeRowItem({
       <a
         href={row.booking_url}
         data-book
+        data-track="Book"
+        data-track-course={row.courses?.slug ?? "unknown"}
+        data-track-area={courseAreaLabel(row.courses?.slug)}
         target="_blank"
         rel="noopener noreferrer"
         className="flex shrink-0 items-center rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"

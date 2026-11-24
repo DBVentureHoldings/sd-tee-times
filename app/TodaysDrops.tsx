@@ -92,6 +92,9 @@ export function DropCard({ drop }: { drop: Drop }) {
       <ShareButton title="SD Tee Times" text={shareText} url={shareUrl} />
       <a
         href={row.booking_url}
+        data-track="Book"
+        data-track-course={row.courses?.slug ?? "unknown"}
+        data-track-from="todays-drops"
         target="_blank"
         rel="noopener noreferrer"
         className="relative flex h-full w-full flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"

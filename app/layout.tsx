@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, Inter } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { TrackClicks } from "./TrackClicks";
 import Link from "next/link";
 import "./globals.css";
 import { SITE_URL } from "@/lib/site";
@@ -93,6 +94,7 @@ export default function RootLayout({
         <SiteFooter />
         <PrimeAlertBar />
         <Analytics />
+        <TrackClicks />
         <SpeedInsights />
       </body>
     </html>

@@ -1,4 +1,5 @@
 "use client";
+import { track } from "@vercel/analytics";
 
 import { useState } from "react";
 
@@ -25,6 +26,7 @@ export function ShareButton({
   async function onShare(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    track("Share", { url: url.replace(/^https?:\/\/[^/]+/, "").slice(0, 100) });
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share({ title, text, url });

@@ -260,6 +260,12 @@ const REGION_AREA: Record<Region, string> = {
   tv: "the Temecula Valley",
 };
 
+/** Area name for analytics ("North County", "Temecula Valley"...). */
+export function courseAreaLabel(slug: string | undefined): string {
+  const c = slug ? getCourse(slug) : undefined;
+  return c?.region ? REGION_LABEL[c.region] : "Other";
+}
+
 export function regionLabel(region: Region | undefined): string {
   return region ? REGION_LABEL[region] : "San Diego";
 }
