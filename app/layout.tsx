@@ -5,7 +5,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TrackClicks } from "./TrackClicks";
 import Link from "next/link";
 import "./globals.css";
-import { SITE_URL } from "@/lib/site";
+import { DONATE_URL, SITE_URL } from "@/lib/site";
 import { courseCounts, coverageAreaPhrase } from "@/lib/courses";
 import { PrimeAlertBar } from "./PrimeAlertBar";
 import { SiteFooter } from "./SiteFooter";
@@ -83,9 +83,19 @@ export default function RootLayout({
                 San Diego&apos;s open tee sheet
               </p>
             </Link>
-            <span className="shrink-0 rounded-sm border border-cream/40 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-cream/80">
-              Vol. I
-            </span>
+            {/* Tip jar. Short label on phones so the logo keeps its room. */}
+            <a
+              href={DONATE_URL}
+              target="_blank"
+              rel="noopener"
+              data-track="Donate"
+              data-track-from="header"
+              className="shrink-0 rounded-sm border-2 border-black bg-cream px-2.5 py-1.5 font-display text-sm uppercase leading-none tracking-wider text-brand shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
+            >
+              <span aria-hidden="true">☕ </span>
+              <span className="hidden sm:inline">Buy me a coffee</span>
+              <span className="sm:hidden">Coffee</span>
+            </a>
           </div>
         </header>
         <main className="mx-auto max-w-2xl px-4 py-4">{children}</main>
