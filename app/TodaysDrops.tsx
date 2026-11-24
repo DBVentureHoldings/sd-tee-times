@@ -4,11 +4,24 @@ import {
   formatDayChip,
   formatPrice,
   formatTime,
+  teeTimeBucket,
+  teeTimeWeekday,
 } from "@/lib/format";
 import type { TeeTimeRow } from "@/lib/supabase-server";
 import { SITE_URL, SITE_HOST } from "@/lib/site";
 import { ShareButton } from "./ShareButton";
 import { DayLabel } from "./Freshness";
+
+/** "weekend" / "weekday" and morning / midday / twilight, for analytics. */
+function bookWhen(iso: string): { day: string; time: string } {
+  const d = new Date(iso);
+  const wd = teeTimeWeekday(d);
+  const b = teeTimeBucket(d);
+  return {
+    day: wd === 0 || wd === 6 ? "weekend" : "weekday",
+    time: b === "evening" ? "twilight" : b,
+  };
+}
 
 /**
  * 🔥 Today's Drops — the hero. A horizontally-scrolling strip of the rarest,
@@ -95,6 +108,9 @@ export function DropCard({ drop }: { drop: Drop }) {
         data-track="Book"
         data-track-course={row.courses?.slug ?? "unknown"}
         data-track-from="todays-drops"
+        data-track2="Book time"
+        data-track2-day={bookWhen(row.tee_time_at).day}
+        data-track2-time={bookWhen(row.tee_time_at).time}
         target="_blank"
         rel="noopener noreferrer"
         className="relative flex h-full w-full flex-col overflow-hidden rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)] transition-transform active:translate-y-0.5"

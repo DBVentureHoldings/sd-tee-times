@@ -4,10 +4,23 @@ import {
   formatPrice,
   formatTime,
   shortCourseName,
+  teeTimeBucket,
+  teeTimeWeekday,
 } from "@/lib/format";
 import { getDealInfo, type DealBaselines } from "@/lib/deals";
 import { courseAreaLabel } from "@/lib/courses";
 import type { TeeTimeRow } from "@/lib/supabase-server";
+
+/** "weekend" / "weekday" and morning / midday / twilight, for analytics. */
+function bookWhen(iso: string): { day: string; time: string } {
+  const d = new Date(iso);
+  const wd = teeTimeWeekday(d);
+  const b = teeTimeBucket(d);
+  return {
+    day: wd === 0 || wd === 6 ? "weekend" : "weekday",
+    time: b === "evening" ? "twilight" : b,
+  };
+}
 
 /**
  * A single tee-time list row (an <li>). Shared by the homepage list and the
@@ -130,6 +143,9 @@ export function TeeTimeRowItem({
         data-track="Book"
         data-track-course={row.courses?.slug ?? "unknown"}
         data-track-area={courseAreaLabel(row.courses?.slug)}
+        data-track2="Book time"
+        data-track2-day={bookWhen(row.tee_time_at).day}
+        data-track2-time={bookWhen(row.tee_time_at).time}
         target="_blank"
         rel="noopener noreferrer"
         className="flex shrink-0 items-center rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)] active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"

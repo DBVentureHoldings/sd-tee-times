@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { track } from "@vercel/analytics";
 import { formatDayChip, relativeMinutes } from "@/lib/format";
 
 /**
@@ -151,7 +152,19 @@ export function StaleNotice({
   const stale = staleAtRender || staleNow;
   useEffect(() => {
     document.documentElement.toggleAttribute("data-tee-stale", stale);
-  }, [stale]);
+    if (stale && last !== null) {
+      const hours = (Date.now() - last) / 3600_000;
+      // Delayed: on load this runs before the layout's <Analytics> is ready.
+      const id = setTimeout(
+        () =>
+          track("Stale notice", {
+            age: hours < 6 ? "2-6h" : hours < 24 ? "6-24h" : "1d+",
+          }),
+        300,
+      );
+      return () => clearTimeout(id);
+    }
+  }, [stale, last]);
 
   if (!stale || !stamp) return null;
   return (

@@ -161,7 +161,15 @@ export function CourseFacts({ course }: { course: CourseMeta }) {
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
           {links.map(([label, href]) => (
             <li key={label}>
-              <a href={href} target="_blank" rel="noopener" className={extLink}>
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener"
+                className={extLink}
+                data-track="Official link"
+                data-track-course={course.slug}
+                data-track-link={label}
+              >
                 {label}
               </a>
             </li>

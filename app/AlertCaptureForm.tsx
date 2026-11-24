@@ -59,10 +59,12 @@ export function AlertCaptureForm({
       }
       else {
         setState("error");
+        track("Signup error", { source: source, reason: String(res.status) });
         setMsg(j.error ?? "Something went wrong — try again.");
       }
     } catch {
       setState("error");
+      track("Signup error", { source: source, reason: "network" });
       setMsg("Network hiccup — try again.");
     }
   }

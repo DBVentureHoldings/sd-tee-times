@@ -95,10 +95,12 @@ export function PrimeAlertBar() {
         setTimeout(() => setVisible(false), 2200);
       } else {
         setState("error");
+        track("Signup error", { source: "alert-bar", reason: String(res.status) });
         setMsg(j.error ?? "Try again.");
       }
     } catch {
       setState("error");
+      track("Signup error", { source: "alert-bar", reason: "network" });
       setMsg("Try again.");
     }
   }

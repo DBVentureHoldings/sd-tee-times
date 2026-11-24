@@ -39,12 +39,22 @@ export function TrackClicks() {
       if (tagged) {
         const data: Record<string, string> = {};
         for (const [k, v] of Object.entries(tagged.dataset)) {
-          if (!k.startsWith("track") || k === "track" || !v) continue;
+          if (!k.startsWith("track") || k.startsWith("track2") || k === "track" || !v) continue;
           if (Object.keys(data).length >= 2) break;
           const key = k.slice(5, 6).toLowerCase() + k.slice(6);
           data[key] = v.slice(0, 100);
         }
         track(tagged.dataset.track!, data);
+        // Optional second event from the same click ("Book time").
+        if (tagged.dataset.track2) {
+          const data2: Record<string, string> = {};
+          for (const [k, v] of Object.entries(tagged.dataset)) {
+            if (!k.startsWith("track2") || k === "track2" || !v) continue;
+            if (Object.keys(data2).length >= 2) break;
+            data2[k.slice(6, 7).toLowerCase() + k.slice(7)] = v.slice(0, 100);
+          }
+          track(tagged.dataset.track2, data2);
+        }
         return;
       }
       const a = target.closest<HTMLAnchorElement>("a[href]");

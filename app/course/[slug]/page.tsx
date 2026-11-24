@@ -16,6 +16,7 @@ import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
 import { CourseAlertForm } from "@/app/CourseAlertForm";
 import { CourseFacts } from "@/app/CourseFacts";
+import { TrackView } from "@/app/TrackView";
 import {
   courseArea,
   courseBookingLink,
@@ -446,7 +447,10 @@ export default async function CoursePage({
           sheetQuery={`course=${slug}`}
         />
       ) : (
-        <UpdatedStamp at={lastScrape} />
+        <>
+          <TrackView event="No times" data={{ course: slug }} />
+          <UpdatedStamp at={lastScrape} />
+        </>
       )}
 
       {/* CTA into the full app filtered to this course. Only with rows: on
