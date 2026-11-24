@@ -177,7 +177,7 @@ function buildHtml(rows: MatchingRow[], appUrl: string): string {
 </body></html>`;
 }
 
-async function sendEmail(
+export async function sendEmail(
   apiKey: string,
   from: string,
   to: string,

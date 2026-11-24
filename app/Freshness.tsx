@@ -111,3 +111,59 @@ export function DayLabel({
   const live = formatDayChip(day);
   return <>{upper ? live.toUpperCase() : live}</>;
 }
+
+/**
+ * Warns when the scraper has stopped, so nobody drives to a tee time that
+ * is long gone. Two checks, both against the last SCRAPE (not the page's
+ * own age, which is normal for a cached page):
+ *
+ *  - at render: the newest data was already over 2 hours old when this page
+ *    was built, which only happens when scraping is down;
+ *  - in the browser: the newest data is over 12 hours old now. 12 hours is
+ *    above the longest cache window (6 h), so a healthy cached page never
+ *    trips it.
+ *
+ * While stale it also dims every Book button (see globals.css).
+ */
+export function StaleNotice({
+  lastScrapeIso,
+  generatedAt,
+  stamp,
+}: {
+  lastScrapeIso: string | null;
+  /** Server render time (epoch ms). */
+  generatedAt: number;
+  /** Server-formatted "Mon, Nov 24, 3:05 PM PT" for the message. */
+  stamp: string | null;
+}) {
+  const last = lastScrapeIso ? new Date(lastScrapeIso).getTime() : null;
+  const staleAtRender = last !== null && generatedAt - last > 2 * 3600_000;
+  const [staleNow, setStaleNow] = useState(false);
+
+  useEffect(() => {
+    if (last === null) return;
+    const check = () => setStaleNow(Date.now() - last > 12 * 3600_000);
+    check();
+    const id = setInterval(check, 5 * 60_000);
+    return () => clearInterval(id);
+  }, [last]);
+
+  const stale = staleAtRender || staleNow;
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-tee-stale", stale);
+  }, [stale]);
+
+  if (!stale || !stamp) return null;
+  return (
+    <div
+      role="status"
+      className="rounded-sm border-2 border-black bg-[#FFF4D6] px-3 py-2 text-xs leading-snug text-black"
+    >
+      <strong className="font-display uppercase tracking-wider text-magred">
+        Heads up:
+      </strong>{" "}
+      these tee times have not updated since {stamp}. Some may already be
+      booked, so check the course&apos;s booking page before you head out.
+    </div>
+  );
+}

@@ -4,7 +4,7 @@ import { capRowsForWindow } from "@/lib/row-cap";
 import type { DealBaselines } from "@/lib/deals";
 import type { TeeTimeRow } from "@/lib/supabase-server";
 import { TeeTimeRowItem } from "./TeeTimeRowItem";
-import { UpdatedAgo } from "./Freshness";
+import { StaleNotice, UpdatedAgo } from "./Freshness";
 
 /**
  * Day-grouped tee-time list shared by the course pages and the programmatic
@@ -80,6 +80,11 @@ export function DayGroupedList({
 
   return (
     <section className="space-y-5">
+      <StaleNotice
+        lastScrapeIso={updatedAt ? updatedAt.toISOString() : null}
+        generatedAt={now}
+        stamp={updatedAt ? `${formatStamp(updatedAt)} PT` : null}
+      />
       {shown.map((d) => {
         const all = byDay.get(d) ?? [];
         const dayRows = capRowsForWindow(all, {

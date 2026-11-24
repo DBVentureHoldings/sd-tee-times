@@ -20,7 +20,7 @@ import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
 import { AlertCaptureForm } from "./AlertCaptureForm";
 import { SecondaryFilters } from "./SecondaryFilters";
 import { TeeTimeRowItem } from "./TeeTimeRowItem";
-import { DayLabel, Freshness, UpdatedAgo } from "./Freshness";
+import { DayLabel, Freshness, UpdatedAgo, StaleNotice } from "./Freshness";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import { buildDealBaselines, getDealInfo } from "@/lib/deals";
 import { capRowsForWindow } from "@/lib/row-cap";
@@ -589,6 +589,11 @@ export async function HomeView({
     <>
     <div className="space-y-5">
       <Freshness generatedAt={generatedAt} staleAfterSec={STALE_AFTER_SEC} />
+      <StaleNotice
+        lastScrapeIso={lastScrape ? lastScrape.toISOString() : null}
+        generatedAt={generatedAt}
+        stamp={lastScrape ? `${formatStamp(lastScrape)} PT` : null}
+      />
       {/* Primary heading for SEO. Visually hidden so the tee sheet still leads,
           but gives the homepage a single, keyword-focused <h1>. */}
       <h1 className="sr-only">{HOME_H1}</h1>

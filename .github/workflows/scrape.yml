@@ -6,6 +6,15 @@ on:
   # /api/cron/scrape route on every-30-min schedule. We keep workflow_dispatch
   # for manual + Vercel-triggered runs.
   workflow_dispatch: {}
+  # Backstop (Nov 2026): the external trigger (cron-job.org -> Vercel ->
+  # dispatch) has died three times, each time leaving the site on stale data
+  # for days. GitHub's own schedule can start a few minutes late, but it does
+  # not depend on either service. The concurrency group below keeps at most
+  # one run waiting, so running both triggers is harmless.
+  # GitHub turns schedules off in public repos after 60 days with no commits;
+  # the health check emails when data goes stale, which would catch that.
+  schedule:
+    - cron: "7,22,37,52 * * * *"
 
 concurrency:
   group: scrape

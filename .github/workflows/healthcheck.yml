@@ -1,0 +1,31 @@
+name: Health check
+
+# Hourly: emails the owner if scraping stops or the website is down.
+# See scrapers/healthcheck.ts. Light: no browser, no scraping, ~30 seconds.
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: healthcheck
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      TZ: America/Los_Angeles
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npx tsx scrapers/healthcheck.ts

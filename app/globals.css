@@ -14,3 +14,10 @@ body {
     radial-gradient(circle at 25% 25%, rgba(14, 91, 61, 0.02) 0%, transparent 50%),
     radial-gradient(circle at 75% 75%, rgba(200, 16, 46, 0.02) 0%, transparent 50%);
 }
+
+/* Scraper down (see StaleNotice in app/Freshness.tsx): dim every Book
+   button so stale times don't look as trustworthy as fresh ones. */
+html[data-tee-stale] a[data-book] {
+  opacity: 0.45 !important;
+  filter: grayscale(0.6) !important;
+}
