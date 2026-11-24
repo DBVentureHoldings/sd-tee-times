@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DONATE_URL } from "@/lib/site";
 import Link from "next/link";
 import { courseCounts, coverageAreaPhrase } from "@/lib/courses";
 import { breadcrumbLd, pageMeta } from "@/lib/seo";
@@ -92,7 +93,19 @@ export default function AboutPage() {
         <p className={p}>
           SD Tee Times is built and run by a San Diego golfer. It is
           independent and not affiliated with any golf course. It is free to
-          use, with no account and no ads.
+          use, with no account and no ads. If it saves you some hassle, you
+          can{" "}
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener"
+            data-track="Donate"
+            data-track-from="about"
+            className="font-bold text-brand underline"
+          >
+            chip in for the hosting with a coffee
+          </a>
+          .
         </p>
       </section>
 

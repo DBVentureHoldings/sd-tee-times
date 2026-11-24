@@ -1,5 +1,6 @@
 "use client";
 import { track } from "@vercel/analytics";
+import { DONATE_URL } from "@/lib/site";
 
 import { useRef, useState } from "react";
 
@@ -76,6 +77,20 @@ export function AlertCaptureForm({
           ✓ You&apos;re on the list
         </div>
         <p className="mt-1 text-xs text-cream/80">{successNote}</p>
+        <p className="mt-2 text-xs text-cream/80">
+          SD Tee Times is free and I pay for the servers myself.{" "}
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noopener"
+            data-track="Donate"
+            data-track-from="signup"
+            className="font-bold text-cream underline"
+          >
+            Buy me a coffee
+          </a>{" "}
+          if it helps.
+        </p>
       </section>
     );
   }

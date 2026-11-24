@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { DONATE_URL } from "@/lib/site";
 import {
   allRegionPageSlugs,
   courseDisplayName,
@@ -144,6 +145,17 @@ export function SiteFooter() {
               <Link href="/about#contact" prefetch={false}>
                 Contact
               </Link>
+            </li>
+            <li>
+              <a
+                href={DONATE_URL}
+                target="_blank"
+                rel="noopener"
+                data-track="Donate"
+                data-track-from="footer"
+              >
+                ☕ Buy me a coffee
+              </a>
             </li>
           </ul>
           <p>
