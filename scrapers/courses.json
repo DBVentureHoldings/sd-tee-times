@@ -813,15 +813,40 @@
     }
   },
   {
-    "_note": "Arrowood books on GolfDistrict (arrowood.golfdistrict.com). GolfNow lists the facility but no inventory is published there. Needs a GolfDistrict scraper to scrape — leaving inactive for now.",
+    "_note": "Added 2026-11-24. The course's advance-booking engine (Golf District, 0-60 days, prepaid). Price is the Public class pricePerGolfer, the per-golfer figure the booking page prints. The page only offers start times inside courseOpenTime..courseCloseTime (600..1400 in Nov 2026); the scraper reads that window from the course page each run, and startTime/endTime here are only the fallback. Resale (second-hand) listings are skipped. Records whose time offset is not Pacific (seen: a $35 2:00 PM slot labeled Public) are the course's junior / walking-only rate and are dropped, as is any slot under half its day's median price. Any failed day makes the run throw so last-good rows are kept. The course's 0-7 day pay-at-the-shop booking sits behind a signed consent form and is not scraped.",
     "slug": "arrowood",
     "name": "Arrowood Golf Course",
     "city": "Oceanside",
     "region": "nc",
-    "bookingUrl": "https://arrowood.golfdistrict.com/F0B",
+    "bookingUrl": "https://arrowood.golfdistrict.com/F0B269B4-BAF4-4127-B0DF-3DBF356B1B7C",
     "scraperId": "golfdistrict",
-    "scraperConfig": {},
-    "active": false
+    "scraperConfig": {
+      "subdomain": "arrowood",
+      "courseId": "F0B269B4-BAF4-4127-B0DF-3DBF356B1B7C",
+      "startTime": 600,
+      "endTime": 1400,
+      "dropAfterSunset": true
+    },
+    "active": true,
+    "rateLabel": "quoted at the prepaid advance-booking rate",
+    "facts": {
+      "about": "The course describes itself as a par-71, 6,721-yard layout on a hilltop by the San Luis Rey Valley, with four sets of tees.",
+      "holes": 18,
+      "par": 71,
+      "address": "5201 Village Drive, Oceanside, CA 92057",
+      "phone": "760-967-8400",
+      "officialUrl": "https://arrowoodgolf.com/",
+      "bookingInfoUrl": "https://arrowoodgolf.com/book/",
+      "feesUrl": "https://arrowoodgolf.com/rates/",
+      "bookingFacts": [
+        "The course offers two ways to book online: standard booking up to 7 days ahead, paid in the golf shop, and advance booking up to 60 days ahead.",
+        "Advance-booking times are non-refundable and cannot be edited, but they can be listed for sale to other golfers.",
+        "Standard bookings need 24 hours' notice to cancel, or a no-show fee applies.",
+        "The course's rates include a cart, and players are expected to share one."
+      ],
+      "sourceUrl": "https://arrowoodgolf.com/",
+      "checkedOn": "2026-11-24"
+    }
   },
   {
     "slug": "mt-woodson",
