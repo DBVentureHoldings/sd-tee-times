@@ -34,6 +34,12 @@ export interface TeeTimeRow {
   price_cents: number | null;
   booking_url: string;
   holes: number;
+  /**
+   * The time can only be booked with a City of San Diego Resident ID Card
+   * (migration 0009). Such a row has no price, is labelled in the list and
+   * stays out of every price figure, deal, drop and emailed pick.
+   */
+  resident_only: boolean;
   courses: { slug: string; name: string } | null;
 }
 
@@ -125,7 +131,7 @@ async function fetchUpcomingTeeTimesUncached(
       const { data, error } = await sb
         .from("tee_times")
         .select(
-          "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, courses(slug, name)",
+          "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, resident_only, courses(slug, name)",
         )
         .gt("tee_time_at", nowIso)
         .lt("tee_time_at", cutoffIso)
@@ -238,7 +244,7 @@ export async function fetchCourseTeeTimes(
     const { data, error } = await sb
       .from("tee_times")
       .select(
-        "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, courses!inner(slug, name)",
+        "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, resident_only, courses!inner(slug, name)",
       )
       .eq("courses.slug", slug)
       .gt("tee_time_at", nowIso)

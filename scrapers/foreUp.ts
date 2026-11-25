@@ -1,6 +1,7 @@
 import type { Scraper, ScrapedTeeTime, ScrapeContext } from "./_types.js";
 import { newContext } from "./_shared/browser.js";
 import { sunsetUtcMs } from "./_shared/sunset.js";
+import { dedupeTeeTimes } from "./_shared/dedupe.js";
 
 /**
  * ForeUp scraper.
@@ -24,6 +25,13 @@ import { sunsetUtcMs } from "./_shared/sunset.js";
  *       classes and want to keep only the resident (subsidized) tier. e.g.,
  *       Torrey resident maxes ~$110; cap at 15000 to drop $300+ non-resident
  *       inventory that the user can't actually book at the resident rate.
+ *   - residentClasses (array of class ids) — the entries of bookingClasses
+ *       that only a resident account can book (City of San Diego Resident ID
+ *       Card). Slots read from them are tagged residentOnly and carry no
+ *       price: the figure the API returns inside those classes is not the
+ *       resident rate. When the same slot is also in an open class, the
+ *       open row is the one kept.
+ *   - dropAfterSunset (boolean) — leave out slots that start after sunset.
  */
 
 let cachedCookie: string | null = null;
@@ -155,6 +163,8 @@ export const foreUpScraper: Scraper = {
       requiresAuth?: boolean;
       loginUrl?: string;
       maxPriceCents?: number;
+      /** Booking classes only a resident account can book. See the header. */
+      residentClasses?: Array<string | number>;
       /**
        * Leave out tee times that start after sunset. For a course whose sheet
        * keeps selling slots into the dark (Oceanside lists them to 6:50 pm in
@@ -213,13 +223,23 @@ export const foreUpScraper: Scraper = {
 
     const results: ScrapedTeeTime[] = [];
     let skippedHere = 0;
+    const residentClasses = new Set(
+      (Array.isArray(cfg.residentClasses) ? cfg.residentClasses : []).map(String),
+    );
+    // Classes that gave at least one good answer this run, and classes that
+    // were refused. Used below: resident-only rows are only safe to write
+    // when every open class answered too.
+    const answered = new Set<string>();
+    const refused = new Set<string>();
 
     for (const holes of holesList) {
       classLoop: for (const bookingClass of classes) {
         const classKey = `${cfg.scheduleId}|${bookingClass}`;
+        const residentOnly = residentClasses.has(String(bookingClass));
         if (deniedClasses.has(classKey)) {
           // Already refused this run (under another `holes` value). The old
           // code asked again, got the 401 again, and logged in again.
+          refused.add(String(bookingClass));
           skippedHere++;
           continue;
         }
@@ -267,6 +287,7 @@ export const foreUpScraper: Scraper = {
               // try the next one: courses commonly have a non-resident
               // class that does work.
               deniedClasses.add(classKey);
+              refused.add(String(bookingClass));
               console.warn(
                 `  (skipping ${ctx.course.slug} class ${bookingClass}: 401 ${retry ? "after re-login" : "on a fresh login"})`,
               );
@@ -278,7 +299,8 @@ export const foreUpScraper: Scraper = {
               );
             }
             const json = (await retry.json()) as ForeUpSlot[];
-            results.push(...parseSlots(json, dayLink, holes));
+            answered.add(String(bookingClass));
+            results.push(...parseSlots(json, dayLink, holes, residentOnly));
             continue;
           }
 
@@ -290,16 +312,12 @@ export const foreUpScraper: Scraper = {
           }
 
           const json = (await res.json()) as ForeUpSlot[];
-          results.push(...parseSlots(json, dayLink, holes));
+          answered.add(String(bookingClass));
+          results.push(...parseSlots(json, dayLink, holes, residentOnly));
         }
       }
     }
 
-    // Drop slots above the per-course max price. This is the resident-only
-    // filter for City of SD munis: we hit all booking classes (resident +
-    // non-resident + advance), so a single tee time can show up at multiple
-    // price points. Anything above the cap is non-resident inventory we
-    // can't book at the resident rate.
     if (skippedHere > 0) {
       foreUpStats.skippedPasses += skippedHere;
       console.warn(
@@ -307,21 +325,80 @@ export const foreUpScraper: Scraper = {
       );
     }
 
-    const cap = cfg.maxPriceCents;
-    let kept = results;
-    if (typeof cap === "number") {
-      kept = kept.filter((r) =>
-        r.priceCents == null ? true : r.priceCents <= cap,
+    // The open row can only win the same-slot dedupe if the open class
+    // answered. If it was refused (or never answered) while a resident class
+    // did, every slot would be written as resident-only with no price, over
+    // rows anyone can book. Fail the course instead: the runner then leaves
+    // the rows from the last good run in place.
+    const missing = openClassesNotAnswered(
+      classes,
+      residentClasses,
+      answered,
+      refused,
+    );
+    if (missing.length > 0) {
+      throw new Error(
+        `ForeUp ${ctx.course.slug}: open class(es) ${missing.join(", ")} gave no usable answer this run; not writing resident-only rows without them`,
       );
     }
-    if (cfg.dropAfterSunset) {
-      kept = kept.filter(
-        (r) => r.teeTimeAt.getTime() <= sunsetUtcMs(r.teeTimeAt),
-      );
-    }
-    return kept;
+
+    // Dedupe (open row wins), price cap, sunset filter: see finalizeSlots.
+    return finalizeSlots(results, {
+      maxPriceCents: cfg.maxPriceCents,
+      dropAfterSunset: cfg.dropAfterSunset,
+    });
   },
 };
+
+/**
+ * For a course with residentClasses: the open (non-resident) classes that
+ * did not answer cleanly this run, either refused at some point or never
+ * answered at all. Empty when the course has no resident classes, or no
+ * open class to compare against. A non-empty result means resident-only
+ * rows must not be written: a slot anyone can book could be among them.
+ */
+export function openClassesNotAnswered(
+  classes: Array<string | number>,
+  residentClasses: Set<string>,
+  answered: Set<string>,
+  refused: Set<string>,
+): string[] {
+  if (residentClasses.size === 0) return [];
+  return classes
+    .map(String)
+    .filter((c) => !residentClasses.has(c))
+    .filter((c) => refused.has(c) || !answered.has(c));
+}
+
+/**
+ * What a course's parsed slots go through before they are returned:
+ *  1. one row per (tee time, holes), the open row winning over a
+ *     resident-only copy in either class order. This runs BEFORE the price
+ *     cap on purpose: if the open copy is then dropped as a junk rate the
+ *     whole slot goes, and a time anyone can book is never left standing
+ *     under a resident-only label;
+ *  2. the price cap. Rows without a price pass, so resident-only rows
+ *     (never priced) are not dropped by it;
+ *  3. the after-sunset filter.
+ */
+export function finalizeSlots(
+  results: ScrapedTeeTime[],
+  opts: { maxPriceCents?: number; dropAfterSunset?: boolean },
+): ScrapedTeeTime[] {
+  let kept = dedupeTeeTimes(results);
+  const cap = opts.maxPriceCents;
+  if (typeof cap === "number") {
+    kept = kept.filter((r) =>
+      r.priceCents == null ? true : r.priceCents <= cap,
+    );
+  }
+  if (opts.dropAfterSunset) {
+    kept = kept.filter(
+      (r) => r.teeTimeAt.getTime() <= sunsetUtcMs(r.teeTimeAt),
+    );
+  }
+  return kept;
+}
 
 export interface ForeUpSlot {
   time: string;
@@ -344,10 +421,18 @@ function groupSizes(slot: ForeUpSlot): number[] {
     .sort((a, b) => a - b);
 }
 
-function parseSlots(
+/**
+ * `residentOnly`: the slots came from a class only a resident account can
+ * book. They are tagged, and nothing account-specific is carried over: no
+ * green fee (it is not the resident rate) and no booking fee (this scraper
+ * never stores one for the main sheet; the slot's booking_fee_* fields are
+ * simply not read).
+ */
+export function parseSlots(
   slots: ForeUpSlot[],
   bookingUrl: string,
   holes: number,
+  residentOnly = false,
 ): ScrapedTeeTime[] {
   const out: ScrapedTeeTime[] = [];
   for (const slot of slots) {
@@ -362,11 +447,12 @@ function parseSlots(
       playersMax: sizes.length > 0 ? sizes[sizes.length - 1] : 4,
       playersAvail: slot.available_spots ?? 4,
       priceCents:
-        typeof slot.green_fee === "number"
+        !residentOnly && typeof slot.green_fee === "number"
           ? Math.round(slot.green_fee * 100)
           : undefined,
       bookingUrl,
       holes,
+      ...(residentOnly ? { residentOnly: true } : {}),
     });
   }
   return out;

@@ -143,7 +143,7 @@ async function fetchUpcoming(sb: SupabaseClient, now: Date): Promise<DigestRow[]
     const { data, error } = await sb
       .from("tee_times")
       .select(
-        "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, scraped_at, courses(slug, name)",
+        "tee_time_at, players_avail, players_min, price_cents, booking_url, holes, resident_only, scraped_at, courses(slug, name)",
       )
       .gt("tee_time_at", nowIso)
       .lt("tee_time_at", cutoffIso)

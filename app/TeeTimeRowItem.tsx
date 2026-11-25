@@ -43,12 +43,19 @@ export function TeeTimeRowItem({
   const viable = row.players_avail >= 2;
   const courseName = row.courses?.name ?? "Unknown course";
   const accent = courseAccent(row.courses?.slug);
-  const deal = baselines ? getDealInfo(row, baselines) : { isDeal: false };
+  // Bookable only with a City of San Diego Resident ID Card. The row says so
+  // and shows no dollar figure; it never says the reader is a resident.
+  const residentOnly = row.resident_only === true;
+  const deal =
+    baselines && !residentOnly ? getDealInfo(row, baselines) : { isDeal: false };
   // A fee the booking page adds per player at checkout (Coronado's advance
   // fee, the city's booking fee on Balboa times 8 or more days out). Shown
   // beside the price; the price stays what the course lists. No tooltip: it
   // would repeat on every row, and the course page explains the fee once.
-  const playerFee = coursePlayerFee(row.courses?.slug, row.tee_time_at);
+  // Left off a resident-only row: the fee is not the same for a cardholder.
+  const playerFee = residentOnly
+    ? undefined
+    : coursePlayerFee(row.courses?.slug, row.tee_time_at);
 
   return (
     <li
@@ -102,8 +109,13 @@ export function TeeTimeRowItem({
               (deal.isDeal ? "text-magred" : "text-black")
             }
           >
-            {formatPrice(row.price_cents)}
+            {residentOnly ? "Price at booking" : formatPrice(row.price_cents)}
           </span>
+          {residentOnly && (
+            <span className="rounded-sm border border-black bg-cream px-1.5 py-0.5 text-[10px] font-bold uppercase leading-tight tracking-wide text-black">
+              Resident ID Card required
+            </span>
+          )}
           {deal.isDeal && deal.usualCents != null && (
             <span className="tabular-nums text-[11px] text-neutral-400 line-through">
               {formatPrice(deal.usualCents)}

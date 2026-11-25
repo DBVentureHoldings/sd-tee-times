@@ -228,6 +228,8 @@ export async function checkAndSendAlerts(
       )
       .gt("tee_time_at", nowIso)
       .gte("players_avail", criteria.minPlayers)
+      // Resident-only times are never alerted (same rule as the digest).
+      .eq("resident_only", false)
       .in("holes", criteria.holes)
       .order("tee_time_at", { ascending: true })
       .range(offset, offset + pageSize - 1);

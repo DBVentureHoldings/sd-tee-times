@@ -334,7 +334,10 @@ export default function TorreyPinesGuidePage() {
         <p className={p}>
           We check both courses through the day and list any open tee
           times we find, with the price. The prices we show for Torrey Pines
-          are the non-resident rate.
+          are the non-resident rate. Any time marked &quot;Resident ID Card
+          required&quot; can only be booked with a City of San Diego Resident
+          ID Card. We do not show a price for those; the booking page shows
+          it when you book.
         </p>
         <ul className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
           <li>

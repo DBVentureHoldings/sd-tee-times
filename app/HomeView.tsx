@@ -47,6 +47,10 @@ import {
 function isPrimeRow(r: TeeTimeRow): boolean {
   const slug = r.courses?.slug;
   if (!slug || SHORT_SLUGS.has(slug)) return false;
+  // Resident-only times are not prime: the Prime view shows share cards with
+  // a price and no room for the card label, and its badge counts times
+  // anyone can book. They stay in the main list, labelled.
+  if (r.resident_only) return false;
   return isPrimeTeeTime(new Date(r.tee_time_at), r.players_avail);
 }
 
@@ -383,6 +387,10 @@ export async function HomeView({
     .map((r): Drop | null => {
       // No short / par-3 courses in the drops hero.
       if (r.courses?.slug && SHORT_SLUGS.has(r.courses.slug)) return null;
+      // No resident-only times either: the hero cards are the ones people
+      // share, and most readers could not book them. They stay in the list,
+      // labelled.
+      if (r.resident_only) return null;
       if (isPrimeRow(r) && r.players_avail >= 4) {
         return { row: r, kind: "prime" };
       }

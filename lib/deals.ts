@@ -35,6 +35,9 @@ function bucketKey(row: TeeTimeRow): string | null {
 export function buildDealBaselines(rows: TeeTimeRow[]): DealBaselines {
   const groups = new Map<string, number[]>();
   for (const r of rows) {
+    // Resident-only rows carry no price; the explicit check keeps them out
+    // of the medians even if one ever arrived with a figure.
+    if (r.resident_only) continue;
     if (r.price_cents == null || r.price_cents <= 0) continue;
     const key = bucketKey(r);
     if (!key) continue;
@@ -68,6 +71,7 @@ export function getDealInfo(
   row: TeeTimeRow,
   baselines: DealBaselines,
 ): DealInfo {
+  if (row.resident_only) return { isDeal: false };
   if (row.price_cents == null || row.price_cents <= 0) return { isDeal: false };
   const key = bucketKey(row);
   if (!key) return { isDeal: false };

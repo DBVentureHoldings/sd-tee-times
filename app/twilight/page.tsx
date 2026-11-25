@@ -61,10 +61,14 @@ export default async function TwilightPage() {
 
   const baselines = buildDealBaselines(rows);
   const prices = rows
+    .filter((r) => !r.resident_only)
     .map((r) => r.price_cents)
     .filter((p): p is number => typeof p === "number" && p > 0)
     .sort((a, b) => a - b);
   const cheapest = prices[0];
+  // Said next to the count, so "N times from $X" is not read as N times
+  // anyone can book at that price.
+  const residentCount = rows.filter((r) => r.resident_only).length;
 
   return (
     <div className="space-y-6">
@@ -87,6 +91,9 @@ export default async function TwilightPage() {
           refresh there {rows.length === 1 ? "was" : "were"}{" "}
           <strong>{rows.length} twilight
           {rows.length === 1 ? " time" : " times"}</strong> open
+          {residentCount > 0
+            ? ` (${residentCount} marked "Resident ID Card required")`
+            : ""}
           {cheapest ? (
             <>
               , starting from <strong>{formatPrice(cheapest)}</strong>

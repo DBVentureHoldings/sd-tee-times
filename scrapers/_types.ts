@@ -11,6 +11,13 @@ export interface ScrapedTeeTime {
   priceCents?: number;
   bookingUrl: string;
   holes: number;
+  /**
+   * True when the slot came from a booking class that only a resident
+   * account can book (foreUp scraperConfig.residentClasses). Such a row
+   * carries no price: the figure the booking page returns inside those
+   * classes is not the resident rate. Absent means anyone can book it.
+   */
+  residentOnly?: boolean;
 }
 
 export interface CourseConfig {

@@ -272,6 +272,10 @@ export function buildDigestData(
   const seenDays = new Set<string>();
   for (const r of visible) {
     const course = getCourse(r.courses!.slug)!;
+    // Resident-only times are never emailed: most readers could not book
+    // them. Checked here, after the fresh/stale split above, so a course
+    // whose only rows are resident-only still counts as freshly scraped.
+    if (r.resident_only) continue;
     if (r.holes !== guideHoles(course)) continue;
     if (r.players_avail < 1) continue;
     const d = new Date(r.tee_time_at);

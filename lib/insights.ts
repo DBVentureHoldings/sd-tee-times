@@ -58,8 +58,12 @@ export function computeCourseInsights(rows: TeeTimeRow[]): CourseInsights {
   // Price stats use only the course's dominant hole count: blending 9-hole
   // rates into an 18-hole course's medians made the Price Guide understate
   // real green fees (and vice versa on short courses).
+  // Counted over the rows that can carry a price. Resident-only rows have
+  // none, and letting them pick the hole count could point the price figures
+  // at a hole count with no priced rows. All rows only when nothing else.
   const holesCount = new Map<number, number>();
-  for (const r of rows) {
+  const openRows = rows.filter((r) => !r.resident_only);
+  for (const r of openRows.length > 0 ? openRows : rows) {
     holesCount.set(r.holes, (holesCount.get(r.holes) ?? 0) + 1);
   }
   let dominantHoles = 18;
@@ -79,6 +83,10 @@ export function computeCourseInsights(rows: TeeTimeRow[]): CourseInsights {
     // Pacific day, not UTC: a 7pm PT Friday slot is Saturday in UTC and was
     // inflating daysWithTimes.
     days.add(dayKey(d));
+    // Resident-only rows count toward the days with times, and nothing
+    // else: not the foursome count (a reader without a card could not book
+    // them) and never a price figure.
+    if (r.resident_only) continue;
     if (r.players_avail >= 4) foursomeCount++;
     const p = r.price_cents;
     if (p == null || p <= 0 || r.holes !== dominantHoles) continue;
@@ -232,7 +240,7 @@ export function computePriceSummaries(
   for (const r of rows) {
     const slug = r.courses?.slug;
     const p = r.price_cents;
-    if (!slug || p == null || p <= 0) continue;
+    if (!slug || r.resident_only || p == null || p <= 0) continue;
     let byHoles = acc.get(slug);
     if (!byHoles) acc.set(slug, (byHoles = new Map()));
     let a = byHoles.get(r.holes);

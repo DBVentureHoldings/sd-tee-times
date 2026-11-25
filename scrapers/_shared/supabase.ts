@@ -1,5 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { KeepRange, ScrapedTeeTime } from "../_types.js";
+import { dedupeTeeTimes } from "./dedupe.js";
 
 let client: SupabaseClient | null = null;
 
@@ -122,22 +123,20 @@ export async function writeTeeTimes(args: {
 
   // Dedupe by (tee_time_at, holes) within this batch — overlapping booking
   // classes return the same slot, and Postgres rejects an upsert that
-  // touches the same row twice. Later entries win.
-  const byKey = new Map<string, ScrapedTeeTime>();
-  for (const t of args.times) {
-    const key = `${t.teeTimeAt.toISOString()}|${t.holes}`;
-    byKey.set(key, t);
-  }
-
-  const rows = Array.from(byKey.values()).map((t) => ({
+  // touches the same row twice. Later entries win, except that a
+  // resident-only copy never replaces a row anyone can book (see dedupe.ts).
+  const rows = dedupeTeeTimes(args.times).map((t) => ({
     course_id: args.courseId,
     tee_time_at: t.teeTimeAt.toISOString(),
     players_max: t.playersMax,
     players_avail: t.playersAvail,
     players_min: t.playersMin ?? 1,
-    price_cents: t.priceCents ?? null,
+    // A resident-only row never carries a price, whatever the scraper sent.
+    price_cents: t.residentOnly ? null : (t.priceCents ?? null),
     booking_url: t.bookingUrl,
     holes: t.holes,
+    // Written on every upsert, so a slot that opens to everyone flips back.
+    resident_only: t.residentOnly === true,
     scraped_at: nowIso,
   }));
 

@@ -200,6 +200,9 @@ export default async function CoursePage({
   // "an 18-hole course" / "a 9-hole course" / null when the format is unknown.
   const kindPhrase = courseKindPhrase(course);
   const openCount = rows.length;
+  // Times only a Resident ID Card holder can book (Torrey Pines). Counted so
+  // the intro can say so; they carry no price and are in no price figure.
+  const residentCount = rows.filter((r) => r.resident_only).length;
 
   // Deal baselines from this course's own rows (baselines are keyed per
   // course, so this is sufficient and keeps the page light).
@@ -323,7 +326,10 @@ export default async function CoursePage({
             refresh there {openCount === 1 ? "was" : "were"}{" "}
             <strong>
               {openCount} open {openCount === 1 ? "time" : "times"}
-            </strong>{" "}
+            </strong>
+            {residentCount > 0
+              ? ` (${residentCount} marked "Resident ID Card required")`
+              : ""}{" "}
             over the next {windowDays > WINDOW_DAYS ? `${windowDays} days` : "two weeks"}
             {priceProse ? (
               <>
@@ -335,6 +341,9 @@ export default async function CoursePage({
             Book to go to the booking page the course uses. No login here,
             and we add no fees; a booking page can add its own at checkout.
             {course.rateLabel ? ` Price note: ${course.rateLabel}.` : ""}
+            {residentCount > 0
+              ? ` Times marked "Resident ID Card required" can only be booked with a City of San Diego Resident ID Card. We do not show a price for those; the booking page shows it when you book.`
+              : ""}
           </p>
         )}
       </header>
