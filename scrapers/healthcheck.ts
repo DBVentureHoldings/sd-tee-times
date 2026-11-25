@@ -123,13 +123,25 @@ async function main() {
     }
   }
 
+  // Manual "send me a test" run (workflow_dispatch input), to prove the
+  // email path works end to end.
+  if (process.env.HEALTHCHECK_TEST === "true") {
+    messages.push({
+      subject: "SD Tee Times: test alert (everything is fine)",
+      body: `<p>This is a test of the SD Tee Times alert emails, sent ${pt(new Date(now))} PT.</p>
+<p>Website: <b>${siteStatus}</b>. Last successful scrape: <b>${lastSuccess ? pt(new Date(lastSuccess)) + " PT" : "none"}</b>.</p>
+<p>If you got this, alerts will reach you when scraping stops or the site goes down.</p>`,
+    });
+  }
+
   console.log(
     `site=${siteStatus} lastSuccess=${lastSuccess ? new Date(lastSuccess).toISOString() : "none"} staleFor=${Number.isFinite(staleFor) ? ago(staleFor) : "n/a"} alerts=${messages.length}`,
   );
 
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.ALERT_EMAIL?.trim().toLowerCase();
-  const from = process.env.ALERT_FROM_EMAIL ?? "SD Tee Times <onboarding@resend.dev>";
+  // `||`, not `??`: an unset GitHub variable arrives as "" rather than undefined.
+  const from = process.env.ALERT_FROM_EMAIL || "SD Tee Times <onboarding@resend.dev>";
   if (!messages.length) return;
   if (!apiKey || !to) {
     console.error("Alert needed but RESEND_API_KEY / ALERT_EMAIL are not set");

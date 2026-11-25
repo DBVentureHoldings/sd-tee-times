@@ -205,7 +205,7 @@ export async function checkAndSendAlerts(
   // Resend's free tier matches your verified address case-insensitively but
   // still 403's a mis-cased recipient. Normalize to lowercase.
   const recipient = process.env.ALERT_EMAIL?.trim().toLowerCase();
-  const fromEmail = process.env.ALERT_FROM_EMAIL ?? "SD Tee Times <onboarding@resend.dev>";
+  const fromEmail = process.env.ALERT_FROM_EMAIL || "SD Tee Times <onboarding@resend.dev>";
   const appUrl = process.env.ALERT_APP_URL ?? "https://sd-tee-times.vercel.app";
 
   if (!apiKey || !recipient) {

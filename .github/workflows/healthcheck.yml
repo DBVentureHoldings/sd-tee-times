@@ -5,7 +5,12 @@ name: Health check
 on:
   schedule:
     - cron: "41 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      test:
+        description: "Send a test alert email now"
+        type: boolean
+        default: false
 
 concurrency:
   group: healthcheck
@@ -21,6 +26,8 @@ jobs:
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
       ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+      ALERT_FROM_EMAIL: ${{ vars.ALERT_FROM_EMAIL }}
+      HEALTHCHECK_TEST: ${{ inputs.test }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
