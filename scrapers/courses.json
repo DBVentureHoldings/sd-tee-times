@@ -1,6 +1,6 @@
 [
   {
-    "_note": "Class map (from page 19347 SCHEDULES): 3181=Non Resident 0-90d, 3201=Resident 8-90d (price includes the city's advance-booking premium, e.g. $163), 1135=Resident 0-7d (usually sold out — the Torrey scramble), 14483/14533=Resident Back 9 weekend classes. Non-res listed FIRST so resident prices win the same-slot dedupe (later entries overwrite). maxPriceCents raised 15000→45000: the old $150 cap was censoring 100% of real inventory once the 8-90d resident price passed $150; 45000 is only a junk-rate sanity ceiling now.",
+    "_note": "Class map (from page 19347 SCHEDULES): 3181=Non Resident 0-90d, 3201=Resident 8-90d (price includes the city's advance-booking premium, e.g. $163), 1135=Resident 0-7d (usually sold out — the Torrey scramble), 14483/14533=Resident Back 9 weekend classes (REMOVED from bookingClasses Nov 2026: back-nine play is suspended and both answered 401 on every run; add them back here if it returns). Non-res listed FIRST so resident prices win the same-slot dedupe (later entries overwrite). maxPriceCents raised 15000→45000: the old $150 cap was censoring 100% of real inventory once the 8-90d resident price passed $150; 45000 is only a junk-rate sanity ceiling now.",
     "slug": "torrey-pines-north",
     "name": "Torrey Pines — North",
     "seoName": "Torrey Pines North Course",
@@ -14,15 +14,54 @@
       "bookingClasses": [
         "3181",
         "3201",
-        "1135",
-        "14483",
-        "14533"
+        "1135"
       ],
       "holes": [
         18,
         9
       ],
       "maxPriceCents": 45000
+    },
+    "playbook": {
+      "checkedOn": "2026-11-25",
+      "tips": [
+        {
+          "text": "New tee times go online at 7:00 PM every day. That is the moment to be on the city's booking page.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "City residents with a Resident ID Card can book 0 to 7 days ahead with no booking fee, or 8 to 90 days ahead for a $32 per player booking fee.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "Non-residents can book 0 to 90 days ahead for a $50 per player booking fee. It is non-refundable, non-transferable and does not count toward green fees.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "The Resident ID Card is listed at $25 a year (annual fee from the date of purchase).",
+          "sourceName": "City of San Diego, Torrey Pines course fees",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/course-fees"
+        },
+        {
+          "text": "No tee time? The city runs a virtual waitlist on the day of play. You register once you are at the course, and players are called in order as cancellations and no-shows open spots.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "One reservation holder can book at most two tee times a day, for up to eight players. Tee times cannot be transferred or rescheduled.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        }
+      ],
+      "observed": [
+        {
+          "text": "The times on this page come from the booking page as a visitor sees it, without a resident login. Resident-only times are not listed here, so residents should also check the booking page itself.",
+          "asOf": "2026-11-25"
+        }
+      ]
     },
     "active": true,
     "pairSlug": "torrey-pines-south",
@@ -112,6 +151,47 @@
       ],
       "maxPriceCents": 45000
     },
+    "playbook": {
+      "checkedOn": "2026-11-25",
+      "tips": [
+        {
+          "text": "New tee times go online at 7:00 PM every day. That is the moment to be on the city's booking page.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "City residents with a Resident ID Card can book 0 to 7 days ahead with no booking fee, or 8 to 90 days ahead for a $32 per player booking fee.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "Non-residents can book 0 to 90 days ahead for a $50 per player booking fee. It is non-refundable, non-transferable and does not count toward green fees.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "The Resident ID Card is listed at $25 a year (annual fee from the date of purchase).",
+          "sourceName": "City of San Diego, Torrey Pines course fees",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/course-fees"
+        },
+        {
+          "text": "No tee time? The city runs a virtual waitlist on the day of play. You register once you are at the course, and players are called in order as cancellations and no-shows open spots.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        },
+        {
+          "text": "One reservation holder can book at most two tee times a day, for up to eight players. Tee times cannot be transferred or rescheduled.",
+          "sourceName": "City of San Diego, tee time booking information",
+          "sourceUrl": "https://www.sandiego.gov/torrey-pines/tee-time-booking-information"
+        }
+      ],
+      "observed": [
+        {
+          "text": "The times on this page come from the booking page as a visitor sees it, without a resident login. Resident-only times are not listed here, so residents should also check the booking page itself.",
+          "asOf": "2026-11-25"
+        }
+      ]
+    },
     "active": true,
     "pairSlug": "torrey-pines-north",
     "rateLabel": "quoted at the non-resident rate",
@@ -195,6 +275,51 @@
       ],
       "maxPriceCents": 10000
     },
+    "advanceFee": {
+      "amount": 10,
+      "label": "booking fee",
+      "fromDay": 8,
+      "rollHourPT": 19
+    },
+    "farAhead": {
+      "scheduleId": "1470",
+      "bookingClass": "51735",
+      "holes": 18,
+      "fromDay": 14,
+      "toDay": 90,
+      "beforeHour": 12
+    },
+    "playbook": {
+      "checkedOn": "2026-11-25",
+      "tips": [
+        {
+          "text": "New tee times go online at 7:00 PM every day.",
+          "sourceName": "City of San Diego golf page",
+          "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf"
+        },
+        {
+          "text": "Booking 0 to 7 days ahead has no booking fee, for residents and non-residents alike. Booking 8 to 90 days ahead adds a $10 per player booking fee that is non-refundable and does not count toward green fees.",
+          "sourceName": "City of San Diego golf page",
+          "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf"
+        },
+        {
+          "text": "The Resident ID Card is listed at $25 a year (annual fee from the date of purchase).",
+          "sourceName": "City of San Diego, Balboa Park Golf Course page",
+          "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf/bpgolf"
+        },
+        {
+          "text": "One reservation holder can book at most two tee times a day, for up to eight players.",
+          "sourceName": "City of San Diego golf page",
+          "sourceUrl": "https://www.sandiego.gov/park-and-recreation/golf"
+        }
+      ],
+      "observed": [
+        {
+          "text": "Mornings are easier to get 15 or more days out. On our Nov 25, 2026 check, the next 14 days had 41 before-noon 18-hole times, on 4 of those days. Days 15 to 90 had 1,420, on 71 of the 77 days, and 1,340 of them had all four spots open.",
+          "asOf": "2026-11-25"
+        }
+      ]
+    },
     "active": true,
     "pairSlug": "balboa-park-9",
     "rateLabel": "quoted at the non-resident rate",
@@ -219,7 +344,7 @@
     }
   },
   {
-    "_note": "Balboa's 9-hole course — separate foreUp teesheet (1490, from page 19348's SCHEDULES). Class 929 is the one that returns 9-hole slots (51735 comes back empty for this schedule). Verified: 19 slots @ $32 on a day+3 probe.",
+    "_note": "Balboa's 9-hole course — separate foreUp teesheet (1490, from page 19348's SCHEDULES). Class 929 is the one that returns 9-hole slots (51735 comes back empty for this schedule). Verified: 19 slots @ $32 on a day+3 probe. 929 only covers days 0-7; 51736 (ADV TEE TIMES 8-90 DAYS on this teesheet) covers day 8 on, added Nov 2026.",
     "slug": "balboa-park-9",
     "name": "Balboa Park — 9 Hole",
     "seoName": "Balboa Park Golf Course (9-Hole Course)",
@@ -233,12 +358,19 @@
       "requiresAuth": true,
       "loginUrl": "https://foreupsoftware.com/index.php/booking/19347",
       "bookingClasses": [
-        "929"
+        "929",
+        "51736"
       ],
       "holes": [
         9
       ],
       "maxPriceCents": 10000
+    },
+    "advanceFee": {
+      "amount": 10,
+      "label": "booking fee",
+      "fromDay": 8,
+      "rollHourPT": 19
     },
     "active": true,
     "pairSlug": "balboa-park",
@@ -327,7 +459,50 @@
     "scraperConfig": {
       "alias": "coronado-gc-3-14-be",
       "facilityId": 10985,
-      "clubUrl": "https://coronado-gc-3-14-be.book.teeitup.com/"
+      "clubUrl": "https://coronado-gc-3-14-be.book.teeitup.com/",
+      "daysAhead": 15,
+      "keepOnEmptyDay": true,
+      "firstOnlineDay": 3
+    },
+    "playerFee": {
+      "amount": 25,
+      "label": "advance fee"
+    },
+    "playbook": {
+      "checkedOn": "2026-11-25",
+      "tips": [
+        {
+          "text": "Online booking covers tee times 3 to 14 days ahead and adds a non-refundable $25 per player advance fee, which does not count toward green fees or cart fees.",
+          "sourceName": "Coronado Golf Course, course information",
+          "sourceUrl": "https://www.golfcoronado.com/course-info/course-information"
+        },
+        {
+          "text": "New days open online at 12:00 AM, 14 days ahead. When we looked on Nov 25, 2026, the booking page said times for Dec 10 would open on Thursday, Nov 26 at 12:00 AM.",
+          "sourceName": "Coronado Golf Course online booking page",
+          "sourceUrl": "https://coronado-gc-3-14-be.book.teeitup.com/"
+        },
+        {
+          "text": "Two days before play, tee times are not sold online and carry no advance fee. They are given out first come, first served: in person from 6:30 AM to 8:30 AM, and by phone from 9:00 AM at (619) 522-6590 ext. 2.",
+          "sourceName": "Coronado Golf Course, course information",
+          "sourceUrl": "https://www.golfcoronado.com/course-info/course-information"
+        },
+        {
+          "text": "No tee time? Walk-ons are welcome. Players without a tee time can go on the waiting list on the day of play, first come, first served, at the starter's discretion.",
+          "sourceName": "Coronado Golf Course, course information",
+          "sourceUrl": "https://www.golfcoronado.com/course-info/course-information"
+        },
+        {
+          "text": "Cancel at least 24 hours before the day of play, or the card on file is charged the full green fees and advance fees.",
+          "sourceName": "Coronado Golf Course, course information",
+          "sourceUrl": "https://www.golfcoronado.com/course-info/course-information"
+        }
+      ],
+      "observed": [
+        {
+          "text": "Morning times are scarce online. Of the 184 open times we saw on Nov 25, 2026, 5 started before 11 AM. The newest day, Dec 9, had 20 open times about 12 hours after it opened, the earliest at 11:45 AM.",
+          "asOf": "2026-11-25"
+        }
+      ]
     },
     "active": true,
     "facts": {

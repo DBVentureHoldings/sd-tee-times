@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import type { ScrapedTeeTime } from "../_types.js";
+import type { KeepRange, ScrapedTeeTime } from "../_types.js";
 
 let client: SupabaseClient | null = null;
 
@@ -52,12 +52,47 @@ export async function getOrCreateCourse(args: {
   return data as DbCourse;
 }
 
+/**
+ * The parts of [fromIso, forever) that are NOT inside any keep range, as
+ * [from, to) pairs; `to` is null for the open-ended last one. With no keep
+ * ranges this is the single segment [fromIso, forever).
+ */
+export function sweepSegments(
+  fromIso: string,
+  keep: KeepRange[],
+): Array<{ from: string; to: string | null }> {
+  const ranges = keep
+    .map((k) => ({ from: Date.parse(k.fromIso), to: Date.parse(k.toIso) }))
+    .filter((k) => Number.isFinite(k.from) && Number.isFinite(k.to) && k.to > k.from)
+    .sort((a, b) => a.from - b.from);
+  const out: Array<{ from: string; to: string | null }> = [];
+  let cursor = Date.parse(fromIso);
+  for (const k of ranges) {
+    if (k.to <= cursor) continue;
+    if (k.from > cursor) {
+      out.push({
+        from: new Date(cursor).toISOString(),
+        to: new Date(k.from).toISOString(),
+      });
+    }
+    cursor = Math.max(cursor, k.to);
+  }
+  out.push({ from: new Date(cursor).toISOString(), to: null });
+  return out;
+}
+
 export async function writeTeeTimes(args: {
   courseId: string;
   times: ScrapedTeeTime[];
+  /**
+   * Stretches whose existing rows must survive this write untouched (a
+   * scraper's suspicious empty day). Empty or absent: the normal sweep.
+   */
+  keep?: KeepRange[];
 }): Promise<void> {
   const sb = supabaseAdmin();
   const nowIso = new Date().toISOString();
+  const segments = sweepSegments(nowIso, args.keep ?? []);
 
   // Mark-and-sweep, NOT delete-then-insert. We upsert the fresh rows FIRST
   // (each stamped with this run's scraped_at = nowIso), THEN delete only the
@@ -72,12 +107,16 @@ export async function writeTeeTimes(args: {
   // empty", and we clear the course's forward rows.
 
   if (args.times.length === 0) {
-    const { error: delErr } = await sb
-      .from("tee_times")
-      .delete()
-      .eq("course_id", args.courseId)
-      .gte("tee_time_at", nowIso);
-    if (delErr) throw delErr;
+    for (const seg of segments) {
+      let del = sb
+        .from("tee_times")
+        .delete()
+        .eq("course_id", args.courseId)
+        .gte("tee_time_at", seg.from);
+      if (seg.to) del = del.lt("tee_time_at", seg.to);
+      const { error: delErr } = await del;
+      if (delErr) throw delErr;
+    }
     return;
   }
 
@@ -113,13 +152,47 @@ export async function writeTeeTimes(args: {
   // 2. Sweep: remove this course's forward rows that this run did NOT touch
   //    (i.e. slots that disappeared since the last scrape). They keep an
   //    older scraped_at because the upsert above didn't update them.
-  const { error: sweepErr } = await sb
+  //    Rows inside a keep range are skipped: the scraper could not get a
+  //    believable answer for that stretch, so what we hold stays as it is.
+  for (const seg of segments) {
+    let sweep = sb
+      .from("tee_times")
+      .delete()
+      .eq("course_id", args.courseId)
+      .gte("tee_time_at", seg.from)
+      .lt("scraped_at", nowIso);
+    if (seg.to) sweep = sweep.lt("tee_time_at", seg.to);
+    const { error: sweepErr } = await sweep;
+    if (sweepErr) throw sweepErr;
+  }
+}
+
+/**
+ * Upcoming rows we currently hold for one course between two instants: when
+ * each tees off and when a scrape last confirmed it. Lets a scraper tell a
+ * day that has been empty for a while from one that had times a run ago.
+ */
+export async function forwardRowsBetween(
+  slug: string,
+  fromIso: string,
+  toIso: string,
+): Promise<Array<{ teeTimeAt: Date; scrapedAt: Date }>> {
+  const sb = supabaseAdmin();
+  const nowIso = new Date().toISOString();
+  const { data, error } = await sb
     .from("tee_times")
-    .delete()
-    .eq("course_id", args.courseId)
-    .gte("tee_time_at", nowIso)
-    .lt("scraped_at", nowIso);
-  if (sweepErr) throw sweepErr;
+    .select("tee_time_at, scraped_at, courses!inner(slug)")
+    .eq("courses.slug", slug)
+    .gt("tee_time_at", nowIso > fromIso ? nowIso : fromIso)
+    .lt("tee_time_at", toIso)
+    .limit(1000);
+  if (error) throw error;
+  return ((data ?? []) as Array<{ tee_time_at: string; scraped_at: string }>).map(
+    (r) => ({
+      teeTimeAt: new Date(r.tee_time_at),
+      scrapedAt: new Date(r.scraped_at),
+    }),
+  );
 }
 
 /**

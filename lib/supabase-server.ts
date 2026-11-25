@@ -50,14 +50,48 @@ export interface TeeTimeRow {
 /** How many days forward we surface in the app. */
 export const WINDOW_DAYS = 14;
 
+const PT_PARTS = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Los_Angeles",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  hourCycle: "h23",
+});
+
+/**
+ * The instant a Pacific calendar day starts, `offsetDays` after today
+ * (0 = today's midnight, 14 = the midnight that ends the 14-day window).
+ */
+export function pacificDayStart(offsetDays: number, now: Date = new Date()): Date {
+  const parts = PT_PARTS.formatToParts(now);
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  const y = get("year");
+  const m = get("month");
+  const d = get("day") + offsetDays;
+  // Pacific midnight is 07:00 or 08:00 UTC depending on daylight saving.
+  for (const utcHour of [7, 8]) {
+    const at = new Date(Date.UTC(y, m - 1, d, utcHour));
+    const h = PT_PARTS.formatToParts(at).find((p) => p.type === "hour")?.value;
+    if (Number(h) === 0) return at;
+  }
+  return new Date(Date.UTC(y, m - 1, d, 8));
+}
+
 async function fetchUpcomingTeeTimesUncached(
   maxRows = 20_000,
 ): Promise<TeeTimeRow[]> {
   const sb = supabaseServer();
   const now = new Date();
   const nowIso = now.toISOString();
-  const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const cutoffIso = cutoff.toISOString();
+  // 14 calendar days, today included, the same days the scrapers cover by
+  // default. It used to be "now + 14 x 24h", which reached into the morning
+  // of a 15th day. Nothing was ever scraped there, so the two were the same
+  // until a course asked for a longer look (Coronado, scraperConfig.daysAhead
+  // 15). Ending at the calendar day keeps that extra day off the homepage
+  // and every other shared list, so their row count does not grow; the day
+  // shows on the course's own page (fetchCourseTeeTimes).
+  const cutoffIso = pacificDayStart(WINDOW_DAYS, now).toISOString();
 
   // Supabase caps each response at 1000 rows. We have ~12,500 upcoming rows
   // in a 14-day window (Nov 2026, 46 courses), so we need ~13 round-trips.
@@ -185,12 +219,18 @@ export async function fetchUpcomingTeeTimes(): Promise<TeeTimeRow[]> {
  * One course's inventory fits well inside a single 1000-row response for all
  * but mega-inventories, so we page just like the full fetch to be safe.
  */
-export async function fetchCourseTeeTimes(slug: string): Promise<TeeTimeRow[]> {
+export async function fetchCourseTeeTimes(
+  slug: string,
+  /** Calendar days to show, today included (courseWindowDays in lib/courses). */
+  windowDays: number = WINDOW_DAYS,
+): Promise<TeeTimeRow[]> {
   const sb = supabaseServer();
   const now = new Date();
   const nowIso = now.toISOString();
-  const cutoff = new Date(now.getTime() + WINDOW_DAYS * 24 * 60 * 60 * 1000);
-  const cutoffIso = cutoff.toISOString();
+  const cutoffIso = pacificDayStart(
+    Math.max(windowDays, WINDOW_DAYS),
+    now,
+  ).toISOString();
   const pageSize = 1000;
 
   const rows: TeeTimeRow[] = [];
@@ -232,4 +272,59 @@ export async function fetchLastScrapeAt(): Promise<Date | null> {
       });
   }
   return lastScrapePromise;
+}
+
+/** One far-ahead time, as stored by scrapers/far-ahead.ts (migration 0008). */
+export interface FarTeeTimeRow {
+  tee_time_at: string;
+  players_avail: number;
+  price_cents: number | null;
+  /** Per-player booking fee the booking page reported; null when none. */
+  booking_fee_cents: number | null;
+  booking_url: string;
+  checked_at: string;
+}
+
+/** Most far-ahead rows a course page will read (3 requests of 1,000). */
+const FAR_MAX_ROWS = 3000;
+
+/**
+ * Far-ahead times for ONE course, from their own small table. They are kept
+ * apart from `tee_times` on purpose: nothing here can reach the homepage or
+ * fetchUpcomingTeeTimes. Only rows past the normal 14-day window are
+ * returned, so this never overlaps the course's main list.
+ *
+ * A failed read returns nothing (the block is simply left out) rather than
+ * failing the whole course page over an optional extra.
+ */
+export async function fetchFarTeeTimes(slug: string): Promise<FarTeeTimeRow[]> {
+  const sb = supabaseServer();
+  const fromIso = pacificDayStart(WINDOW_DAYS).toISOString();
+  const pageSize = 1000;
+  const rows: FarTeeTimeRow[] = [];
+  try {
+    for (let offset = 0; offset < FAR_MAX_ROWS; offset += pageSize) {
+      const { data, error } = await sb
+        .from("far_tee_times")
+        .select(
+          "tee_time_at, players_avail, price_cents, booking_fee_cents, booking_url, checked_at",
+        )
+        .eq("course_slug", slug)
+        .gte("tee_time_at", fromIso)
+        .order("tee_time_at", { ascending: true })
+        .order("holes", { ascending: true })
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      const page = (data ?? []) as FarTeeTimeRow[];
+      rows.push(...page);
+      if (page.length < pageSize) break;
+    }
+  } catch (err) {
+    console.error(
+      `far-ahead times for ${slug} unavailable:`,
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+  return rows;
 }

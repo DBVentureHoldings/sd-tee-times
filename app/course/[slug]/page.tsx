@@ -3,9 +3,17 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   fetchCourseTeeTimes,
+  fetchFarTeeTimes,
   fetchLastScrapeAt,
+  pacificDayStart,
+  WINDOW_DAYS,
 } from "@/lib/supabase-server";
-import { formatPrice, formatPriceRange } from "@/lib/format";
+import {
+  formatDayHeader,
+  formatPrice,
+  formatPriceRange,
+  formatTime,
+} from "@/lib/format";
 import { buildDealBaselines } from "@/lib/deals";
 import {
   computeCourseInsights,
@@ -16,12 +24,16 @@ import { DayGroupedList, UpdatedStamp } from "@/app/DayGroupedList";
 import { Freshness } from "@/app/Freshness";
 import { CourseAlertForm } from "@/app/CourseAlertForm";
 import { CourseFacts } from "@/app/CourseFacts";
+import { CoursePlaybook } from "@/app/CoursePlaybook";
+import { FarAheadMornings } from "@/app/FarAheadMornings";
+import { TeeTimeRowItem } from "@/app/TeeTimeRowItem";
 import { TrackView } from "@/app/TrackView";
 import {
   courseArea,
   courseBookingLink,
   courseDisplayName,
   courseKindPhrase,
+  courseWindowDays,
   getCourse,
   isShortFormat,
   publicCourses,
@@ -155,10 +167,31 @@ export default async function CoursePage({
   // Deliberately not caught: a failed regeneration keeps the last good page,
   // whereas a swallowed error would be cached as "no open times" for a whole
   // revalidate window.
-  const [rows, lastScrape] = await Promise.all([
-    fetchCourseTeeTimes(slug),
+  // Most courses show 14 days. A course scraped one day further (Coronado
+  // opens its newest day 14 days out) shows that day here, and only here.
+  const windowDays = courseWindowDays(course);
+  const [rows, lastScrape, farRows] = await Promise.all([
+    fetchCourseTeeTimes(slug, windowDays),
     fetchLastScrapeAt(),
+    // Far-ahead mornings, from their own small table, for the one or two
+    // courses that have a far-ahead scrape. No request at all for the rest.
+    course.farAhead ? fetchFarTeeTimes(slug) : Promise.resolve([]),
   ]);
+
+  // Rows past the shared 14-day window: the newest day(s) the course has
+  // opened. They get their own block, and stay out of the day list below,
+  // whose "more on the full tee sheet" links lead to a sheet that stops at
+  // 14 days.
+  const newestFrom = pacificDayStart(WINDOW_DAYS).getTime();
+  const newestRows =
+    windowDays > WINDOW_DAYS
+      ? rows.filter((r) => new Date(r.tee_time_at).getTime() >= newestFrom)
+      : [];
+  const listRows =
+    newestRows.length > 0
+      ? rows.filter((r) => new Date(r.tee_time_at).getTime() < newestFrom)
+      : rows;
+  const NEWEST_MAX_ROWS = 40;
 
   // Official full name where we have one ("Torrey Pines South Course");
   // `course.name` is the short tee-sheet label and stays out of page copy.
@@ -291,7 +324,7 @@ export default async function CoursePage({
             <strong>
               {openCount} open {openCount === 1 ? "time" : "times"}
             </strong>{" "}
-            over the next two weeks
+            over the next {windowDays > WINDOW_DAYS ? `${windowDays} days` : "two weeks"}
             {priceProse ? (
               <>
                 , with {feeHoles ? `${feeHoles}-hole ` : ""}green fees{" "}
@@ -414,7 +447,7 @@ export default async function CoursePage({
                 on weekends.{" "}
               </>
             )}
-            Open times span {insights.daysWithTimes} of the next 14 days
+            Open times span {insights.daysWithTimes} of the next {windowDays} days
             {insights.foursomeCount > 0 && (
               <>
                 , including {insights.foursomeCount}{" "}
@@ -428,16 +461,66 @@ export default async function CoursePage({
         </section>
       )}
 
+      {/* Tactics for the hard-to-book courses: official rules with their
+          sources, then our own dated observations. Static. */}
+      <CoursePlaybook course={course} />
+
       {/* Course-specific alert signup — highest-intent ask for a visitor who
           arrived searching for this exact course. */}
       <CourseAlertForm courseName={n} courseSlug={slug} />
 
+      {/* The newest day the course has opened, past the shared 14-day
+          window. This is the day with the most choice, so it leads. */}
+      {newestRows.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="font-display text-xl uppercase tracking-tight text-black">
+            Newest day open: {formatDayHeader(new Date(newestRows[0].tee_time_at))}
+          </h2>
+          <p className="text-sm leading-relaxed text-neutral-700">
+            The latest date we saw on the booking page, with{" "}
+            <strong>
+              {newestRows.length} open{" "}
+              {newestRows.length === 1 ? "time" : "times"}
+            </strong>
+            , the earliest at{" "}
+            {formatTime(new Date(newestRows[0].tee_time_at))}. As of the
+            Updated line under the list below.
+          </p>
+          <ul
+            data-tee-group
+            className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200 data-[tee-empty]:hidden"
+          >
+            {newestRows.slice(0, NEWEST_MAX_ROWS).map((r) => (
+              <TeeTimeRowItem
+                key={`${r.tee_time_at}-${r.holes}`}
+                row={r}
+                baselines={baselines}
+                hideCourseName
+              />
+            ))}
+          </ul>
+          {newestRows.length > NEWEST_MAX_ROWS && (
+            <p className="text-xs text-neutral-500">
+              + {newestRows.length - NEWEST_MAX_ROWS} more that day on the{" "}
+              <a
+                href={bookingLink}
+                target="_blank"
+                rel="noopener"
+                className="font-bold text-brand underline"
+              >
+                course booking page
+              </a>
+            </p>
+          )}
+        </section>
+      )}
+
       {/* Live tee times, grouped by day. Capped to the next few days: the
           later ones are summarized in a "+N more" line and live one tap away
           behind the CTA below, which keeps these ~37 pages cheap to rebuild. */}
-      {rows.length > 0 ? (
+      {listRows.length > 0 ? (
         <DayGroupedList
-          rows={rows}
+          rows={listRows}
           baselines={baselines}
           maxDays={4}
           maxRowsPerDay={40}
@@ -452,6 +535,39 @@ export default async function CoursePage({
           <UpdatedStamp at={lastScrape} />
         </>
       )}
+
+      {/* The city's advance booking fee, said once per page; the rows it
+          applies to carry a short label. */}
+      {course.advanceFee && listRows.length > 0 && (
+        <p className="text-xs leading-relaxed text-neutral-600">
+          The city adds a ${course.advanceFee.amount} per player{" "}
+          {course.advanceFee.label} at checkout on tee times booked{" "}
+          {course.advanceFee.fromDay} or more days ahead. It is not in the
+          price shown. In our lists those times are marked{" "}
+          <span className="font-bold uppercase text-magred">
+            +${course.advanceFee.amount}/player {course.advanceFee.label}
+          </span>
+          . Right at the one-week line, go by what the booking page shows.{" "}
+          <a
+            href="https://www.sandiego.gov/park-and-recreation/golf"
+            target="_blank"
+            rel="noopener"
+            className="font-bold text-brand underline"
+          >
+            Source
+          </a>
+        </p>
+      )}
+
+      {/* Before-noon times past the 14-day window, one line per date, from
+          the separate far-ahead check. Leaves itself out when empty or when
+          that check is over a day old. */}
+      <FarAheadMornings
+        rows={farRows}
+        courseSlug={slug}
+        courseName={n}
+        rateLabel={course.rateLabel}
+      />
 
       {/* CTA into the full app filtered to this course. Only with rows: on
           an empty page the booking-page button above is the useful one. */}

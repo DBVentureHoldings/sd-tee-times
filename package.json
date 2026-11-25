@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "scrape": "tsx --env-file=.env scrapers/_runner.ts",
+    "scrape:far": "tsx --env-file=.env scrapers/far-ahead.ts",
     "inspect:foreup": "tsx --env-file=.env scrapers/inspect-foreup.ts",
     "email:preview": "tsx --env-file=.env scrapers/send-emails.ts --mode=preview"
   },

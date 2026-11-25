@@ -8,7 +8,7 @@ import {
   teeTimeWeekday,
 } from "@/lib/format";
 import { getDealInfo, type DealBaselines } from "@/lib/deals";
-import { courseAreaLabel } from "@/lib/courses";
+import { courseAreaLabel, coursePlayerFee } from "@/lib/courses";
 import type { TeeTimeRow } from "@/lib/supabase-server";
 
 /** "weekend" / "weekday" and morning / midday / twilight, for analytics. */
@@ -44,6 +44,11 @@ export function TeeTimeRowItem({
   const courseName = row.courses?.name ?? "Unknown course";
   const accent = courseAccent(row.courses?.slug);
   const deal = baselines ? getDealInfo(row, baselines) : { isDeal: false };
+  // A fee the booking page adds per player at checkout (Coronado's advance
+  // fee, the city's booking fee on Balboa times 8 or more days out). Shown
+  // beside the price; the price stays what the course lists. No tooltip: it
+  // would repeat on every row, and the course page explains the fee once.
+  const playerFee = coursePlayerFee(row.courses?.slug, row.tee_time_at);
 
   return (
     <li
@@ -102,6 +107,11 @@ export function TeeTimeRowItem({
           {deal.isDeal && deal.usualCents != null && (
             <span className="tabular-nums text-[11px] text-neutral-400 line-through">
               {formatPrice(deal.usualCents)}
+            </span>
+          )}
+          {playerFee && (
+            <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-magred">
+              +${playerFee.amount}/player {playerFee.label}
             </span>
           )}
           {hideCourseName && row.holes === 9 && (

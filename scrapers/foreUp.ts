@@ -83,12 +83,28 @@ async function loginAndGetCookie(loginUrl: string): Promise<string> {
   }
 }
 
+/**
+ * Booking classes ("scheduleId|class") that answered 401 even with a login
+ * we had just made. They are gated behind something the account lacks, so
+ * for the rest of this process we neither ask for them again (the same class
+ * is otherwise retried for every `holes` value) nor log in again for them.
+ */
+const deniedClasses = new Set<string>();
+// A 401 on a login younger than this is the class refusing us, not a stale
+// session, so logging in again cannot help.
+const FRESH_LOGIN_MS = 2 * 60 * 1000;
+let forcedLogins = 0;
+
+/** Counters for the end-of-course log line (and for tests). */
+export const foreUpStats = { logins: 0, forcedLogins: 0, skippedPasses: 0 };
+
 async function getCookie(loginUrl: string): Promise<string> {
   if (cachedCookie && Date.now() - cachedAt < COOKIE_TTL_MS) {
     return cachedCookie;
   }
   cachedCookie = await loginAndGetCookie(loginUrl);
   cachedAt = Date.now();
+  foreUpStats.logins++;
   return cachedCookie;
 }
 
@@ -196,9 +212,17 @@ export const foreUpScraper: Scraper = {
     }
 
     const results: ScrapedTeeTime[] = [];
+    let skippedHere = 0;
 
     for (const holes of holesList) {
       classLoop: for (const bookingClass of classes) {
+        const classKey = `${cfg.scheduleId}|${bookingClass}`;
+        if (deniedClasses.has(classKey)) {
+          // Already refused this run (under another `holes` value). The old
+          // code asked again, got the 401 again, and logged in again.
+          skippedHere++;
+          continue;
+        }
         for (let i = 0; i < ctx.daysAhead; i++) {
           const date = addDays(new Date(), i);
           const mdy = formatMDY(date);
@@ -220,19 +244,31 @@ export const foreUpScraper: Scraper = {
           const res = await fetch(url, { headers });
 
           if (res.status === 401 && cfg.requiresAuth) {
-            // Stale cookie. Force a re-login and retry once.
-            cachedCookie = null;
-            headers.cookie = await getCookie(
-              cfg.loginUrl ?? ctx.course.bookingUrl,
-            );
-            const retry = await fetch(url, { headers });
-            if (retry.status === 401) {
-              // Persistent 401 after re-login means this booking class is
-              // gated behind something we lack (e.g., an active resident
-              // pass). Skip this class entirely and try the next one —
-              // courses commonly have a non-resident class that does work.
+            // Either the session went stale or this class is closed to the
+            // account. Log in again at most once per stale session: the
+            // first 401 of the process always gets one fresh login, after
+            // that only a session older than FRESH_LOGIN_MS does. A 401 on
+            // a fresh login is final for the class.
+            const mayRelogin =
+              forcedLogins === 0 || Date.now() - cachedAt > FRESH_LOGIN_MS;
+            let retry: Response | null = null;
+            if (mayRelogin) {
+              forcedLogins++;
+              foreUpStats.forcedLogins++;
+              cachedCookie = null;
+              headers.cookie = await getCookie(
+                cfg.loginUrl ?? ctx.course.bookingUrl,
+              );
+              retry = await fetch(url, { headers });
+            }
+            if (!retry || retry.status === 401) {
+              // The class is gated behind something we lack (e.g., an
+              // active resident pass). Skip it for the rest of this run and
+              // try the next one: courses commonly have a non-resident
+              // class that does work.
+              deniedClasses.add(classKey);
               console.warn(
-                `  (skipping ${ctx.course.slug} class ${bookingClass}: 401 after re-login)`,
+                `  (skipping ${ctx.course.slug} class ${bookingClass}: 401 ${retry ? "after re-login" : "on a fresh login"})`,
               );
               continue classLoop;
             }
@@ -264,6 +300,13 @@ export const foreUpScraper: Scraper = {
     // non-resident + advance), so a single tee time can show up at multiple
     // price points. Anything above the cap is non-resident inventory we
     // can't book at the resident rate.
+    if (skippedHere > 0) {
+      foreUpStats.skippedPasses += skippedHere;
+      console.warn(
+        `  (${ctx.course.slug}: ${skippedHere} repeat pass(es) over refused classes not sent)`,
+      );
+    }
+
     const cap = cfg.maxPriceCents;
     let kept = results;
     if (typeof cap === "number") {
@@ -280,8 +323,13 @@ export const foreUpScraper: Scraper = {
   },
 };
 
-interface ForeUpSlot {
+export interface ForeUpSlot {
   time: string;
+  // Present when the booking class charges a booking fee (per player when
+  // booking_fee_per_person). Dollars.
+  booking_fee_required?: boolean;
+  booking_fee_price?: number | string;
+  booking_fee_per_person?: boolean;
   available_spots?: number;
   // The API sends these as strings ("2", "3", "4"); parse before use.
   allowed_group_sizes?: Array<number | string>;
@@ -324,7 +372,7 @@ function parseSlots(
   return out;
 }
 
-function parseForeUpTime(s: string): Date | null {
+export function parseForeUpTime(s: string): Date | null {
   const m = s.match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})/);
   if (!m) return null;
   const [, y, mo, d, h, mi] = m;

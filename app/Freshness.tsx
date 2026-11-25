@@ -184,3 +184,29 @@ export function StaleNotice({
     </div>
   );
 }
+
+/**
+ * Shows its children only while `iso` is younger than `maxAgeMs`. For a block
+ * built from a slower, separate check (the far-ahead times): the server
+ * already leaves it out when the check is too old at render, and this takes
+ * it down in the browser if a cached page outlives that limit.
+ */
+export function HideWhenOlder({
+  iso,
+  maxAgeMs,
+  children,
+}: {
+  iso: string;
+  maxAgeMs: number;
+  children: React.ReactNode;
+}) {
+  const [tooOld, setTooOld] = useState(false);
+  useEffect(() => {
+    const at = new Date(iso).getTime();
+    const check = () => setTooOld(Date.now() - at > maxAgeMs);
+    check();
+    const id = setInterval(check, 5 * 60_000);
+    return () => clearInterval(id);
+  }, [iso, maxAgeMs]);
+  return tooOld ? null : <>{children}</>;
+}

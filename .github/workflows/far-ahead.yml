@@ -1,0 +1,46 @@
+name: Far-ahead tee times
+
+# A light, separate scrape of days 15 to 90 for the courses that opt in
+# (scrapers/far-ahead.ts; today only Balboa Park's 18-hole mornings). About
+# 78 requests a run, 1.5 seconds apart, no login and no browser. It writes
+# only the far_tee_times table, never the main tee sheet, so it cannot
+# collide with the 15-minute scrape or add rows to the homepage.
+
+on:
+  workflow_dispatch: {}
+  # Four runs a day, Pacific: about 6:20 AM, 12:20 PM, 7:20 PM and 11:20 PM.
+  # The evening run is after the 7:00 PM release, when the booking-fee
+  # window moves a day. GitHub runs schedules in UTC and can start them late;
+  # the course page prints when the data was last checked and hides the
+  # block once that is over a day old, so a missed run is never silent.
+  schedule:
+    - cron: "20 14,20 * * *"
+    - cron: "20 3,7 * * *"
+
+concurrency:
+  group: far-ahead
+  cancel-in-progress: false
+
+jobs:
+  far-ahead:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      # Day math must match the golf courses' clock (see scrape.yml).
+      TZ: America/Los_Angeles
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run far-ahead scrape
+        run: npx tsx scrapers/far-ahead.ts

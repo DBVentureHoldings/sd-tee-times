@@ -12,7 +12,7 @@ import {
 } from "./_shared/supabase.js";
 import { closeBrowser } from "./_shared/browser.js";
 import { checkAndSendAlerts } from "./_shared/alerts.js";
-import type { CourseConfig } from "./_types.js";
+import type { CourseConfig, KeepRange } from "./_types.js";
 
 // Env loading: locally, run with `node --env-file=.env`. In GH Actions, env
 // vars come from repo secrets via the workflow `env:` block.
@@ -25,6 +25,17 @@ const COURSES_PATH = join(__dirname, "courses.json");
 // wasted work that lengthened runs and fed the source rate-limiting (TeeItUp
 // 429s, cps.golf Cloudflare). Scraping only what we display cuts that load.
 const DAYS_AHEAD = 14;
+// A course can ask for a longer look with `scraperConfig.daysAhead` (Coronado
+// opens its newest day 14 days out, one past our default). Capped so a typo
+// can't multiply requests. The homepage query stops at 14 calendar days no
+// matter what (lib/supabase-server.ts), so an extra day only reaches the
+// course's own page.
+const MAX_DAYS_AHEAD = 21;
+
+function daysAheadFor(course: CourseConfig): number {
+  const n = Number((course.scraperConfig ?? {}).daysAhead);
+  return Number.isInteger(n) && n > 0 ? Math.min(n, MAX_DAYS_AHEAD) : DAYS_AHEAD;
+}
 
 function loadCourses(): CourseConfig[] {
   const raw = readFileSync(COURSES_PATH, "utf8");
@@ -87,8 +98,13 @@ async function main() {
     const runId = await startScrapeRun(dbCourseId);
     const t0 = Date.now();
     try {
-      const times = await scraper.scrape({ course, daysAhead: DAYS_AHEAD });
-      await writeTeeTimes({ courseId: dbCourseId, times });
+      const keep: KeepRange[] = [];
+      const times = await scraper.scrape({
+        course,
+        daysAhead: daysAheadFor(course),
+        keep,
+      });
+      await writeTeeTimes({ courseId: dbCourseId, times, keep });
       await finishScrapeRun({
         runId,
         status: "success",

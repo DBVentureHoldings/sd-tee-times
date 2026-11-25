@@ -45,6 +45,43 @@ export interface CourseMeta {
   rateLabel?: string;
   /** Static facts read from the course's official pages; every key optional. */
   facts?: CourseFacts;
+  /**
+   * A per-player fee the course's booking page adds at checkout, on top of
+   * the listed price (whole dollars). Printed as a label beside the price;
+   * the price itself is never changed. The scraper logs a warning when the
+   * booking page's own fee stops matching `amount`.
+   */
+  playerFee?: { amount: number; label: string };
+  /**
+   * A per-player booking fee that only applies to times far enough ahead
+   * (the city courses: $10 from 8 days out at Balboa). `fromDay` counts
+   * Pacific calendar days from the booking day, and the booking day rolls
+   * over at `rollHourPT` (the 7:00 PM release), not at midnight. Printed as
+   * a label on the rows it applies to; the price is never changed.
+   */
+  advanceFee?: { amount: number; label: string; fromDay: number; rollHourPT?: number };
+  /** "How to actually get a time" box; see app/CoursePlaybook.tsx. */
+  playbook?: CoursePlaybook;
+  /** Set when a separate far-ahead scrape covers this course (far-ahead.ts). */
+  farAhead?: { fromDay?: number; toDay?: number; beforeHour?: number; holes?: number };
+  /** Only `daysAhead` is read by the app; the rest belongs to the scrapers. */
+  scraperConfig?: { daysAhead?: number };
+}
+
+/**
+ * Tactics for getting a tee time. Two kinds, kept visibly apart:
+ *  - `tips`: read from an official page (the course's or the city's own
+ *    site, or the course's own booking page), each with its `sourceUrl`,
+ *    all re-read on `checkedOn`. No hour or fee goes here unless that page
+ *    states it.
+ *  - `observed`: what our own checks of the booking page showed, dated with
+ *    `asOf`. Printed under a heading that says it is ours, not official.
+ */
+export interface CoursePlaybook {
+  /** YYYY-MM-DD the official pages were last read. */
+  checkedOn: string;
+  tips: Array<{ text: string; sourceName: string; sourceUrl: string }>;
+  observed?: Array<{ text: string; asOf: string }>;
 }
 
 export type CourseType = "par-3" | "executive" | "9-hole";
@@ -115,6 +152,64 @@ export function getCourse(slug: string): CourseMeta | undefined {
   const c = COURSES.find((x) => x.slug === slug);
   if (!c || c.hidden || c.active === false) return undefined;
   return c;
+}
+
+/**
+ * Calendar days of tee times a course's own page shows, today included. 14
+ * for everyone unless the course is scraped further (scraperConfig.daysAhead).
+ * Shared lists (homepage, hubs) always stop at 14.
+ */
+export function courseWindowDays(c: CourseMeta | undefined): number {
+  const n = Number(c?.scraperConfig?.daysAhead);
+  return Number.isInteger(n) && n > 14 && n <= 21 ? n : 14;
+}
+
+const FEE_DAY_FMT = new Intl.DateTimeFormat("en-CA", {
+  timeZone: "America/Los_Angeles",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+let feeBySlug: Map<string, CourseMeta> | null = null;
+function dayNumber(d: Date): number {
+  const [y, m, day] = FEE_DAY_FMT.format(d).split("-").map(Number);
+  return Date.UTC(y, m - 1, day) / 86_400_000;
+}
+
+/**
+ * The per-player fee the booking page adds to one tee time, if any:
+ *  - `playerFee`: on every time the course sells online (Coronado);
+ *  - `advanceFee`: only on times `fromDay` or more days past the booking
+ *    day, which rolls over at `rollHourPT` Pacific. For Balboa (fromDay 8,
+ *    roll 19) that is 7 or more calendar days out before 7:00 PM and 8 or
+ *    more after it. The before-7 PM side is what the booking page answered
+ *    on both sides of the line at midday on Nov 25, 2026; the after-7 PM
+ *    side follows the city's published "0 to 7 days, no fee" rule.
+ * Worked out when the page is rendered, so on a cached page the line can
+ * sit a day off for as long as the cache lives.
+ */
+export function coursePlayerFee(
+  slug: string | undefined,
+  teeTimeIso?: string,
+  now: Date = new Date(),
+): { amount: number; label: string } | undefined {
+  if (!slug) return undefined;
+  if (!feeBySlug) {
+    feeBySlug = new Map(
+      COURSES.filter((c) => c.playerFee || c.advanceFee).map((c) => [c.slug, c]),
+    );
+  }
+  const c = feeBySlug.get(slug);
+  if (!c) return undefined;
+  if (c.playerFee) return c.playerFee;
+  const adv = c.advanceFee;
+  if (!adv || !teeTimeIso) return undefined;
+  const tee = new Date(teeTimeIso);
+  if (Number.isNaN(tee.getTime())) return undefined;
+  const bookingDay = new Date(now.getTime() - (adv.rollHourPT ?? 0) * 3600_000);
+  return dayNumber(tee) - dayNumber(bookingDay) >= adv.fromDay
+    ? { amount: adv.amount, label: adv.label }
+    : undefined;
 }
 
 /** Name for titles, headings and link text: the official name when we have one. */

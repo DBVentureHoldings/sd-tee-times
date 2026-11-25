@@ -32,11 +32,32 @@ export interface CourseConfig {
   short?: boolean;
   /** Hidden from the UI (scraper blocked; stale rows must never surface). */
   hidden?: boolean;
+  /**
+   * A per-player fee the booking page adds at checkout on top of the listed
+   * price (Coronado's $25 advance fee). Shown as a label next to the price;
+   * never added into price_cents. `amount` is whole dollars.
+   */
+  playerFee?: { amount: number; label: string };
+}
+
+/** A stretch of the tee sheet, as two instants (from included, to excluded). */
+export interface KeepRange {
+  fromIso: string;
+  toIso: string;
 }
 
 export interface ScrapeContext {
   course: CourseConfig;
   daysAhead: number;
+  /**
+   * Filled in by a scraper that got a suspicious empty answer for part of
+   * the sheet (see teeitup.ts, keepOnEmptyDay): the writer leaves the rows
+   * we already hold inside these ranges alone instead of sweeping them.
+   * Everything outside the ranges is written and swept as usual. The kept
+   * rows are NOT re-stamped, so their scraped_at keeps ageing and the
+   * scraper can tell how long that stretch has been empty.
+   */
+  keep?: KeepRange[];
 }
 
 export interface Scraper {
