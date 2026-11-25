@@ -152,7 +152,11 @@ export function StaleNotice({
   const stale = staleAtRender || staleNow;
   useEffect(() => {
     document.documentElement.toggleAttribute("data-tee-stale", stale);
-    if (stale && last !== null) {
+    // Count only real outages (the page was BUILT on old data). A tab left
+    // open for hours also trips the in-browser check and still shows the
+    // notice, but that is the visitor's old tab, not the scraper, and it
+    // refreshes itself (see Freshness), so it is not counted.
+    if (staleAtRender && last !== null) {
       const hours = (Date.now() - last) / 3600_000;
       // Delayed: on load this runs before the layout's <Analytics> is ready.
       const id = setTimeout(
@@ -164,7 +168,7 @@ export function StaleNotice({
       );
       return () => clearTimeout(id);
     }
-  }, [stale, last]);
+  }, [stale, staleAtRender, last]);
 
   if (!stale || !stamp) return null;
   return (
