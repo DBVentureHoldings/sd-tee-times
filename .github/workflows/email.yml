@@ -1,0 +1,81 @@
+name: Email (manual only)
+
+# Subscriber emails: the one-time intro and the weekly digest.
+# See scrapers/send-emails.ts.
+#
+# MANUAL ONLY. There is no schedule, so nothing here can send on its own.
+# The default mode is "preview", which renders the emails for a fake
+# recipient and uploads them as a build artifact. It sends nothing.
+#
+# A real send needs ALL of: mode=send, confirm=SEND, the repository
+# VARIABLE EMAILS_ENABLED set to "true", and the email_log table
+# (supabase/migrations/0007_email_log.sql) applied.
+#
+# To add the weekly digest later, add this under `on:`
+#   schedule:
+#     - cron: "0 22 * * 4"   # Thu 22:00 UTC = 2pm PST / 3pm PDT. GitHub cron can run late.
+# Scheduled runs get no inputs, so KIND/MODE/CONFIRM below would be empty and
+# the script would fall back to a digest PREVIEW. For the schedule, set them
+# from `github.event_name == 'schedule'`, e.g.
+#   MODE: ${{ github.event_name == 'schedule' && 'send' || inputs.mode }}
+#   CONFIRM: ${{ github.event_name == 'schedule' && 'SEND' || inputs.confirm }}
+# and keep EMAILS_ENABLED as the off switch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      kind:
+        description: "Which email"
+        type: choice
+        options: [digest, intro]
+        default: digest
+      mode:
+        description: "preview = files only; test = one email to ALERT_EMAIL; send = real subscribers"
+        type: choice
+        options: [preview, test, send]
+        default: preview
+      confirm:
+        description: "Type SEND to really send (mode=send only)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: email
+  cancel-in-progress: false
+
+jobs:
+  email:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      TZ: America/Los_Angeles
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+      ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+      EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+      DONATE_URL: ${{ vars.DONATE_URL }}
+      EMAIL_POSTAL_ADDRESS: ${{ vars.EMAIL_POSTAL_ADDRESS }}
+      EMAILS_ENABLED: ${{ vars.EMAILS_ENABLED }}
+      # Inputs go through env, never interpolated into the shell line.
+      KIND: ${{ inputs.kind }}
+      MODE: ${{ inputs.mode }}
+      CONFIRM: ${{ inputs.confirm }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npx tsx scrapers/send-emails.ts --kind="${KIND:-digest}" --mode="${MODE:-preview}" --confirm="$CONFIRM" --out=email-preview
+      - if: ${{ (inputs.mode || 'preview') == 'preview' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: email-preview
+          path: email-preview
+          retention-days: 3

@@ -117,10 +117,10 @@ export default async function DealsPage() {
 
       <AlertCaptureForm
         source="deals"
-        title="🔥 Deal alerts"
-        blurb="Get an email when a San Diego course drops a tee time well below its usual rate. Free, unsubscribe anytime."
+        title="🔥 Deals by email"
+        blurb="Once a week, before the weekend, we email the best weekend times, including tee times well below a course's usual rate. Free, unsubscribe anytime."
         cta="Send me deals"
-        successNote="Deal alerts on — we'll email you when prices drop."
+        successNote="You're set. Deals come in the weekly email."
       />
 
       {dealRows.length > 0 ? (
