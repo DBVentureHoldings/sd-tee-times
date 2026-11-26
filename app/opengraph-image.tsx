@@ -3,33 +3,37 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
 /**
- * Open Graph share card, "ticket" direction: one oversized tee-time ticket
- * (a single big time is the hero) tilted next to the stacked wordmark. Built
- * to read at ~300px wide in an iMessage link preview.
+ * Open Graph share card, "board" direction: a dark, full-bleed live
+ * leaderboard. Built to read at ~300px wide in a chat link preview:
+ * wordmark, a red LIVE badge, and three chunky tee-time rows.
  */
 export const alt =
-  "SD Tee Times: every open tee time across San Diego. 47 courses, free, no login.";
+  "SD Tee Times: every open tee time across San Diego, live. 47 courses, free, no login.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const GREEN = "#0E5B3D";
 const GREEN_DK = "#0A4530";
+const GREEN_LT = "#1F7A53";
 const CREAM = "#F5EFE0";
 const RED = "#C8102E";
 const INK = "#111111";
 
-const outline = (w: number, drop: number) =>
-  [
-    `-${w}px -${w}px 0 ${INK}`,
-    `${w}px -${w}px 0 ${INK}`,
-    `-${w}px ${w}px 0 ${INK}`,
-    `${w}px ${w}px 0 ${INK}`,
-    `0 ${w}px 0 ${INK}`,
-    `${w}px 0 0 ${INK}`,
-    `0 -${w}px 0 ${INK}`,
-    `-${w}px 0 0 ${INK}`,
-    `${drop}px ${drop}px 0 ${INK}`,
-  ].join(", ");
+const OUTLINE = [
+  `-3px -3px 0 ${INK}`,
+  `3px -3px 0 ${INK}`,
+  `-3px 3px 0 ${INK}`,
+  `3px 3px 0 ${INK}`,
+  `8px 8px 0 ${INK}`,
+].join(", ");
+
+// Illustrative rows only (not live data).
+const ROWS = [
+  { time: "6:52", ampm: "AM", course: "CORONADO", price: "$78" },
+  { time: "8:03", ampm: "AM", course: "MADERAS", price: "$175" },
+  { time: "2:40", ampm: "PM", course: "BALBOA PARK", price: "$34" },
+];
+
+const ROW_H = 106;
 
 export default async function OpengraphImage() {
   let fonts:
@@ -43,28 +47,6 @@ export default async function OpengraphImage() {
   }
   const display = fonts ? "Bebas Neue" : "sans-serif";
 
-  const chip = (label: string, bg: string, color: string) => (
-    <div
-      style={{
-        display: "flex",
-        background: bg,
-        color,
-        border: `4px solid ${INK}`,
-        boxShadow: `5px 5px 0 ${INK}`,
-        alignItems: "center",
-        flexShrink: 0,
-        whiteSpace: "nowrap",
-        height: 62,
-        padding: "4px 14px 0",
-        fontSize: 40,
-        letterSpacing: 2,
-        lineHeight: 1,
-      }}
-    >
-      {label}
-    </div>
-  );
-
   return new ImageResponse(
     (
       <div
@@ -73,197 +55,173 @@ export default async function OpengraphImage() {
           width: "100%",
           height: "100%",
           display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background: GREEN_DK,
+          padding: "38px 48px 36px 40px",
           fontFamily: display,
-          background: GREEN,
-          backgroundImage: `repeating-linear-gradient(90deg, ${GREEN} 0px, ${GREEN} 60px, ${GREEN_DK} 60px, ${GREEN_DK} 120px)`,
         }}
       >
-        {/* Left: wordmark + facts */}
+        {/* Mowing stripes + floodlight glow */}
         <div
           style={{
             position: "absolute",
-            left: 56,
-            top: 44,
-            width: 530,
-            height: 542,
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: 630,
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
+            background: `repeating-linear-gradient(115deg, rgba(31,122,83,0.0) 0px, rgba(31,122,83,0.0) 70px, rgba(31,122,83,0.22) 70px, rgba(31,122,83,0.22) 140px)`,
           }}
-        >
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div
-              style={{
-                display: "flex",
-                gap: 26,
-                fontSize: 190,
-                lineHeight: 0.92,
-              }}
-            >
-              <span style={{ color: CREAM, textShadow: outline(4, 9) }}>SD</span>
-              <span style={{ color: RED, textShadow: outline(4, 9) }}>TEE</span>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 190,
-                lineHeight: 0.92,
-                color: CREAM,
-                textShadow: outline(4, 9),
-              }}
-            >
-              TIMES
-            </div>
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 37,
-                letterSpacing: 2,
-                color: "#F2C230",
-                whiteSpace: "nowrap",
-              }}
-            >
-              EVERY OPEN TEE TIME IN SAN DIEGO
-            </div>
-            <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-              {chip("47 COURSES", CREAM, INK)}
-              {chip("FREE", RED, CREAM)}
-              {chip("NO LOGIN", CREAM, INK)}
-            </div>
-            <div
-              style={{
-                display: "flex",
-                fontSize: 50,
-                letterSpacing: 3,
-                color: CREAM,
-              }}
-            >
-              SDTEETIMES.GOLF
-            </div>
-          </div>
-        </div>
-
-        {/* Right: the ticket */}
+        />
         <div
           style={{
             position: "absolute",
-            left: 580,
-            top: 106,
-            width: 540,
-            height: 452,
+            top: 0,
+            left: 0,
+            width: 1200,
+            height: 630,
             display: "flex",
-            transform: "rotate(-5deg)",
+            background: `radial-gradient(circle at 20% 0%, rgba(31,122,83,0.75) 0%, rgba(10,69,48,0) 60%)`,
+          }}
+        />
+
+        {/* Header: wordmark + LIVE */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 96,
           }}
         >
           <div
             style={{
-              position: "relative",
-              width: 540,
-              height: 452,
               display: "flex",
-              flexDirection: "column",
-              background: CREAM,
-              border: `8px solid ${INK}`,
-              borderRadius: 14,
-              boxShadow: `18px 18px 0 ${INK}`,
-              overflow: "hidden",
+              gap: 26,
+              fontSize: 118,
+              lineHeight: 1,
+              letterSpacing: 2,
             }}
           >
-            {/* header strip */}
+            <span style={{ color: CREAM, textShadow: OUTLINE }}>SD</span>
+            <span style={{ color: RED, textShadow: OUTLINE }}>TEE</span>
+            <span style={{ color: CREAM, textShadow: OUTLINE }}>TIMES</span>
+          </div>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 16,
+              background: RED,
+              border: `5px solid ${INK}`,
+              boxShadow: `8px 8px 0 ${INK}`,
+              padding: "6px 24px 2px 20px",
+              transform: "rotate(-3deg)",
+            }}
+          >
             <div
               style={{
                 display: "flex",
-                alignItems: "center",
-                background: INK,
-                color: CREAM,
-                padding: "10px 26px 6px",
-                fontSize: 34,
-                letterSpacing: 4,
-              }}
-            >
-              <span>OPEN TEE TIME</span>
-            </div>
-
-            {/* big time */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                padding: "14px 30px 0",
-                color: INK,
-              }}
-            >
-              <span style={{ fontSize: 250, lineHeight: 0.9 }}>7:12</span>
-              <span style={{ fontSize: 96, lineHeight: 1, marginLeft: 12, marginBottom: 14 }}>
-                AM
-              </span>
-            </div>
-
-            {/* perforation */}
-            <div
-              style={{
-                display: "flex",
-                height: 6,
-                marginTop: 4,
-                backgroundImage: `repeating-linear-gradient(90deg, ${INK} 0px, ${INK} 18px, ${CREAM} 18px, ${CREAM} 32px)`,
+                width: 30,
+                height: 30,
+                borderRadius: 15,
+                background: "#ffffff",
+                border: `4px solid ${INK}`,
+                marginBottom: 6,
               }}
             />
+            <span style={{ fontSize: 72, lineHeight: 1, color: "#ffffff", letterSpacing: 4 }}>
+              LIVE
+            </span>
+          </div>
+        </div>
 
-            {/* stub */}
+        {/* Board */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 15 }}>
+          {ROWS.map((r, i) => (
             <div
+              key={i}
               style={{
                 display: "flex",
-                flex: 1,
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "4px 30px 0",
+                alignItems: "stretch",
+                height: ROW_H,
+                background: CREAM,
+                border: `5px solid ${INK}`,
+                boxShadow: `8px 8px 0 ${INK}`,
               }}
             >
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <span style={{ fontSize: 68, lineHeight: 1, color: INK }}>BALBOA PARK</span>
-                <span style={{ fontSize: 32, letterSpacing: 3, color: GREEN }}>
-                  4 SPOTS OPEN
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  justifyContent: "center",
+                  width: 300,
+                  background: INK,
+                  color: CREAM,
+                  paddingTop: 8,
+                }}
+              >
+                <span style={{ fontSize: 96, lineHeight: 1 }}>{r.time}</span>
+                <span style={{ fontSize: 46, lineHeight: 1, marginLeft: 10, color: "#F2C230" }}>
+                  {r.ampm}
                 </span>
               </div>
               <div
                 style={{
                   display: "flex",
-                  background: GREEN,
-                  color: CREAM,
-                  border: `5px solid ${INK}`,
-                  padding: "6px 16px 0",
-                  fontSize: 64,
-                  lineHeight: 1.1,
+                  alignItems: "center",
+                  flex: 1,
+                  paddingLeft: 30,
+                  paddingTop: 8,
+                  fontSize: 86,
+                  lineHeight: 1,
+                  letterSpacing: 1,
+                  color: INK,
                 }}
               >
-                $34
+                {r.course}
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  width: 220,
+                  background: i === 2 ? RED : GREEN_LT,
+                  borderLeft: `5px solid ${INK}`,
+                  color: CREAM,
+                  paddingTop: 8,
+                  fontSize: 86,
+                  lineHeight: 1,
+                }}
+              >
+                {r.price}
               </div>
             </div>
-          </div>
+          ))}
+        </div>
 
-          {/* PRIME stamp */}
-          <div
-            style={{
-              position: "absolute",
-              right: -30,
-              top: -34,
-              display: "flex",
-              transform: "rotate(14deg)",
-              background: RED,
-              color: CREAM,
-              border: `7px solid ${INK}`,
-              boxShadow: `8px 8px 0 ${INK}`,
-              padding: "6px 22px 0",
-              fontSize: 78,
-              letterSpacing: 4,
-              lineHeight: 1.1,
-            }}
-          >
-            PRIME
+        {/* Footer */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            height: 50,
+            fontSize: 46,
+            lineHeight: 1,
+            letterSpacing: 3,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 20, color: CREAM }}>
+            <span>47 COURSES</span>
+            <div style={{ display: "flex", width: 12, height: 12, background: RED }} />
+            <span>FREE</span>
+            <div style={{ display: "flex", width: 12, height: 12, background: RED }} />
+            <span>NO LOGIN</span>
           </div>
+          <span style={{ color: "#F2C230" }}>SDTEETIMES.GOLF</span>
         </div>
       </div>
     ),
