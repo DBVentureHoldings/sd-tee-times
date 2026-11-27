@@ -16,7 +16,7 @@ type State = "checking" | "ready" | "no-token" | "loading" | "done" | "error";
 const card =
   "rounded-sm border-2 border-black bg-brand p-4 text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)]";
 const heading = "font-display text-2xl uppercase leading-tight tracking-tight";
-const body = "mt-2 text-sm text-cream/90";
+const body = "mt-2 text-[15px] leading-relaxed text-cream";
 
 export function UnsubscribeClient() {
   const [state, setState] = useState<State>("checking");
@@ -70,7 +70,7 @@ export function UnsubscribeClient() {
   if (state === "checking") {
     return (
       <section className={card} aria-busy="true">
-        <p className="text-sm text-cream/90">One moment...</p>
+        <p className="text-[15px] text-cream">One moment...</p>
       </section>
     );
   }
@@ -127,12 +127,12 @@ export function UnsubscribeClient() {
         type="button"
         onClick={unsubscribe}
         disabled={state === "loading"}
-        className="mt-4 rounded-sm border-2 border-black bg-magred px-5 py-2.5 font-display text-lg uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
+        className="mt-4 min-h-[44px] rounded-sm border-2 border-black bg-magred px-5 py-2.5 font-display text-lg uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
       >
         {state === "loading" ? "..." : "Unsubscribe"}
       </button>
       {state === "error" && (
-        <p className="mt-2 text-xs font-semibold text-cream" role="alert">
+        <p className="mt-2 text-sm font-semibold text-cream" role="alert">
           {msg}
         </p>
       )}

@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   title: { absolute: "About SD Tee Times" },
 };
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 export default function AboutPage() {
   const count = courseCounts().total;
@@ -31,12 +31,14 @@ export default function AboutPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -45,7 +47,7 @@ export default function AboutPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           About SD Tee Times
         </h1>
         <p className={p}>
@@ -101,7 +103,7 @@ export default function AboutPage() {
             rel="noopener"
             data-track="Donate"
             data-track-from="about"
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             chip in for the hosting with a coffee
           </a>
@@ -122,7 +124,7 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 border-t-2 border-black pt-4 text-[15px]">
         <Link href="/" prefetch={false} className={link}>
           Full San Diego tee sheet
         </Link>

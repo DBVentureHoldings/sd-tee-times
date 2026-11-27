@@ -33,8 +33,8 @@ export function DayPickerScroll({ children }: { children: ReactNode }) {
   });
 
   return (
-    <div ref={ref} className="-mx-4 overflow-x-auto px-4">
-      <div className="flex gap-2 pb-1">{children}</div>
+    <div ref={ref} className="strip">
+      {children}
     </div>
   );
 }

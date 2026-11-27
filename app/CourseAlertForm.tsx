@@ -60,17 +60,17 @@ export function CourseAlertForm({
   }
 
   return (
-    <section className="rounded-sm border-2 border-black bg-brand p-4 text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)]">
+    <section className="rounded-sm border-2 border-black bg-brand px-3 py-3.5 text-cream shadow-[4px_4px_0_0_#000] sm:px-[22px] sm:py-[18px]">
       {state === "done" ? (
         <div className="py-1 text-center">
-          <div className="font-display text-2xl uppercase tracking-wider">
+          <div className="font-display text-[26px] uppercase leading-none tracking-wider">
             ✓ You&apos;re on the list
           </div>
-          <p className="mt-1 text-xs text-cream/80">
+          <p className="mt-2 text-[14.5px] leading-normal text-[#EFE9D8]">
             Look for a short email from Daniel. Then once a week, before
             the weekend, you&apos;ll get the open times at {courseName}.
           </p>
-          <p className="mt-2 text-xs text-cream/80">
+          <p className="mt-2 text-[14.5px] leading-normal text-[#EFE9D8]">
             SD Tee Times is free and I pay for the servers myself.{" "}
             <a
               href={DONATE_URL}
@@ -78,7 +78,7 @@ export function CourseAlertForm({
               rel="noopener"
               data-track="Donate"
               data-track-from="signup"
-              className="font-bold text-cream underline"
+              className="font-bold text-cream underline underline-offset-[3px]"
             >
               Buy me a coffee
             </a>{" "}
@@ -87,10 +87,10 @@ export function CourseAlertForm({
         </div>
       ) : (
         <>
-          <h2 className="font-display text-xl uppercase leading-tight tracking-tight">
-            🔥 Weekend times at {courseName}
+          <h2 className="font-display text-[23px] uppercase leading-[1.05] tracking-[0.005em] [text-wrap:balance] sm:text-[26px]">
+            Weekend times at {courseName}
           </h2>
-          <p className="mt-1 text-xs text-cream/80">
+          <p className="mt-1.5 max-w-[62ch] text-[14.5px] leading-normal text-[#EFE9D8] sm:text-[15px]">
             Weekend mornings here go fast. Get one email a week, before the
             weekend, with the open tee times at {courseName}. Free.
           </p>
@@ -112,18 +112,18 @@ export function CourseAlertForm({
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@email.com"
               aria-label={`Email for the weekly ${courseName} tee times email`}
-              className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-3 py-2.5 text-sm text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
+              className="min-h-[46px] min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-[11px] text-base text-black placeholder:text-[#5A5E66] placeholder:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-hilite focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
             />
             <button
               type="submit"
               disabled={state === "loading"}
-              className="shrink-0 rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
+              className="min-h-[46px] shrink-0 rounded-sm border-2 border-black bg-magred px-3.5 pt-0.5 font-display text-lg uppercase leading-none tracking-[0.07em] text-cream shadow-[2px_2px_0_0_#000] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
             >
               {state === "loading" ? "…" : "Email me"}
             </button>
           </form>
           {state === "error" && (
-            <p className="mt-2 text-xs font-semibold text-cream">{msg}</p>
+            <p className="mt-2 text-sm font-semibold text-cream">{msg}</p>
           )}
         </>
       )}

@@ -48,9 +48,9 @@ export const metadata: Metadata = pageMeta({
 // Breadcrumb label: the visible crumb and the BreadcrumbList JSON-LD.
 const CRUMB = "Cheap Golf in San Diego";
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 export default async function CheapGolfPage() {
   // Deliberately not caught: a failed regeneration keeps the last good page,
@@ -98,12 +98,14 @@ export default async function CheapGolfPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -112,7 +114,7 @@ export default async function CheapGolfPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           Cheap Golf in San Diego
         </h1>
         <p className={p}>
@@ -132,7 +134,7 @@ export default async function CheapGolfPage() {
             </>
           ) : null}
         </p>
-        <p className="text-xs text-neutral-500">
+        <p className="paper-note">
           Prices as of {asOf}, from open tee times over the following 14 days.
           This page is rebuilt once a day.
         </p>
@@ -170,7 +172,7 @@ export default async function CheapGolfPage() {
             caption="Typical price we have seen for an 18-hole round, per player."
           />
           <PriceTableKey />
-          <p className="text-xs leading-relaxed text-neutral-500">
+          <p className="paper-note">
             Some courses start their twilight rate before 3pm, especially in
             winter, so a weekday figure can include twilight prices.
           </p>
@@ -224,7 +226,7 @@ export default async function CheapGolfPage() {
             course page for anything open, or the course&apos;s own site for
             its rates.
           </p>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-neutral-700">
+          <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
             {thin.map(({ course: c }) => {
               const official = c.facts?.feesUrl ?? c.facts?.officialUrl;
               return (
@@ -275,7 +277,7 @@ export default async function CheapGolfPage() {
 
       <section className="space-y-2">
         <h2 className={h2}>Ways to pay less</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-700">
+        <ul className="list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
           <li>
             <strong>Play Monday to Thursday.</strong>
             {withWeekend.length >= MIN_SAMPLES
@@ -340,7 +342,7 @@ export default async function CheapGolfPage() {
 
       <section className="space-y-2">
         <h2 className={h2}>How these prices are worked out</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-700">
+        <ul className="list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
           <li>
             We record the price each course lists for each open tee time
             over the next 14 days. A typical
@@ -383,7 +385,7 @@ export default async function CheapGolfPage() {
         </ul>
       </section>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 border-t-2 border-black pt-4 text-[15px]">
         <Link href="/" prefetch={false} className={link}>
           Full San Diego tee sheet
         </Link>

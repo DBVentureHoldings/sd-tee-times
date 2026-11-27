@@ -70,7 +70,10 @@ export default async function ThisWeekendPage() {
   return (
     <div className="space-y-6">
       <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <div className="sheet sheet-pad sheet-pinned space-y-3">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -79,34 +82,35 @@ export default async function ThisWeekendPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           San Diego Tee Times This Weekend
         </h1>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           Every open <strong>Friday, Saturday, and Sunday</strong> tee time
           across San Diego County in the next seven days:{" "}
           <strong>{rows.length}</strong> open at the last refresh. Weekend
           mornings are the first slots to vanish, so if you see one you want,
           book it. Times and prices are as of the Updated line under the
           list; the{" "}
-          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/" prefetch={false} className="paper-link">
             full tee sheet
           </Link>{" "}
           has every day.
         </p>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           This page covers San Diego County. Temecula and Murrieta are on
           the{" "}
-          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/tee-times/temecula" prefetch={false} className="paper-link">
             Temecula tee times
           </Link>{" "}
           page.
         </p>
       </header>
+      </div>
 
       <AlertCaptureForm
         source="weekend"
-        title="🔥 Weekend tee times by email"
+        title="Weekend tee times by email"
         blurb="Prime Friday to Sunday slots sell out first. Get the best ones by email once a week, before the weekend. Free."
         cta="Email me"
         successNote="You're set. Look for it before the weekend."
@@ -121,11 +125,11 @@ export default async function ThisWeekendPage() {
           updatedAt={lastScrape}
         />
       ) : (
-        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-          <p className="font-display text-2xl uppercase tracking-wider">
+        <div className="sheet sheet-pad text-center text-sm text-neutral-700">
+          <p className="font-display text-2xl uppercase tracking-wider text-black">
             Weekend&apos;s booked solid
           </p>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mx-auto mt-1 max-w-[52ch] text-sm text-neutral-700">
             Cancellations reappear all week — check back, or browse weekday
             times on the full sheet.
           </p>
@@ -135,17 +139,17 @@ export default async function ThisWeekendPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" prefetch={false} className="font-bold text-brand underline">
+      <div className="sheet sheet-flat sheet-pad flex flex-wrap gap-x-5 gap-y-4 text-[15px]">
+        <Link href="/" prefetch={false} className="paper-link">
           Full San Diego tee sheet
         </Link>
-        <Link href="/deals" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/deals" prefetch={false} className="paper-link">
           Golf deals
         </Link>
-        <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/twilight" prefetch={false} className="paper-link">
           Twilight tee times
         </Link>
-        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="paper-link">
           All courses
         </Link>
       </div>

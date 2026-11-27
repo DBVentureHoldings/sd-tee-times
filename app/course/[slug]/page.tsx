@@ -26,7 +26,7 @@ import { CourseAlertForm } from "@/app/CourseAlertForm";
 import { CourseFacts } from "@/app/CourseFacts";
 import { CoursePlaybook } from "@/app/CoursePlaybook";
 import { FarAheadMornings } from "@/app/FarAheadMornings";
-import { TeeTimeRowItem } from "@/app/TeeTimeRowItem";
+import { TeeColHead, TeeTimeRowItem } from "@/app/TeeTimeRowItem";
 import { TrackView } from "@/app/TrackView";
 import {
   courseArea,
@@ -293,34 +293,58 @@ export default async function CoursePage({
     ],
   };
 
+  // The three stat tiles. With times open they close the title sheet; with
+  // nothing open they follow the empty state (same order as before).
+  const statTiles = (
+    <dl className="tiles">
+      <div className="tile">
+        <dt>Open times</dt>
+        <dd className="g">{openCount}</dd>
+      </div>
+      <div className="tile">
+        <dt>{feeHoles && priceRange ? `${feeHoles}-hole fees` : "Green fees"}</dt>
+        <dd>{priceRange ?? "—"}</dd>
+      </div>
+      <div className="tile">
+        <dt>Location</dt>
+        <dd>{course.city ?? regionLabel(course.region)}</dd>
+      </div>
+    </dl>
+  );
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-[18px] sm:space-y-[22px]">
       <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
+      {/* Title sheet: breadcrumb, heading, intro and (with times open) the
+          stat tiles. */}
+      <div className="sheet sheet-pad sheet-pinned">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       {/* Breadcrumb */}
-      <nav className="flex flex-wrap items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
-        <Link href="/" prefetch={false} className="hover:text-brand">
+      <nav className="crumb">
+        <Link href="/" prefetch={false}>
           Home
         </Link>
         <span>/</span>
-        <Link href="/courses" prefetch={false} className="hover:text-brand">
+        <Link href="/courses" prefetch={false}>
           Courses
         </Link>
         <span>/</span>
-        <span className="text-neutral-700">{n}</span>
+        <span>{n}</span>
       </nav>
 
       {/* Heading + intro */}
-      <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+      <header className="mt-3 sm:mt-3.5">
+        <h1 className="paper-h1">
           {n} Tee Times
         </h1>
         {openCount > 0 && (
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <p className="paper-p mt-2.5">
             Open tee times for {n}
             {kindPhrase ? `, ${kindPhrase}` : ""} in {area}. At the last
             refresh there {openCount === 1 ? "was" : "were"}{" "}
@@ -347,6 +371,8 @@ export default async function CoursePage({
           </p>
         )}
       </header>
+      {openCount > 0 && <div className="mt-4">{statTiles}</div>}
+      </div>
 
       {/* With nothing open (the usual state at Torrey Pines and Admiral
           Baker), the booking rules lead and the empty state follows them.
@@ -358,7 +384,8 @@ export default async function CoursePage({
           {/* Zero rows means either nothing is open or we could not read
               the course's booking page; the page cannot tell which, so it
               says so and always offers the way to book. */}
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <div className="sheet sheet-pad space-y-4">
+          <p className="paper-p">
             We have no open tee times to show for {n}. Either nothing was
             open when we last checked, or we could not read the course&apos;s
             booking page. Check the booking page for what is open now
@@ -371,66 +398,45 @@ export default async function CoursePage({
               href={bookingLink}
               target="_blank"
               rel="noopener"
-              className="inline-flex items-center rounded-sm border-2 border-black bg-brand px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
+              className="brand-btn"
             >
               Go to the course booking page
             </a>
           </div>
+          {statTiles}
+          </div>
         </>
       )}
-
-      {/* Quick facts */}
-      <dl className="grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
-          <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Open times
-          </dt>
-          <dd className="font-display text-2xl text-brand">{openCount}</dd>
-        </div>
-        <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
-          <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            {feeHoles && priceRange ? `${feeHoles}-hole fees` : "Green fees"}
-          </dt>
-          <dd className="font-display text-2xl text-black">
-            {priceRange ?? "—"}
-          </dd>
-        </div>
-        <div className="rounded-sm border-2 border-black bg-white px-2 py-3">
-          <dt className="text-[10px] uppercase tracking-widest text-neutral-500">
-            Location
-          </dt>
-          <dd className="font-display text-xl leading-tight text-black">
-            {course.city ?? regionLabel(course.region)}
-          </dd>
-        </div>
-      </dl>
 
       {/* Price guide — unique per-course data (bucket medians, weekday vs
           weekend) computed from live rows. Only renders stats with enough
           samples to be honest. */}
       {Object.keys(insights.bucketMedians).length > 0 && (
-        <section className="space-y-2">
-          <h2 className="font-display text-xl uppercase tracking-tight text-black">
+        <section className="sheet sheet-pad">
+          <h2 className="paper-h2">
             {n} Green Fees &amp; Price Guide
           </h2>
-          <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="tiles mt-3">
             {(Object.entries(insights.bucketMedians) as Array<
               [keyof typeof BUCKET_LABEL, number]
             >).map(([bucket, med]) => (
-              <div
-                key={bucket}
-                className="rounded-sm border-2 border-black bg-white px-2 py-3"
-              >
-                <div className="text-[10px] uppercase tracking-widest text-neutral-500">
-                  {BUCKET_LABEL[bucket]}
+              <div key={bucket} className="tile">
+                <div className="tile-k">
+                  {/* "Morning (before 11am)": the window goes on its own
+                      line in sentence case; the text is unchanged. */}
+                  {BUCKET_LABEL[bucket].split(" (")[0]}
+                  {BUCKET_LABEL[bucket].includes(" (") && (
+                    <small>
+                      {" ("}
+                      {BUCKET_LABEL[bucket].split(" (").slice(1).join(" (")}
+                    </small>
+                  )}
                 </div>
-                <div className="font-display text-2xl text-black">
-                  ~{formatPrice(med)}
-                </div>
+                <div className="tile-v">~{formatPrice(med)}</div>
               </div>
             ))}
           </div>
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <p className="paper-p mt-3">
             {insights.cheapestBucket && (
               <>
                 The cheapest window at {n} is typically{" "}
@@ -481,11 +487,11 @@ export default async function CoursePage({
       {/* The newest day the course has opened, past the shared 14-day
           window. This is the day with the most choice, so it leads. */}
       {newestRows.length > 0 && (
-        <section className="space-y-2">
-          <h2 className="font-display text-xl uppercase tracking-tight text-black">
+        <section className="sheet sheet-pad space-y-3">
+          <h2 className="paper-h2">
             Newest day open: {formatDayHeader(new Date(newestRows[0].tee_time_at))}
           </h2>
-          <p className="text-sm leading-relaxed text-neutral-700">
+          <p className="paper-p">
             The latest date we saw on the booking page, with{" "}
             <strong>
               {newestRows.length} open{" "}
@@ -495,9 +501,11 @@ export default async function CoursePage({
             {formatTime(new Date(newestRows[0].tee_time_at))}. As of the
             Updated line under the list below.
           </p>
+          <div className="-mx-1 sm:mx-0">
+          <TeeColHead middle="Open spots" />
           <ul
             data-tee-group
-            className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200 data-[tee-empty]:hidden"
+            className="tee-list data-[tee-empty]:hidden"
           >
             {newestRows.slice(0, NEWEST_MAX_ROWS).map((r) => (
               <TeeTimeRowItem
@@ -508,14 +516,15 @@ export default async function CoursePage({
               />
             ))}
           </ul>
+          </div>
           {newestRows.length > NEWEST_MAX_ROWS && (
-            <p className="text-xs text-neutral-500">
+            <p className="paper-note">
               + {newestRows.length - NEWEST_MAX_ROWS} more that day on the{" "}
               <a
                 href={bookingLink}
                 target="_blank"
                 rel="noopener"
-                className="font-bold text-brand underline"
+                className="paper-link"
               >
                 course booking page
               </a>
@@ -541,19 +550,23 @@ export default async function CoursePage({
       ) : (
         <>
           <TrackView event="No times" data={{ course: slug }} />
-          <UpdatedStamp at={lastScrape} />
+          {lastScrape && (
+            <div className="sheet sheet-flat">
+              <UpdatedStamp at={lastScrape} />
+            </div>
+          )}
         </>
       )}
 
       {/* The city's advance booking fee, said once per page; the rows it
           applies to carry a short label. */}
       {course.advanceFee && listRows.length > 0 && (
-        <p className="text-xs leading-relaxed text-neutral-600">
+        <p className="sheet sheet-flat paper-note max-w-none px-3 py-3 sm:px-[22px]">
           The city adds a ${course.advanceFee.amount} per player{" "}
           {course.advanceFee.label} at checkout on tee times booked{" "}
           {course.advanceFee.fromDay} or more days ahead. It is not in the
           price shown. In our lists those times are marked{" "}
-          <span className="font-bold uppercase text-magred">
+          <span className="font-semibold text-magred">
             +${course.advanceFee.amount}/player {course.advanceFee.label}
           </span>
           . Right at the one-week line, go by what the booking page shows.{" "}
@@ -561,7 +574,7 @@ export default async function CoursePage({
             href="https://www.sandiego.gov/park-and-recreation/golf"
             target="_blank"
             rel="noopener"
-            className="font-bold text-brand underline"
+            className="paper-link hit"
           >
             Source
           </a>
@@ -581,7 +594,7 @@ export default async function CoursePage({
       {/* CTA into the full app filtered to this course. Only with rows: on
           an empty page the booking-page button above is the useful one. */}
       {openCount > 0 && (
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-3 pb-1">
         <Link
           href={`/?course=${slug}`}
           // A filter URL renders on demand; prefetching it would invoke the
@@ -589,7 +602,7 @@ export default async function CoursePage({
           // from walking into it from all 37 course pages.
           prefetch={false}
           rel="nofollow"
-          className="inline-flex items-center rounded-sm border-2 border-black bg-brand px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5"
+          className="brand-btn"
         >
           Open this course on the full tee sheet
         </Link>
@@ -597,7 +610,7 @@ export default async function CoursePage({
           href={bookingLink}
           target="_blank"
           rel="noopener"
-          className="text-sm font-bold text-brand underline"
+          className="paper-btn"
         >
           Course booking page
         </a>
@@ -609,9 +622,10 @@ export default async function CoursePage({
       {openCount > 0 && <CourseFacts course={course} />}
 
       {/* Internal links: siblings + browse all */}
+      <div className="sheet sheet-pad space-y-5">
       {siblings.length > 0 && (
-        <section className="space-y-2 border-t-2 border-black pt-4">
-          <h2 className="font-display text-lg uppercase tracking-tight text-black">
+        <section className="space-y-3">
+          <h2 className="paper-h2">
             More {areaHeading} courses
           </h2>
           <ul className="flex flex-wrap gap-2">
@@ -620,7 +634,7 @@ export default async function CoursePage({
                 <Link
                   href={`/course/${c.slug}`}
                   prefetch={false}
-                  className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
+                  className="inline-flex min-h-[44px] items-center rounded-sm border-2 border-black bg-white px-3 py-1.5 text-[15px] font-semibold leading-tight text-black transition-colors hover:bg-cream-dark"
                 >
                   {courseDisplayName(c)}
                 </Link>
@@ -630,11 +644,11 @@ export default async function CoursePage({
         </section>
       )}
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 text-[15px]">
         <Link
           href="/courses"
           prefetch={false}
-          className="font-bold text-brand underline"
+          className="paper-link"
         >
           All courses
         </Link>
@@ -642,7 +656,7 @@ export default async function CoursePage({
           <Link
             href={`/tee-times/${regionPage}`}
             prefetch={false}
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             {regionLabel(course.region)} tee times
           </Link>
@@ -651,7 +665,7 @@ export default async function CoursePage({
           <Link
             href="/torrey-pines-tee-times"
             prefetch={false}
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             Torrey Pines booking guide
           </Link>
@@ -660,7 +674,7 @@ export default async function CoursePage({
           <Link
             href="/north-county-san-diego-golf-courses"
             prefetch={false}
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             North County golf courses by city
           </Link>
@@ -669,7 +683,7 @@ export default async function CoursePage({
           <Link
             href="/par-3-golf-san-diego"
             prefetch={false}
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             Par-3 and short courses
           </Link>
@@ -677,10 +691,11 @@ export default async function CoursePage({
         <Link
           href="/"
           prefetch={false}
-          className="font-bold text-brand underline"
+          className="paper-link"
         >
           Full tee sheet
         </Link>
+      </div>
       </div>
     </div>
   );

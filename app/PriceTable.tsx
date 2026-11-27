@@ -15,7 +15,7 @@ import { formatAbout, rateNote, type PriceRow } from "@/lib/price-guide";
 
 function Typical({ stat, range }: { stat: PriceStat; range?: boolean }) {
   if (stat.median == null) {
-    return <span className="font-normal text-neutral-400">n/a</span>;
+    return <span className="font-normal text-neutral-600">n/a</span>;
   }
   const spread =
     range && stat.low != null && stat.high != null && stat.low !== stat.high;
@@ -23,7 +23,7 @@ function Typical({ stat, range }: { stat: PriceStat; range?: boolean }) {
     <>
       ~{formatAbout(stat.median)}
       {spread && (
-        <span className="block text-[10px] font-normal leading-tight text-neutral-500">
+        <span className="block text-[13px] font-normal leading-tight text-neutral-600 max-[389px]:whitespace-normal">
           {formatAbout(stat.low!)} to {formatAbout(stat.high!)}
         </span>
       )}
@@ -45,12 +45,12 @@ export function PriceTable({
 }) {
   if (rows.length === 0) return null;
   return (
-    <table className="w-full border-collapse border-2 border-black bg-white text-left text-sm [&_td]:whitespace-nowrap [&_td]:px-2 [&_td]:py-2 [&_td]:text-right [&_td]:align-top [&_td]:font-semibold [&_td]:text-black [&_th]:px-2 [&_th]:py-2 [&_th]:align-top">
-      <caption className="pb-1.5 text-left text-xs text-neutral-500">
+    <table className="w-full border-collapse border-2 border-black bg-white text-left text-sm [&_td]:whitespace-nowrap [&_td]:px-1.5 sm:[&_td]:px-2 [&_td]:py-2 [&_td]:text-right [&_td]:align-top [&_td]:font-semibold [&_td]:text-black [&_th]:px-1.5 sm:[&_th]:px-2 [&_th]:py-2 [&_th]:align-top">
+      <caption className="pb-1.5 text-left text-[13px] leading-snug text-neutral-600">
         {caption}
       </caption>
       <thead>
-        <tr className="border-b-2 border-black text-[10px] uppercase tracking-wider text-neutral-500 [&>th]:font-semibold">
+        <tr className="border-b-2 border-black text-[13px] uppercase leading-tight tracking-normal text-neutral-600 sm:tracking-wider [&>th]:font-semibold">
           <th scope="col">Course ({holes} holes)</th>
           <th scope="col" className="text-right">
             Weekday
@@ -75,7 +75,7 @@ export function PriceTable({
             .join(", ");
           return (
             <tr key={c.slug}>
-              <th scope="row" className="font-normal">
+              <th scope="row" className="font-normal max-[389px]:w-[46%]">
                 <Link
                   href={`/course/${c.slug}`}
                   prefetch={false}
@@ -84,7 +84,7 @@ export function PriceTable({
                   {courseDisplayName(c)}
                 </Link>
                 {sub && (
-                  <span className="block text-[11px] leading-snug text-neutral-500">
+                  <span className="block text-[13px] leading-snug text-neutral-600">
                     {sub}
                   </span>
                 )}
@@ -109,7 +109,7 @@ export function PriceTable({
 /** The key under a table: what the three columns mean. */
 export function PriceTableKey() {
   return (
-    <p className="text-xs leading-relaxed text-neutral-500">
+    <p className="paper-note">
       Weekday is Monday to Thursday before 3pm, with the lowest and highest
       price we saw under it. Weekend is Saturday and Sunday before 3pm. After
       3pm is Monday to Thursday. Public holidays are left out. A figure needs

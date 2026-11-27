@@ -28,9 +28,9 @@ export const metadata: Metadata = pageMeta({
   path: "/privacy",
 });
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 export default function PrivacyPage() {
   const jsonLd = breadcrumbLd([
@@ -39,12 +39,14 @@ export default function PrivacyPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -53,7 +55,7 @@ export default function PrivacyPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           Privacy
         </h1>
         <p className={p}>

@@ -21,10 +21,21 @@ export default {
           DEFAULT: "#C8102E",
           dark: "#9E0D24",
         },
+        // Cork-and-paper tokens (see the design-system block in globals.css)
+        paper: "#FBFAF4", // graph-paper sheet
+        score: "#1F3FA8", // scoreboard blue: times, Prime tags, rosette
+        hilite: "#FFE14D", // highlighter yellow (dark text only)
+        cork: "#C39A66", // the board
+        ink: "#16181A", // body text on paper
+        soft: "#33373D", // secondary text on paper (11:1 on paper)
       },
       fontFamily: {
         display: ["var(--font-display)", "Impact", "sans-serif"],
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        // Course names on the tee sheet (Texturina 700)
+        hand: ["var(--font-hand)", "Georgia", "serif"],
+        // Handwritten times and prices (Merienda 800)
+        num: ["var(--font-num)", "Georgia", "serif"],
       },
     },
   },

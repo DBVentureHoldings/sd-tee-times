@@ -35,13 +35,13 @@ export function CoursePlaybook({ course }: { course: CourseMeta }) {
   return (
     <section
       id="get-a-time"
-      className="space-y-3 rounded-sm border-2 border-black bg-[#FFF4D6] p-4"
+      className="sheet sheet-yellow sheet-pad space-y-3"
     >
-      <h2 className="font-display text-xl uppercase tracking-tight text-black">
+      <h2 className="paper-h2">
         How to actually get a time at {name}
       </h2>
 
-      <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-neutral-800">
+      <ul className="sq-list max-w-[64ch]">
         {pb.tips.map((tip) => (
           <li key={tip.text}>
             {tip.text}{" "}
@@ -49,7 +49,7 @@ export function CoursePlaybook({ course }: { course: CourseMeta }) {
               href={tip.sourceUrl}
               target="_blank"
               rel="noopener"
-              className="whitespace-nowrap text-xs font-bold text-brand underline"
+              className="paper-link hit ml-1 whitespace-nowrap text-sm"
               title={tip.sourceName}
               data-track="Official link"
               data-track-course={course.slug}
@@ -62,15 +62,15 @@ export function CoursePlaybook({ course }: { course: CourseMeta }) {
       </ul>
 
       {observed.length > 0 && (
-        <div className="space-y-1 border-t border-black/20 pt-2">
-          <h3 className="text-[11px] font-bold uppercase tracking-wider text-neutral-600">
+        <div className="space-y-2.5 border-t-2 border-dashed border-black/35 pt-3">
+          <h3 className="paper-h3">
             What we have seen (our own checks, not official)
           </h3>
-          <ul className="list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-neutral-800">
+          <ul className="sq-list max-w-[64ch]">
             {observed.map((o) => (
               <li key={o.text}>
                 {o.text}{" "}
-                <span className="whitespace-nowrap text-xs text-neutral-500">
+                <span className="whitespace-nowrap text-[13px] font-medium text-[#4A4F57]">
                   As of {formatDate(o.asOf)}.
                 </span>
               </li>
@@ -79,7 +79,7 @@ export function CoursePlaybook({ course }: { course: CourseMeta }) {
         </div>
       )}
 
-      <p className="text-xs leading-relaxed text-neutral-600">
+      <p className="paper-note border-t-2 border-dashed border-black/35 pt-3">
         Official items were read from the linked pages on{" "}
         {formatDate(pb.checkedOn)}. Rules and fees can change; the official
         page is the authority.

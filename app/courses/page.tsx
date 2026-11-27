@@ -64,13 +64,15 @@ export default function CoursesIndexPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -79,21 +81,21 @@ export default function CoursesIndexPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           San Diego Golf Courses
         </h1>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           Every course we track in {coverageAreaPhrase()}. Pick a course
           for its open times and green fees, browse{" "}
           <Link
             href="/north-county-san-diego-golf-courses"
             prefetch={false}
-            className="font-bold text-brand underline"
+            className="paper-link"
           >
             North County courses by city
           </Link>
           , or see the{" "}
-          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/" prefetch={false} className="paper-link">
             full tee sheet
           </Link>
           .
@@ -105,7 +107,7 @@ export default function CoursesIndexPage() {
         if (list.length === 0) return null;
         return (
           <section key={section.key} className="space-y-2">
-            <h2 className="font-display text-xl uppercase tracking-tight text-black">
+            <h2 className="paper-h2">
               {section.label}
             </h2>
             <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -123,7 +125,7 @@ export default function CoursesIndexPage() {
                         "San Diego" for Rams Hill (Borrego Springs) and only
                         repeated the section heading for the rest. */}
                     {c.city && (
-                      <span className="shrink-0 pl-2 text-[10px] uppercase tracking-widest text-neutral-400">
+                      <span className="shrink-0 pl-2 text-[13px] uppercase tracking-widest text-neutral-600">
                         {c.city}
                       </span>
                     )}

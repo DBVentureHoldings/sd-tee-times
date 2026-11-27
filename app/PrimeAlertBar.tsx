@@ -111,17 +111,17 @@ export function PrimeAlertBar() {
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-black bg-brand shadow-[0_-3px_0_0_rgba(0,0,0,0.15)]">
-      <div className="mx-auto flex max-w-2xl items-center gap-2 px-3 py-2">
+      <div className="site-col flex items-center gap-2 px-3 py-2">
         {state === "done" ? (
           <p className="flex-1 text-center font-display text-lg uppercase tracking-wider text-cream">
             ✓ You&apos;re on the list
           </p>
         ) : (
           <>
-            <span className="shrink-0 text-lg leading-none" aria-hidden="true">
-              🔥
-            </span>
-            <span className="hidden shrink-0 font-display text-sm uppercase tracking-wider text-cream sm:inline">
+            <svg aria-hidden="true" className="h-8 w-[23px] shrink-0">
+              <use href="#cg-rosette" />
+            </svg>
+            <span className="hidden shrink-0 font-display text-lg uppercase tracking-wider text-cream sm:inline">
               Weekend tee times
             </span>
             <form
@@ -146,12 +146,12 @@ export function PrimeAlertBar() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@email.com"
                 aria-label="Email for the weekly tee times email"
-                className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-2.5 py-1.5 text-sm text-black placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-black"
+                className="paper min-h-[44px] min-w-0 flex-1 rounded-none border-2 border-black px-2.5 text-base text-ink placeholder:text-[#5a5f68] placeholder:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-hilite focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
               />
               <button
                 type="submit"
                 disabled={state === "loading"}
-                className="shrink-0 rounded-sm border-2 border-black bg-magred px-3 py-1.5 font-display text-sm uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all active:translate-y-0.5 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)] disabled:opacity-60"
+                className="min-h-[44px] shrink-0 whitespace-nowrap border-2 border-black bg-magred px-3 pt-0.5 font-display text-lg uppercase leading-none tracking-wider text-white shadow-[2px_2px_0_0_#000] transition-all active:translate-y-0.5 active:shadow-[1px_1px_0_0_#000] disabled:opacity-60"
               >
                 {state === "loading" ? "…" : "Email me"}
               </button>
@@ -162,13 +162,13 @@ export function PrimeAlertBar() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss"
-          className="shrink-0 rounded-sm border-2 border-black bg-cream px-2 py-1 text-sm font-bold leading-none text-black transition-transform active:translate-y-0.5"
+          className="grid h-11 w-9 shrink-0 place-items-center border-2 border-black bg-cream text-sm font-bold leading-none text-black transition-transform active:translate-y-0.5"
         >
           ✕
         </button>
       </div>
       {state === "error" && (
-        <p className="pb-1 text-center text-[11px] font-semibold text-cream">
+        <p className="pb-1 text-center text-[13px] font-semibold text-cream">
           {msg}
         </p>
       )}

@@ -73,7 +73,10 @@ export default async function TwilightPage() {
   return (
     <div className="space-y-6">
       <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <div className="sheet sheet-pad sheet-pinned space-y-3">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -82,10 +85,10 @@ export default async function TwilightPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           Twilight Golf in San Diego
         </h1>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           Every open <strong>after-3pm tee time</strong> across San Diego
           County, usually the cheapest way onto any course. At the last
           refresh there {rows.length === 1 ? "was" : "were"}{" "}
@@ -100,21 +103,22 @@ export default async function TwilightPage() {
             </>
           ) : null}
           . Times and prices are as of the Updated line under the list; the{" "}
-          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/" prefetch={false} className="paper-link">
             full tee sheet
           </Link>{" "}
           has every time of day. Each Book button goes straight to the
           booking page that course uses.
         </p>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           This page covers San Diego County. Temecula and Murrieta are on
           the{" "}
-          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/tee-times/temecula" prefetch={false} className="paper-link">
             Temecula tee times
           </Link>{" "}
           page.
         </p>
       </header>
+      </div>
 
       {rows.length > 0 ? (
         <DayGroupedList
@@ -126,11 +130,11 @@ export default async function TwilightPage() {
           sheetQuery="time=evening"
         />
       ) : (
-        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-          <p className="font-display text-2xl uppercase tracking-wider">
+        <div className="sheet sheet-pad text-center text-sm text-neutral-700">
+          <p className="font-display text-2xl uppercase tracking-wider text-black">
             No twilight times at the last refresh
           </p>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mx-auto mt-1 max-w-[52ch] text-sm text-neutral-700">
             Check the full tee sheet for other times of day.
           </p>
           <div className="mt-3">
@@ -139,20 +143,20 @@ export default async function TwilightPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" prefetch={false} className="font-bold text-brand underline">
+      <div className="sheet sheet-flat sheet-pad flex flex-wrap gap-x-5 gap-y-4 text-[15px]">
+        <Link href="/" prefetch={false} className="paper-link">
           Full San Diego tee sheet
         </Link>
-        <Link href="/deals" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/deals" prefetch={false} className="paper-link">
           Golf deals
         </Link>
-        <Link href="/this-weekend" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/this-weekend" prefetch={false} className="paper-link">
           This weekend
         </Link>
-        <Link href="/cheap-golf-san-diego" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/cheap-golf-san-diego" prefetch={false} className="paper-link">
           Cheap golf
         </Link>
-        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="paper-link">
           All courses
         </Link>
       </div>

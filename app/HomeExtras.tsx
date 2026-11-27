@@ -57,36 +57,37 @@ export function HomeIntro() {
     <section
       id="home-intro"
       aria-label="About SD Tee Times"
-      className="rounded-sm border-2 border-black bg-cream p-[3px] shadow-[3px_3px_0_0_rgba(0,0,0,0.85)]"
+      className="sheet p-1"
     >
+      <i className="pin pin-c" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: SITE_LD }}
       />
-      <div className="border border-black/70">
-        <div className="flex items-center justify-between gap-2 bg-brand px-3 py-1 text-cream">
-          <span className="font-display text-sm uppercase tracking-[0.18em]">
+      <div className="border border-black">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 bg-brand px-3 pb-[7px] pt-2.5 text-cream md:px-4">
+          <span className="font-display text-[19px] uppercase leading-none tracking-[0.15em] md:text-[21px] md:tracking-[0.2em]">
             Clubhouse Notice
           </span>
-          <span className="text-[9px] font-semibold uppercase tracking-[0.25em] text-cream/75">
+          <span className="text-[13px] font-medium uppercase leading-none tracking-[0.1em] text-[#E4EDE4] md:tracking-[0.2em]">
             Free &middot; No login
           </span>
         </div>
-        <div className="px-3 pb-2 pt-2">
-          <p className="text-[13px] font-semibold leading-snug text-black">
+        <div className="px-3 pb-1 pt-2.5 md:px-4 md:pt-3">
+          <p className="text-base font-semibold leading-[1.4] text-black">
             SD Tee Times is a free San Diego tee time finder: every open tee
             time and price, on one sheet.
           </p>
-          <dl className="mt-1.5 text-xs leading-snug">
+          <dl className="mt-2.5 text-[15px] font-medium leading-[1.4]">
             {items.map(([label, value]) => (
               <div
                 key={label}
-                className="flex items-baseline gap-2 border-t border-dashed border-black/25 py-1"
+                className="grid grid-cols-[78px_minmax(0,1fr)] items-baseline gap-2 border-t-[1.5px] border-dashed border-[#6c6a62] py-2 md:grid-cols-[104px_minmax(0,1fr)]"
               >
-                <dt className="w-16 shrink-0 font-display text-[11px] uppercase tracking-[0.12em] text-magred">
+                <dt className="font-display text-base uppercase leading-tight tracking-[0.14em] text-magred">
                   {label}
                 </dt>
-                <dd className="text-neutral-800">{value}</dd>
+                <dd className="text-ink">{value}</dd>
               </div>
             ))}
           </dl>
@@ -102,20 +103,21 @@ export function HomeCourseDirectory() {
   return (
     <section
       id="home-directory"
-      className="space-y-3 border-t-2 border-black pt-4"
+      className="sheet space-y-4 p-4 md:p-5"
     >
-      <h2 className="font-display text-xl uppercase tracking-tight text-black">
+      <i className="pin" aria-hidden="true" />
+      <h2 className="pt-2 font-display text-[27px] uppercase leading-none tracking-[0.01em] text-black">
         Golf courses we track
       </h2>
       {areas.map((area) => (
         <div key={area.key} className="space-y-1">
-          <h3 className="flex items-baseline justify-between gap-3 text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+          <h3 className="flex items-baseline justify-between gap-3 text-[13px] font-bold uppercase tracking-widest text-soft">
             <span>{area.heading}</span>
             {area.regionPage && (
               <Link
                 href={`/tee-times/${area.regionPage}`}
                 prefetch={false}
-                className="font-semibold normal-case tracking-normal text-brand underline"
+                className="shrink-0 text-sm font-semibold normal-case tracking-normal text-brand underline"
               >
                 All open times
               </Link>
@@ -123,7 +125,7 @@ export function HomeCourseDirectory() {
           </h3>
           {/* Row styles hang off the <ul>: a class on each of 37 rows would
               be repeated in the HTML and again in the RSC payload. */}
-          <ul className="grid grid-cols-1 gap-x-6 text-sm sm:grid-cols-2 [&>li]:flex [&>li]:items-baseline [&>li]:justify-between [&>li]:gap-3 [&>li]:border-b [&>li]:border-neutral-200 [&>li]:py-1.5 [&_a:hover]:text-brand [&_a]:font-semibold [&_a]:text-black [&_a]:underline [&_a]:decoration-neutral-300 [&_a]:underline-offset-2 [&_span]:shrink-0 [&_span]:text-xs [&_span]:text-neutral-500">
+          <ul className="grid grid-cols-1 gap-x-6 text-sm sm:grid-cols-2 [&>li]:flex [&>li]:items-baseline [&>li]:justify-between [&>li]:gap-3 [&>li]:border-b [&>li]:border-[#aeb2b9] [&>li]:py-2 [&_a:hover]:text-brand [&_a]:font-semibold [&_a]:text-black [&_a]:underline [&_a]:decoration-[#8d9199] [&_a]:underline-offset-2 [&_span]:shrink-0 [&_span]:text-[13px] [&_span]:text-soft">
             {area.courses.map((c) => (
               <li key={c.slug}>
                 <Link href={`/course/${c.slug}`} prefetch={false}>
@@ -136,7 +138,7 @@ export function HomeCourseDirectory() {
         </div>
       ))}
       {GUIDE_LINKS.length > 0 && (
-        <p className="text-sm text-neutral-700">
+        <p className="text-sm text-soft">
           Guides:{" "}
           {GUIDE_LINKS.map((g, i) => (
             <span key={g.href}>
@@ -240,14 +242,15 @@ function faqItems(counts: {
 export function HomeFaq() {
   const items = faqItems(courseCounts());
   return (
-    <section id="home-faq" className="space-y-3 border-t-2 border-black pt-4">
-      <h2 className="font-display text-xl uppercase tracking-tight text-black">
+    <section id="home-faq" className="sheet space-y-4 p-4 md:p-5">
+      <i className="pin pin-r" aria-hidden="true" />
+      <h2 className="pt-2 font-display text-[27px] uppercase leading-none tracking-[0.01em] text-black">
         Questions
       </h2>
       {items.map((item) => (
         <div key={item.q} className="space-y-1">
-          <h3 className="text-sm font-bold text-black">{item.q}</h3>
-          <p className="text-sm leading-relaxed text-neutral-700">{item.a}</p>
+          <h3 className="text-[15px] font-bold text-black">{item.q}</h3>
+          <p className="text-[15px] leading-relaxed text-soft">{item.a}</p>
         </div>
       ))}
     </section>

@@ -97,9 +97,9 @@ function groupKey(c: CourseMeta): GroupKey {
   return c.courseType ?? "short";
 }
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 /** "about $21 to about $60" across the rows' weekday figures. */
 function span(rows: PriceRow[]): string | null {
@@ -194,12 +194,14 @@ export default async function ShortCoursesPage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -208,7 +210,7 @@ export default async function ShortCoursesPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           {TITLE}
         </h1>
         <p className={p}>
@@ -253,7 +255,7 @@ export default async function ShortCoursesPage() {
           ranks the courses side by side and explains how the figures are
           worked out.
         </p>
-        <p className="text-xs text-neutral-500">
+        <p className="paper-note">
           Prices as of {asOf}, from open tee times over the following 14 days.
           This page is rebuilt once a day.
         </p>
@@ -293,7 +295,7 @@ export default async function ShortCoursesPage() {
                   </Link>
                 </h3>
                 {meta && (
-                  <p className="text-[11px] uppercase tracking-wider text-neutral-500">
+                  <p className="text-[13px] uppercase tracking-wider text-neutral-600">
                     {meta}
                   </p>
                 )}
@@ -330,14 +332,14 @@ export default async function ShortCoursesPage() {
         </section>
       ))}
 
-      <p className="text-xs leading-relaxed text-neutral-500">
+      <p className="paper-note">
         Holes, par and course descriptions come from each course&apos;s
         official website
         {checkedOn ? `, checked ${formatChecked(checkedOn)}` : ""}. Where we
         could not confirm one, it is left out.
       </p>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 border-t-2 border-black pt-4 text-[15px]">
         <Link href="/" prefetch={false} className={link}>
           Full San Diego tee sheet
         </Link>

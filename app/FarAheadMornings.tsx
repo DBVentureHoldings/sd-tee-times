@@ -104,11 +104,11 @@ export function FarAheadMornings({
 
   return (
     <HideWhenOlder iso={checkedAt.toISOString()} maxAgeMs={MAX_AGE_MS}>
-      <section id="further-ahead" className="space-y-2">
-        <h2 className="font-display text-xl uppercase tracking-tight text-black">
+      <section id="further-ahead" className="sheet sheet-pad space-y-3">
+        <h2 className="paper-h2">
           Morning times further ahead
         </h2>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           Before-noon 18-hole times at {courseName} beyond the next two
           weeks: <strong>{total.toLocaleString("en-US")} times</strong> on{" "}
           <strong>{days.length} dates</strong>, as we counted them on the
@@ -124,22 +124,22 @@ export function FarAheadMornings({
           )}
           {rateLabel ? ` Green fees are ${rateLabel}.` : ""}
         </p>
-        <ul className="overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200">
+        <ul className="white-box divide-y divide-[#aeb2b9]">
           {lead.map((d) => (
             <li
               key={d.key}
-              className="flex items-center gap-3 px-3 py-2 text-sm"
+              className="flex items-center gap-3 px-3 py-2.5 text-[15px]"
             >
               <div className="min-w-0 flex-1">
-                <div className="font-bold text-black">
+                <div className="font-bold leading-snug text-black">
                   {formatDayHeader(d.first)}
                 </div>
-                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-neutral-600">
+                <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[13.5px] leading-snug text-soft">
                   <span className="tabular-nums">
                     <strong className="text-black">{d.count}</strong> morning{" "}
                     {d.count === 1 ? "time" : "times"}
                   </span>
-                  <span className="text-neutral-400">·</span>
+                  <span aria-hidden="true" className="text-neutral-600">·</span>
                   <span className="tabular-nums">
                     {d.count === 1
                       ? formatTime(d.first)
@@ -147,7 +147,7 @@ export function FarAheadMornings({
                   </span>
                   {d.foursomes > 0 && (
                     <>
-                      <span className="text-neutral-400">·</span>
+                      <span aria-hidden="true" className="text-neutral-600">·</span>
                       <span className="tabular-nums">
                         {d.foursomes} with 4 spots
                       </span>
@@ -155,7 +155,7 @@ export function FarAheadMornings({
                   )}
                   {d.lo != null && d.hi != null && (
                     <>
-                      <span className="text-neutral-400">·</span>
+                      <span aria-hidden="true" className="text-neutral-600">·</span>
                       <span className="font-bold tabular-nums text-black">
                         {d.lo === d.hi
                           ? formatPrice(d.lo)
@@ -166,7 +166,7 @@ export function FarAheadMornings({
                   {[...d.fees].sort((a, b) => a - b).map((f) => (
                     <span
                       key={f}
-                      className="text-[10px] font-bold uppercase tracking-wide text-magred"
+                      className="text-[13px] font-semibold text-magred"
                     >
                       +{formatPrice(f)} booking fee
                     </span>
@@ -182,7 +182,7 @@ export function FarAheadMornings({
                 data-track2-course={courseSlug}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 rounded-sm border-2 border-black bg-white px-3 py-1.5 font-display text-sm uppercase tracking-wider text-black transition-colors hover:bg-cream-dark"
+                className="tee-book shrink-0"
               >
                 Book
               </a>
@@ -190,13 +190,13 @@ export function FarAheadMornings({
           ))}
         </ul>
         {rest.length > 0 && (
-          <details className="rounded-sm border-2 border-black bg-white">
-            <summary className="cursor-pointer px-3 py-2 text-sm font-bold text-black">
+          <details className="white-box">
+            <summary className="flex min-h-[44px] cursor-pointer items-center px-3 py-2 text-[15px] font-bold text-black">
               Show all {days.length} dates ({rest.length} more)
             </summary>
-            <ul className="divide-y divide-neutral-200 border-t border-neutral-200 text-xs text-neutral-700">
+            <ul className="divide-y divide-[#aeb2b9] border-t border-[#aeb2b9] text-[13.5px] leading-snug text-soft">
               {rest.map((d) => (
-                <li key={d.key} className="px-3 py-1.5 tabular-nums">
+                <li key={d.key} className="px-3 py-2 tabular-nums">
                   <b className="text-black">{formatDayHeader(d.first)}</b>
                   {": "}
                   {d.count} {d.count === 1 ? "time" : "times"}
@@ -214,7 +214,7 @@ export function FarAheadMornings({
                 </li>
               ))}
             </ul>
-            <p className="border-t border-neutral-200 px-3 py-2 text-xs">
+            <p className="border-t border-[#aeb2b9] px-3 py-3 text-[15px]">
               <a
                 href={bookingUrl}
                 data-track="Book"
@@ -224,7 +224,7 @@ export function FarAheadMornings({
                 data-track2-course={courseSlug}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="font-bold text-brand underline"
+                className="paper-link"
               >
                 Open the course booking page
               </a>{" "}
@@ -232,7 +232,7 @@ export function FarAheadMornings({
             </p>
           </details>
         )}
-        <p className="text-xs leading-relaxed text-neutral-500">
+        <p className="paper-note">
           Book opens the course booking page; pick the date there. Dates
           with no morning times at our last check are left out.
         </p>

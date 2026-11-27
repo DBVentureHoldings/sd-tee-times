@@ -63,10 +63,10 @@ const CITY_BOOKING_URL =
 const CITY_FEES_URL = "https://www.sandiego.gov/torrey-pines/course-fees";
 const CITY_GOLF_URL = "https://www.sandiego.gov/park-and-recreation/golf";
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
-const list = "list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-700";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
+const list = "list-disc space-y-2 pl-5 text-[15px] leading-relaxed text-soft sm:text-base";
 
 const CHECKED_FMT = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -118,12 +118,14 @@ export default function TorreyPinesGuidePage() {
   ]);
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -132,7 +134,7 @@ export default function TorreyPinesGuidePage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           How to Book a Torrey Pines Tee Time
         </h1>
         <p className={p}>
@@ -144,7 +146,7 @@ export default function TorreyPinesGuidePage() {
           release time, the booking windows and fees, the rules to know
           before you book, and what to do if you have no tee time.
         </p>
-        <p className="text-xs text-neutral-500">
+        <p className="paper-note">
           Everything here comes from the City of San Diego&apos;s golf pages
           {checked ? `, checked ${checked}` : ""}. Rules and fees can change,
           and the{" "}
@@ -156,12 +158,12 @@ export default function TorreyPinesGuidePage() {
       <section className="space-y-2">
         <h2 className={h2}>The short version</h2>
         <table className="w-full border-collapse border-2 border-black bg-white text-left text-sm text-neutral-700 [&_td]:px-2 [&_td]:py-2 [&_td]:align-top [&_th]:px-2 [&_th]:py-2 [&_th]:align-top">
-          <caption className="pb-1.5 text-left text-xs text-neutral-500">
+          <caption className="pb-1.5 text-left text-[13px] leading-snug text-neutral-600">
             Torrey Pines booking windows and booking fees. The fee is per
             player and is separate from the green fee.
           </caption>
           <thead>
-            <tr className="border-b-2 border-black text-[10px] uppercase tracking-wider text-neutral-500 [&>th]:font-semibold">
+            <tr className="border-b-2 border-black text-[13px] uppercase tracking-wider text-neutral-600 [&>th]:font-semibold">
               <th scope="col">Who</th>
               <th scope="col">How far ahead</th>
               <th scope="col">Booking fee</th>
@@ -390,25 +392,25 @@ export default function TorreyPinesGuidePage() {
       <section className="space-y-2">
         <h2 className={h2}>Course facts and official links</h2>
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+          <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
             Courses
           </dt>
           <dd className="text-neutral-800">
             North and South, 18 holes and par 72 each
           </dd>
-          <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+          <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
             Owner
           </dt>
           <dd className="text-neutral-800">City of San Diego</dd>
-          <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+          <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
             Opened
           </dt>
           <dd className="text-neutral-800">1957</dd>
-          <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+          <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
             U.S. Opens
           </dt>
           <dd className="text-neutral-800">2008 and 2021, on the South Course</dd>
-          <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+          <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
             Practice
           </dt>
           <dd className="text-neutral-800">
@@ -416,7 +418,7 @@ export default function TorreyPinesGuidePage() {
           </dd>
           {f?.address && (
             <>
-              <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+              <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
                 Address
               </dt>
               <dd className="text-neutral-800">{f.address}</dd>
@@ -424,7 +426,7 @@ export default function TorreyPinesGuidePage() {
           )}
           {f?.phone && (
             <>
-              <dt className="text-[11px] uppercase leading-5 tracking-wider text-neutral-500">
+              <dt className="text-[13px] uppercase leading-5 tracking-wider text-neutral-600">
                 Phone
               </dt>
               <dd className="text-neutral-800">
@@ -450,14 +452,14 @@ export default function TorreyPinesGuidePage() {
             <Ext href={torreyUrl}>City of San Diego Torrey Pines page</Ext>
           </li>
         </ul>
-        <p className="text-xs leading-relaxed text-neutral-500">
+        <p className="paper-note">
           Source: City of San Diego golf pages
           {checked ? `, checked ${checked}` : ""}. SD Tee Times is independent
           and is not affiliated with Torrey Pines or the City of San Diego.
         </p>
       </section>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 border-t-2 border-black pt-4 text-[15px]">
         <Link href="/" prefetch={false} className={link}>
           Full San Diego tee sheet
         </Link>

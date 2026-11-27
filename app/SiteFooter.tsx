@@ -75,7 +75,7 @@ function FooterRow({
   links: Array<{ href: string; label: string }>;
 }) {
   return (
-    <ul aria-label={label} className="flex flex-wrap gap-x-4 gap-y-1">
+    <ul aria-label={label} className="flex flex-wrap gap-x-4">
       {links.map((l) => (
         <li key={l.href}>
           <Link href={l.href} prefetch={false}>
@@ -95,8 +95,10 @@ export function SiteFooter() {
   }));
 
   return (
-    <footer className="border-t-2 border-black">
-      <div className="mx-auto max-w-2xl space-y-5 px-4 pb-10 pt-6 text-xs leading-6 text-neutral-600 [&_a:hover]:text-brand [&_a:hover]:decoration-brand [&_a]:underline [&_a]:decoration-neutral-300 [&_a]:underline-offset-2">
+    <footer className="border-t-4 border-black bg-brand">
+      {/* Solid green band: nothing here sits on bare cork. pb leaves room
+          for the fixed signup bar. */}
+      <div className="site-col space-y-5 px-4 pb-24 pt-6 text-[13px] leading-7 text-[#EDF3EC] [&_a:hover]:text-white [&_a:hover]:decoration-2 [&_a]:font-medium [&_a]:text-cream [&_a]:underline [&_a]:decoration-cream/60 [&_a]:underline-offset-[3px]">
         <nav aria-label="Site" className="space-y-1">
           <FooterRow label="Tee times" links={HUB_LINKS} />
           <FooterRow label="Areas" links={regionLinks} />
@@ -106,17 +108,17 @@ export function SiteFooter() {
         </nav>
 
         <nav aria-label="Golf courses" className="space-y-3">
-          <h2 className="font-display text-base uppercase tracking-wide text-black">
+          <h2 className="font-display text-2xl uppercase leading-none tracking-[0.01em] text-cream [text-shadow:_1px_1px_0_#06301f]">
             Golf courses
           </h2>
           {areas.map((area) => (
             <div key={area.key}>
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+              <h3 className="text-[13px] font-bold uppercase tracking-widest text-[#E4EDE4]">
                 {area.heading}
               </h3>
               {/* Styles hang off the <ul>, not each <li>: a class on 37 items
                   is repeated in the HTML and again in the RSC payload. */}
-              <ul className="columns-2 gap-x-4 sm:columns-3 [&>li]:break-inside-avoid">
+              <ul className="columns-2 gap-x-4 sm:columns-3 [&>li>a]:block [&>li>a]:py-[5px] [&>li>a]:leading-snug [&>li]:break-inside-avoid">
                 {area.courses.map((c) => (
                   <li key={c.slug}>
                     <Link href={`/course/${c.slug}`} prefetch={false}>
@@ -130,7 +132,7 @@ export function SiteFooter() {
         </nav>
 
         <div className="space-y-1">
-          <ul className="flex flex-wrap gap-x-4 gap-y-1">
+          <ul className="flex flex-wrap gap-x-4">
             <li>
               <Link href="/about" prefetch={false}>
                 About
@@ -154,7 +156,7 @@ export function SiteFooter() {
                 data-track="Donate"
                 data-track-from="footer"
               >
-                ☕ Buy me a coffee
+                Buy me a coffee
               </a>
             </li>
           </ul>

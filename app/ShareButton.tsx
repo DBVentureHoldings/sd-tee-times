@@ -67,15 +67,15 @@ export function ShareButton({
       onClick={onShare}
       aria-label="Share this tee time"
       title="Share this tee time"
-      className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-sm border-2 border-black bg-white text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:bg-cream-dark active:translate-y-0 active:shadow-[1px_1px_0_0_rgba(0,0,0,1)]"
+      className="absolute right-3 top-3 z-10 flex h-11 w-11 items-center justify-center border-2 border-black bg-paper text-black shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 hover:bg-cream-dark active:translate-y-0 active:shadow-[1px_1px_0_0_#000]"
     >
       {copied ? (
-        <span className="text-xs font-bold text-brand">✓</span>
+        <span className="text-base font-bold text-brand">✓</span>
       ) : (
         // iOS-style share glyph: arrow up out of a tray.
         <svg
-          width="14"
-          height="16"
+          width="18"
+          height="20"
           viewBox="0 0 14 16"
           fill="none"
           stroke="currentColor"

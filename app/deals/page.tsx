@@ -72,7 +72,10 @@ export default async function DealsPage() {
   return (
     <div className="space-y-6">
       <Freshness generatedAt={Date.now()} staleAfterSec={revalidate} />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <div className="sheet sheet-pad sheet-pinned space-y-3">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -81,10 +84,10 @@ export default async function DealsPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           San Diego Golf Deals
         </h1>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           Tee times priced <strong>below what that course usually
           charges for the same time of day</strong> — not just cheap twilight
           slots, actual discounts against each course&apos;s own baseline.
@@ -100,24 +103,25 @@ export default async function DealsPage() {
           ) : null}
           . Times and prices are as of the Updated line under the list.
           The{" "}
-          <Link href="/" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/" prefetch={false} className="paper-link">
             full tee sheet
           </Link>{" "}
           marks deals too.
         </p>
-        <p className="text-sm leading-relaxed text-neutral-700">
+        <p className="paper-p">
           This page covers San Diego County. Temecula and Murrieta are on
           the{" "}
-          <Link href="/tee-times/temecula" prefetch={false} className="font-bold text-brand underline">
+          <Link href="/tee-times/temecula" prefetch={false} className="paper-link">
             Temecula tee times
           </Link>{" "}
           page.
         </p>
       </header>
+      </div>
 
       <AlertCaptureForm
         source="deals"
-        title="🔥 Deals by email"
+        title="Deals by email"
         blurb="Once a week, before the weekend, we email the best weekend times, including tee times well below a course's usual rate. Free, unsubscribe anytime."
         cta="Send me deals"
         successNote="You're set. Deals come in the weekly email."
@@ -132,11 +136,11 @@ export default async function DealsPage() {
           updatedAt={lastScrape}
         />
       ) : (
-        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-          <p className="font-display text-2xl uppercase tracking-wider">
+        <div className="sheet sheet-pad text-center text-sm text-neutral-700">
+          <p className="font-display text-2xl uppercase tracking-wider text-black">
             No standout deals at the last refresh
           </p>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mx-auto mt-1 max-w-[52ch] text-sm text-neutral-700">
             Deals appear when a course prices a slot well below its usual rate
             — check back soon, or browse the full tee sheet.
           </p>
@@ -146,20 +150,20 @@ export default async function DealsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
-        <Link href="/" prefetch={false} className="font-bold text-brand underline">
+      <div className="sheet sheet-flat sheet-pad flex flex-wrap gap-x-5 gap-y-4 text-[15px]">
+        <Link href="/" prefetch={false} className="paper-link">
           Full San Diego tee sheet
         </Link>
-        <Link href="/twilight" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/twilight" prefetch={false} className="paper-link">
           Twilight tee times
         </Link>
-        <Link href="/this-weekend" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/this-weekend" prefetch={false} className="paper-link">
           This weekend
         </Link>
-        <Link href="/cheap-golf-san-diego" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/cheap-golf-san-diego" prefetch={false} className="paper-link">
           Cheap golf
         </Link>
-        <Link href="/courses" prefetch={false} className="font-bold text-brand underline">
+        <Link href="/courses" prefetch={false} className="paper-link">
           All courses
         </Link>
       </div>

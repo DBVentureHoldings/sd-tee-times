@@ -15,9 +15,10 @@ export const metadata: Metadata = {
 
 export default function UnsubscribePage() {
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-5">
+      <i className="pin pin-c" aria-hidden="true" />
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           Unsubscribe
         </h1>
       </header>

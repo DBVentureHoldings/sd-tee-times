@@ -159,9 +159,9 @@ export async function generateMetadata({
   };
 }
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 export default async function RegionPage({
   params,
@@ -255,7 +255,10 @@ export default async function RegionPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <div className="sheet sheet-pad sheet-pinned space-y-3">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -264,7 +267,7 @@ export default async function RegionPage({
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           {copy.h1}
         </h1>
         <p className={p}>
@@ -280,10 +283,11 @@ export default async function RegionPage({
         </p>
         <UpdatedStamp at={lastScrape} />
       </header>
+      </div>
 
       {/* Course directory by city: every course page linked (crawl path),
           with what a golfer needs to pick one. */}
-      <section className="space-y-3">
+      <section className="sheet sheet-pad space-y-3">
         <h2 className={h2}>Golf courses by city</h2>
         {cities.length > 1 && (
           <ul className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
@@ -292,7 +296,7 @@ export default async function RegionPage({
                 <a href={`#${g.id}`} className={link}>
                   {g.label}
                 </a>{" "}
-                <span className="text-xs text-neutral-500">
+                <span className="paper-note">
                   ({g.courses.length})
                 </span>
               </li>
@@ -301,11 +305,11 @@ export default async function RegionPage({
         )}
         {cities.map((g) => (
           <div key={g.id} id={g.id} className="scroll-mt-4 space-y-1">
-            <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+            <h3 className="text-[13px] font-bold uppercase tracking-widest text-neutral-600">
               {g.label}
             </h3>
             {/* Styles hang off the <ul> so they are not repeated per row. */}
-            <ul className="overflow-hidden rounded-sm border-2 border-black bg-white text-sm [&>li:last-child]:border-b-0 [&>li]:flex [&>li]:items-start [&>li]:justify-between [&>li]:gap-3 [&>li]:border-b [&>li]:border-neutral-200 [&>li]:px-3 [&>li]:py-2 [&_small]:block [&_small]:text-xs [&_small]:leading-snug [&_small]:text-neutral-500">
+            <ul className="overflow-hidden rounded-sm border-2 border-black bg-white text-sm [&>li:last-child]:border-b-0 [&>li]:flex [&>li]:items-start [&>li]:justify-between [&>li]:gap-3 [&>li]:border-b [&>li]:border-neutral-200 [&>li]:px-3 [&>li]:py-2 [&_small]:block [&_small]:text-[13px] [&_small]:leading-snug [&_small]:text-neutral-600">
               {g.courses.map((c) => {
                 const open = openBySlug.get(c.slug) ?? 0;
                 const price = priceBySlug.get(c.slug);
@@ -327,13 +331,13 @@ export default async function RegionPage({
                       {price?.weekday.median != null ? (
                         <span className="font-semibold text-black">
                           ~{formatAbout(price.weekday.median)}
-                          <span className="font-normal text-neutral-500">
+                          <span className="font-normal text-neutral-600">
                             {" "}
                             weekday{price.holes === 9 ? ", 9 holes" : ""}
                           </span>
                         </span>
                       ) : open > 0 ? (
-                        <span className="text-neutral-400">No typical price</span>
+                        <span className="text-neutral-600">No typical price</span>
                       ) : null}
                       {open > 0 ? (
                         <small>
@@ -359,7 +363,7 @@ export default async function RegionPage({
             </ul>
           </div>
         ))}
-        <p className="text-xs leading-relaxed text-neutral-500">
+        <p className="paper-note">
           Holes and par are from each course&apos;s official site, and are
           left out where we have not confirmed them. The weekday price is the
           middle price we saw in open Monday to Thursday tee times before 3pm,
@@ -389,7 +393,11 @@ export default async function RegionPage({
         )}
       </section>
 
-      <h2 className={h2}>Open tee times</h2>
+      <div>
+        <div className="cork-label">
+          <h2>Open tee times</h2>
+        </div>
+      </div>
       {rows.length > 0 ? (
         <DayGroupedList
           rows={rows}
@@ -406,11 +414,11 @@ export default async function RegionPage({
           sheetQuery={`view=${regionView(key)}`}
         />
       ) : (
-        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-          <p className="font-display text-2xl uppercase tracking-wider">
+        <div className="sheet sheet-pad text-center text-sm text-neutral-700">
+          <p className="font-display text-2xl uppercase tracking-wider text-black">
             No open times to show
           </p>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mx-auto mt-1 max-w-[52ch] text-sm text-neutral-700">
             We had none for these courses at our last check. Use the course
             booking links above.
           </p>
@@ -420,13 +428,13 @@ export default async function RegionPage({
         </div>
       )}
 
-      <section className="space-y-3 border-t-2 border-black pt-4">
+      <section className="sheet sheet-pad space-y-4">
         <h2 className={h2}>Questions</h2>
         {/* Not on the muni page: the city courses book through a city
             account and Admiral Baker is a Navy course. */}
         {key !== "muni" && (
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-[15px] font-bold text-black sm:text-base">
               Can anyone book these courses?
             </h3>
             <p className={p}>
@@ -441,7 +449,7 @@ export default async function RegionPage({
         )}
         {pricedFull.length >= 2 && (
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-[15px] font-bold text-black sm:text-base">
               How much is a round in {copy.phrase}?
             </h3>
             <p className={p}>
@@ -458,7 +466,7 @@ export default async function RegionPage({
         )}
         {shortCourses.length > 0 && (
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-[15px] font-bold text-black sm:text-base">
               Which are the short courses?
             </h3>
             <p className={p}>
@@ -497,10 +505,10 @@ export default async function RegionPage({
         )}
         {withRules.length > 0 && (
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-[15px] font-bold text-black sm:text-base">
               What are the booking rules?
             </h3>
-            <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-neutral-700">
+            <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
               {withRules.map((c) => (
                 <li key={c.slug}>
                   <strong>{courseDisplayName(c)}:</strong>{" "}
@@ -508,7 +516,7 @@ export default async function RegionPage({
                 </li>
               ))}
             </ul>
-            <p className="text-xs leading-relaxed text-neutral-500">
+            <p className="paper-note">
               From each course&apos;s own pages. The source and the date we
               checked it are on the course page.
             </p>
@@ -516,7 +524,7 @@ export default async function RegionPage({
         )}
         {coursesWithTimes < regionCourses.length && (
           <div className="space-y-1">
-            <h3 className="text-sm font-bold text-black">
+            <h3 className="text-[15px] font-bold text-black sm:text-base">
               Why do some courses show no times?
             </h3>
             <p className={p}>
@@ -528,7 +536,7 @@ export default async function RegionPage({
         )}
       </section>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="sheet sheet-flat sheet-pad flex flex-wrap gap-x-5 gap-y-4 text-[15px]">
         {(key === "nc" || key === "tv") && (
           <Link
             href="/north-county-san-diego-golf-courses"

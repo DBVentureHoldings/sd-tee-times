@@ -3,7 +3,7 @@ import { dayKey, formatDayHeader, formatStamp } from "@/lib/format";
 import { capRowsForWindow } from "@/lib/row-cap";
 import type { DealBaselines } from "@/lib/deals";
 import type { TeeTimeRow } from "@/lib/supabase-server";
-import { TeeTimeRowItem } from "./TeeTimeRowItem";
+import { TeeColHead, TeeTimeRowItem } from "./TeeTimeRowItem";
 import { StaleNotice, UpdatedAgo } from "./Freshness";
 
 /**
@@ -76,10 +76,12 @@ export function DayGroupedList({
   const sheetHref = sheetQuery ? `/?${sheetQuery}` : "/";
   // Filter URLs render on demand: never prefetched, and nofollow so crawlers
   // don't walk from 44 cached pages into the one expensive route.
-  const linkClass = "font-bold text-brand underline";
+  const linkClass = "paper-link";
 
   return (
-    <section className="space-y-5">
+    <section className="sheet tee-sheet">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <StaleNotice
         lastScrapeIso={updatedAt ? updatedAt.toISOString() : null}
         generatedAt={now}
@@ -97,13 +99,14 @@ export function DayGroupedList({
         const clipped = all.length - dayRows.length;
         const dayHref = `/?day=${d}${sheetQuery ? `&${sheetQuery}` : ""}`;
         return (
-          <div key={d} className="space-y-2">
-            <h2 className="font-display text-xl uppercase tracking-tight text-black">
-              {formatDayHeader(new Date(dayRows[0].tee_time_at))}
-            </h2>
+          <div key={d} className="tee-day">
+            <div className="day-hd">
+              <h2>{formatDayHeader(new Date(dayRows[0].tee_time_at))}</h2>
+            </div>
+            <TeeColHead middle={hideCourseName ? "Open spots" : "Course"} />
             <ul
               data-tee-group
-              className="peer overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200 data-[tee-empty]:hidden"
+              className="peer tee-list data-[tee-empty]:hidden"
             >
               {dayRows.map((r) => (
                 <TeeTimeRowItem
@@ -114,7 +117,7 @@ export function DayGroupedList({
                 />
               ))}
             </ul>
-            <p className="hidden text-xs text-neutral-500 peer-data-[tee-empty]:block">
+            <p className="paper-note hidden px-1 py-2 peer-data-[tee-empty]:block">
               The times listed here have passed.{" "}
               <Link
                 href={dayHref}
@@ -126,7 +129,7 @@ export function DayGroupedList({
               </Link>
             </p>
             {clipped > 0 && (
-              <p className="text-xs text-neutral-500">
+              <p className="paper-note px-1 pt-3">
                 <Link
                   href={dayHref}
                   prefetch={false}
@@ -141,7 +144,7 @@ export function DayGroupedList({
         );
       })}
       {restDays > 0 && (
-        <p className="text-sm text-neutral-600">
+        <p className="white-box mx-[3px] mt-4 px-3 py-3 text-[15px] font-medium leading-normal">
           Plus <strong>{restCount} more times</strong> across the next{" "}
           {restDays} {restDays === 1 ? "day" : "days"} — see{" "}
           <Link
@@ -168,7 +171,7 @@ export function DayGroupedList({
 export function UpdatedStamp({ at }: { at: Date | null }) {
   if (!at) return null;
   return (
-    <p className="text-[10px] uppercase tracking-[0.2em] text-neutral-400">
+    <p className="upd">
       <UpdatedAgo
         iso={at.toISOString()}
         initial={`Updated ${formatStamp(at)} PT`}

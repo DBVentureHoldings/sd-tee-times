@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bebas_Neue, Inter } from "next/font/google";
+import { Bebas_Neue, Inter, Merienda, Texturina } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { TrackClicks } from "./TrackClicks";
@@ -21,6 +21,25 @@ const sansFont = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
   display: "swap",
+});
+
+// Cork-and-paper lettering: course names (Texturina) and the handwritten
+// times and prices on the tee sheet (Merienda). One weight each.
+const handFont = Texturina({
+  weight: "700",
+  subsets: ["latin"],
+  variable: "--font-hand",
+  display: "swap",
+  // Used only by tee rows, which sit below the first screen: no preload.
+  preload: false,
+});
+
+const numFont = Merienda({
+  weight: "800",
+  subsets: ["latin"],
+  variable: "--font-num",
+  display: "swap",
+  preload: false,
 });
 
 const SITE_DESCRIPTION = `Open tee times at ${courseCounts().total} golf courses in ${coverageAreaPhrase()}. Free, no login.`;
@@ -67,19 +86,74 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${displayFont.variable} ${sansFont.variable}`}>
-      <body className="min-h-screen bg-cream font-sans text-neutral-900 antialiased">
+    <html
+      lang="en"
+      className={`${displayFont.variable} ${sansFont.variable} ${handFont.variable} ${numFont.variable}`}
+    >
+      <body className="cork min-h-screen font-sans text-ink antialiased">
+        {/* One-time SVG sprite for the cork-and-paper design: reference with
+            <svg><use href="#cg-cloud" /></svg> (also #cg-rosette, #cg-id). */}
+        <svg
+          aria-hidden="true"
+          focusable="false"
+          width="0"
+          height="0"
+          className="absolute"
+        >
+          <defs>
+            <symbol id="cg-cloud" viewBox="0 0 120 72" preserveAspectRatio="none">
+              <path
+                d="M58.5 7.1A20.0 20.0 0 0 1 89.0 12.2A13.4 13.4 0 0 1 108.6 23.9A8.8 8.8 0 0 1 113.9 38.2A10.9 10.9 0 0 1 103.0 53.8A15.8 15.8 0 0 1 78.0 63.0A21.3 21.3 0 0 1 44.9 65.8A14.1 14.1 0 0 1 22.5 56.4A15.3 15.3 0 0 1 4.0 39.8A11.3 11.3 0 0 1 11.7 23.3A16.1 16.1 0 0 1 35.5 10.8A14.3 14.3 0 0 1 58.5 7.1"
+                fill="#FBFAF4"
+                stroke="#0E5B3D"
+                strokeWidth="3"
+                strokeLinejoin="round"
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            </symbol>
+            <symbol id="cg-rosette" viewBox="0 0 40 56">
+              <path d="M11 28 L6 54 L14 48 L19 55 L20 30Z" fill="#1F3FA8" />
+              <path d="M29 28 L34 54 L26 48 L21 55 L20 30Z" fill="#17307f" />
+              <g fill="#1F3FA8">
+                <circle cx="33.0" cy="20.0" r="5" />
+                <circle cx="31.3" cy="26.5" r="5" />
+                <circle cx="26.5" cy="31.3" r="5" />
+                <circle cx="20.0" cy="33.0" r="5" />
+                <circle cx="13.5" cy="31.3" r="5" />
+                <circle cx="8.7" cy="26.5" r="5" />
+                <circle cx="7.0" cy="20.0" r="5" />
+                <circle cx="8.7" cy="13.5" r="5" />
+                <circle cx="13.5" cy="8.7" r="5" />
+                <circle cx="20.0" cy="7.0" r="5" />
+                <circle cx="26.5" cy="8.7" r="5" />
+                <circle cx="31.3" cy="13.5" r="5" />
+              </g>
+              <circle cx="20" cy="20" r="12" fill="#FBFAF4" />
+              <circle cx="20" cy="20" r="12" fill="none" stroke="#C8102E" strokeWidth="1.6" />
+              <polygon
+                points="20.0,13.0 21.8,17.6 26.7,17.8 22.9,20.9 24.1,25.7 20.0,23.0 15.9,25.7 17.1,20.9 13.3,17.8 18.2,17.6"
+                fill="#C8102E"
+              />
+            </symbol>
+            <symbol id="cg-id" viewBox="0 0 20 14">
+              <rect x="1" y="1" width="18" height="12" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+              <circle cx="6.5" cy="6" r="2" fill="currentColor" />
+              <path d="M11 5h5M11 8.5h5M3.5 10.5h6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+            </symbol>
+          </defs>
+        </svg>
         {/* Slim brand bar — kept compact so the tee times lead. Feedback link
             lives in the footer instead of eating header space. */}
         <header className="border-b-4 border-black bg-brand text-cream">
-          <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-4 py-2.5">
+          <div className="site-col flex items-center justify-between gap-3 px-4 pb-3 pt-2">
             {/* Brand/logo, not the page heading — each page supplies its own
                 <h1> for SEO. Links home so it doubles as navigation. */}
             <Link href="/" prefetch={false} className="block min-w-0">
-              <div className="font-display text-3xl leading-none tracking-tight [text-shadow:_-1.5px_-1.5px_0_#0A4530,_1.5px_-1.5px_0_#0A4530,_-1.5px_1.5px_0_#0A4530,_1.5px_1.5px_0_#0A4530,_2px_2px_0_rgba(0,0,0,0.25)]">
+              <div className="whitespace-nowrap font-display text-[32px] leading-none tracking-[0.01em] [text-shadow:_2px_2px_0_#06301f,_-1px_-1px_0_#06301f,_1px_-1px_0_#06301f,_-1px_1px_0_#06301f] min-[400px]:text-[34px] md:text-[40px]">
                 SD <span className="text-magred">TEE</span> TIMES
               </div>
-              <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-cream/70">
+              <p className="mt-1 whitespace-nowrap text-[13px] font-medium uppercase leading-tight tracking-[0.06em] text-[#E4EDE4] min-[400px]:tracking-[0.1em] md:tracking-[0.2em]">
                 San Diego&apos;s open tee sheet
               </p>
             </Link>
@@ -91,18 +165,15 @@ export default function RootLayout({
               data-track="Donate"
               data-track-from="header"
               aria-label="Tip jar: buy me a coffee"
-              className="shrink-0 rounded-sm border-2 border-black bg-cream px-2.5 py-1.5 font-display text-sm uppercase leading-none tracking-wider text-brand shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
+              className="mr-[3px] inline-flex min-h-[44px] shrink-0 items-center whitespace-nowrap border-2 border-black bg-cream px-3 pt-0.5 font-display text-[19px] uppercase leading-none tracking-[0.08em] text-brand shadow-[3px_3px_0_0_#000] transition-transform hover:-translate-y-0.5"
             >
               {/* "Tip jar", not "Coffee": a bare "Coffee" read like a
                   "find coffee" feature. One short line on every screen. */}
-              <span className="flex items-center gap-1.5 whitespace-nowrap">
-                <span aria-hidden="true">☕</span>
-                <span>Tip jar</span>
-              </span>
+              Tip jar
             </a>
           </div>
         </header>
-        <main className="mx-auto max-w-2xl px-4 py-4">{children}</main>
+        <main className="site-col px-4 pb-8 pt-6">{children}</main>
         {/* Links every hub, region page and course from every page. Static:
             it reads only courses.json. */}
         <SiteFooter />

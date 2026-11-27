@@ -72,12 +72,12 @@ export function AlertCaptureForm({
 
   if (state === "done") {
     return (
-      <section className="rounded-sm border-2 border-black bg-brand p-4 text-center text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)]">
+      <section className="border-2 border-black bg-brand p-4 text-center text-cream shadow-[4px_4px_0_0_#000]">
         <div className="font-display text-2xl uppercase tracking-wider">
           ✓ You&apos;re on the list
         </div>
-        <p className="mt-1 text-xs text-cream/80">{successNote}</p>
-        <p className="mt-2 text-xs text-cream/80">
+        <p className="mt-1 text-sm text-[#EDF3EC]">{successNote}</p>
+        <p className="mt-2 text-sm text-[#EDF3EC]">
           SD Tee Times is free and I pay for the servers myself.{" "}
           <a
             href={DONATE_URL}
@@ -97,15 +97,13 @@ export function AlertCaptureForm({
 
   return (
     <section
-      className={`rounded-sm border-2 border-black bg-brand text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)] ${compact ? "p-3" : "p-4"}`}
+      className={`border-2 border-black bg-brand text-cream shadow-[4px_4px_0_0_#000] ${compact ? "px-3.5 pb-4 pt-3.5 md:px-5 md:pb-5 md:pt-[18px]" : "p-4 md:p-5"}`}
     >
-      <h2
-        className={`font-display uppercase leading-tight tracking-tight ${compact ? "text-lg" : "text-xl"}`}
-      >
+      <h2 className="font-display text-[25px] uppercase leading-[1.05] tracking-[0.01em] md:text-[28px]">
         {title}
       </h2>
-      <p className="mt-1 text-xs text-cream/80">{blurb}</p>
-      <form onSubmit={onSubmit} className={`flex gap-2 ${compact ? "mt-2" : "mt-3"}`}>
+      <p className="mt-1.5 text-[15px] leading-[1.45] text-[#EDF3EC]">{blurb}</p>
+      <form onSubmit={onSubmit} className="mt-3 flex gap-2.5 pr-[3px]">
         <input
           ref={honeypot}
           type="text"
@@ -123,18 +121,18 @@ export function AlertCaptureForm({
           onChange={(e) => setEmail(e.target.value)}
           placeholder="you@email.com"
           aria-label="Email for the weekly tee times email"
-          className="min-w-0 flex-1 rounded-sm border-2 border-black bg-cream px-3 py-2.5 text-sm text-black placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-black"
+          className="paper min-h-[50px] min-w-0 flex-1 rounded-none border-2 border-black px-3 text-base font-medium text-ink placeholder:text-[#5a5f68] placeholder:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-hilite focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
         />
         <button
           type="submit"
           disabled={state === "loading"}
-          className="shrink-0 rounded-sm border-2 border-black bg-magred px-4 py-2.5 font-display text-base uppercase tracking-wider text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
+          className="min-h-[50px] shrink-0 whitespace-nowrap border-2 border-black bg-magred px-4 pt-0.5 font-display text-[21px] uppercase leading-none tracking-[0.08em] text-white shadow-[3px_3px_0_0_#000] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60"
         >
           {state === "loading" ? "…" : cta}
         </button>
       </form>
       {state === "error" && (
-        <p className="mt-2 text-xs font-semibold text-cream">{msg}</p>
+        <p className="mt-2 text-sm font-semibold text-cream">{msg}</p>
       )}
     </section>
   );

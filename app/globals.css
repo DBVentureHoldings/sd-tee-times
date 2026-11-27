@@ -1,19 +1,960 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
+
+/* ==========================================================================
+   CORK AND PAPER design system
+   --------------------------------------------------------------------------
+   The page is a cork board; content sits on graph-paper sheets pinned to it.
+   Rule: text never sits on bare cork. Put it on .paper / .sheet or a solid
+   fill (bg-brand, bg-cream, ...). Nothing below 13px.
+
+   This block sits BEFORE "@tailwind utilities" on purpose, so any Tailwind
+   utility on the same element (p-4, mt-2, text-sm ...) wins over these.
+
+   Tailwind tokens (tailwind.config.ts):
+     colors  paper, score (blue), hilite (yellow), cork, ink, soft
+             plus the existing brand, cream, magred
+     fonts   font-hand (Texturina 700), font-num (Merienda 800)
+             plus the existing font-display (Bebas Neue), font-sans (Inter)
+
+   SVG sprite (defined once in app/layout.tsx):
+     <svg><use href="#cg-cloud" /></svg>   green cloud (deal price)
+     <svg><use href="#cg-rosette" /></svg> blue prize rosette
+     <svg><use href="#cg-id" /></svg>      ID card glyph (uses currentColor)
+
+   Surfaces
+     .cork          cork-board fill (on <body>; also for sticky bars)
+     .paper         graph-paper fill only
+     .sheet         a paper card: graph paper + 2px black border + hard 4px
+                    shadow + position:relative (so pins can sit in it)
+     .sheet-flat    modifier: same card without the hard shadow
+     .pin           red push pin, top left of a .sheet (an empty <i>)
+     .pin.pin-r     blue pin, top right
+     .pin.pin-c     pin centred on the top edge
+     .site-col      the centred page column (672px; 820px on pages that
+                    render an element with [data-wide], e.g. the tee sheet)
+     .cork-label    tilted paper tab for a section heading that would
+                    otherwise sit on cork (wrap an <h2> + optional rosette)
+     .cork-label-sm small paper tab for a kicker next to it
+     .paper-btn     secondary button / chip: paper fill, black border, hard
+                    shadow, Bebas Neue, 44px tall
+     .chip          filter chip / tab (paper); .chip.chip-on = selected green
+     .strip         horizontal scroller that leaves room for hard shadows
+
+   Tee sheet ("scoreboard") rows
+     .tee-colhead   the TIME | COURSE | PRICE header strip (3 <span>s)
+     ul.tee-list    the list itself (closes the sheet with a rule)
+     li.tee-row     one row: .tee-t | .tee-c | .tee-p
+       .tee-thin    modifier: a row that cannot fit two players (greyed)
+     .tee-t         time cell: <b>6:52</b> <span>AM</span> (blue Merienda)
+     .tee-c         middle cell
+     .tee-name      course name (Texturina; black / green alternate per row,
+                    red first letter drawn with ::first-letter, so the link
+                    text stays one plain string)
+     .tee-meta      the wrapping line of spots, tags and marks
+     .tee-fee       red per-player fee note
+     .tee-resid     blue "Resident ID Card required" line with the ID glyph
+     .tee-p         price cell (stacked on phones, side by side from 768px)
+     .tee-price     red Merienda price; add .tee-price-sm for long prices
+     .tee-cloud     wrapper that draws the green cloud round a deal price:
+                    <span class="tee-price tee-cloud"><svg><use href="#cg-cloud"/></svg><em>$59</em></span>
+     .tee-pab       "Price at booking" (resident-only rows; never a figure)
+     .tee-book      the green Book button (44px tall)
+     .tee-ros       rosette size inside a row
+
+   Text blocks on paper (course pages; reusable on any reading page)
+     .sheet-pad     standard inner padding for a .sheet of prose; add
+                    .sheet-pinned when the sheet carries pins (more top room)
+     .sheet-yellow  modifier: legal-pad yellow graph paper (the playbook)
+     .crumb         breadcrumb line (13px caps)
+     .paper-h1      page title (Bebas, green)
+     .paper-h2      section title on a sheet (Bebas, black)
+     .paper-h3      small caps sub-heading (13px)
+     .paper-p       reading text: Inter 15px (16px from 640px), 62ch measure
+     .paper-note    small print (13.5px)
+     .paper-link    bold green underlined text link
+     .tiles > .tile stat tiles (white box): <dt> label (+ <small>), <dd> figure;
+                    dd.g = green figure. Works on <dl> or <div>.
+     .sq-list       list with red square bullets
+     .white-box     plain white bordered box inside a sheet (lists, callouts)
+     .brand-btn     primary green button (Bebas, 44px, hard shadow, may wrap)
+     .tee-sheet     the .sheet that holds day-grouped tee lists
+     .tee-day       one day inside it; .day-hd = its heading row (<h2>)
+     li.tee-solo    row modifier for single-course lists (no course name:
+                    the spots count becomes the bold lead of the middle cell)
+
+   Marks and tags (all 13px, usable anywhere on paper)
+     .mark-hl       yellow highlighter bar ("25% off"); dark text only
+     .tag           outlined tag base; colour with .tag-blue (Prime time),
+                    .tag-green (9 holes), .tag-red (min players),
+                    .tag-dash (grey dashed: 1 spot)
+     .pill-2        solid green "2+" pill
+     .upd           centred "Updated ..." line with a green dot
+   ========================================================================== */
 
 :root {
   color-scheme: light;
+  --paper: #fbfaf4;
+  --ink: #16181a;
+  --green: #0e5b3d;
+  --red: #c8102e;
+  --score: #1f3fa8;
+  --hilite: #ffe14d;
+  --cork: #c39a66;
+  --rule: #8d9199;
+  --rule2: #aeb2b9;
+  --soft: #33373d;
+  --tint: rgba(120, 126, 136, 0.17);
 }
 
 body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, "Inter",
     "Segoe UI", Roboto, sans-serif;
-  /* Subtle paper texture via repeating gradient */
-  background-image:
-    radial-gradient(circle at 25% 25%, rgba(14, 91, 61, 0.02) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, rgba(200, 16, 46, 0.02) 0%, transparent 50%);
 }
+
+/* ---- surfaces ---- */
+.cork {
+  background-color: var(--cork);
+  background-image:
+    radial-gradient(rgba(90, 55, 20, 0.28) 1px, transparent 1.6px),
+    radial-gradient(rgba(255, 235, 200, 0.3) 1px, transparent 1.6px),
+    radial-gradient(rgba(70, 40, 10, 0.18) 1.4px, transparent 2px);
+  background-size: 13px 13px, 17px 17px, 29px 29px;
+  background-position: 0 0, 6px 9px, 11px 4px;
+}
+.paper,
+.sheet,
+.paper-btn,
+.chip {
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(70, 85, 110, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 85, 110, 0.11) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.sheet {
+  position: relative;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 0 #000;
+  color: var(--ink);
+}
+.sheet-flat {
+  box-shadow: none;
+}
+.pin {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  z-index: 2;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8d8d, var(--red) 55%, #7c0a1c);
+  box-shadow: 1px 2px 2px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+.pin.pin-r {
+  left: auto;
+  right: 10px;
+  background: radial-gradient(circle at 35% 30%, #8fb0ff, var(--score) 55%, #12235f);
+}
+.pin.pin-c {
+  left: 50%;
+  margin-left: -6px;
+  top: -8px;
+}
+/* A sheet that also carries a Tailwind space-y-* class would push its second
+   pin (and the first block after the pins) down by the stack gap. The design
+   CSS loads before the utilities, hence !important. */
+.sheet > .pin,
+.sheet > .pin + :not(.pin),
+.sheet > .pin + script + * {
+  margin-top: 0 !important;
+}
+.site-col {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 42rem;
+}
+body:has([data-wide]) .site-col {
+  max-width: 820px;
+}
+
+.cork-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 2px solid #000;
+  padding: 7px 12px 4px 9px;
+  flex: none;
+  max-width: 100%;
+  transform: rotate(-1deg);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(rgba(70, 85, 110, 0.11) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(70, 85, 110, 0.11) 1px, transparent 1px);
+  background-size: 14px 14px;
+  color: #000;
+}
+.cork-label > :is(h1, h2, h3, span) {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 27px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.cork-label > svg {
+  width: 20px;
+  height: 28px;
+  flex: none;
+  margin-top: -3px;
+}
+.cork-label-sm {
+  border: 1.5px solid #000;
+  padding: 6px 9px 5px;
+  background-color: var(--paper);
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2c3038;
+  white-space: nowrap;
+  /* May shrink (clipped) so a wide fallback font cannot widen the page. */
+  min-width: 0;
+  flex-shrink: 1;
+  overflow: hidden;
+}
+.paper-btn,
+.chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 2px 13px 0;
+  border: 2px solid #000;
+  background-color: var(--paper);
+  color: #000;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.paper-btn {
+  box-shadow: 3px 3px 0 0 #000;
+  cursor: pointer;
+}
+.chip > .chip-n {
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #3d4149;
+  font-variant-numeric: tabular-nums;
+}
+.chip.chip-on {
+  background: var(--green);
+  color: #f5efe0;
+  box-shadow: 4px 4px 0 0 #000;
+}
+.chip.chip-on > .chip-n {
+  color: #e4ede4;
+}
+/* Horizontal scroller: overflow-x clips vertically too, so pad for the hard
+   shadows of whatever scrolls inside. Bleeds to the edge of a px-4 column. */
+.strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  margin: 0 -1rem;
+  padding: 2px 1rem 8px;
+  scrollbar-width: thin;
+}
+.strip::after {
+  /* keeps the last card's shadow visible at the scroll end */
+  content: "";
+  flex: none;
+  width: 1px;
+}
+
+/* ---- tee sheet rows: time | course | price + Book ---- */
+.tee-colhead {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 88px;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-top: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ink);
+}
+.tee-colhead > span {
+  padding: 7px 0 6px;
+  background: #3b3f46;
+  color: #fff;
+  text-align: center;
+}
+.tee-colhead > span:nth-child(2) {
+  background: #fff;
+  color: var(--ink);
+  text-align: left;
+  padding-left: 11px;
+}
+.tee-list {
+  border-bottom: 2px solid var(--ink);
+}
+.tee-row {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 88px;
+  min-height: 84px;
+  border-bottom: 1.5px solid var(--rule);
+  font-size: 13.5px;
+  line-height: 1.3;
+  color: var(--soft);
+}
+.tee-row:last-child {
+  border-bottom: 0;
+}
+.tee-t {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  background: var(--tint);
+  border-right: 1px solid var(--rule2);
+}
+.tee-t > b {
+  font-family: var(--font-num), Georgia, serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--score);
+  font-variant-numeric: tabular-nums;
+  transform: rotate(-2deg);
+}
+.tee-t > span {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.1;
+  letter-spacing: 0.06em;
+  color: #2c3038;
+}
+.tee-c {
+  position: relative;
+  align-self: center;
+  min-width: 0;
+  padding: 9px 5px 9px 11px;
+}
+.tee-name {
+  display: block;
+  font-family: var(--font-hand), Georgia, serif;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.27;
+  letter-spacing: 0.012em;
+  color: var(--ink);
+  transform: rotate(-0.8deg);
+  transform-origin: left center;
+  text-wrap: pretty;
+  margin-bottom: 4px;
+}
+.tee-name > :is(a, span) {
+  /* inline-block so ::first-letter applies; the padding is tap area */
+  display: inline-block;
+  color: inherit;
+  text-decoration: none;
+  padding: 10px 0;
+  margin: -10px 0;
+}
+.tee-name > a:hover {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+.tee-name > :is(a, span)::first-letter {
+  color: var(--red);
+  font-size: 1.3em;
+  line-height: 0;
+}
+/* Names alternate black / green row by row (CSS only, no JS state). */
+.tee-row:nth-child(even) .tee-name {
+  color: var(--green);
+  transform: rotate(0.5deg);
+}
+@supports selector(:nth-child(1 of li)) {
+  /* Where supported, count only rows still on the sheet, so the alternation
+     survives past tee times being hidden. */
+  .tee-row:nth-child(even) .tee-name {
+    color: var(--ink);
+    transform: rotate(-0.8deg);
+  }
+  .tee-row:nth-child(even of .tee-row:not([data-tee-past])) .tee-name {
+    transform: rotate(0.5deg);
+  }
+  /* Colour is kept apart and skips thin rows, which are always grey. */
+  .tee-row:not(.tee-thin):nth-child(even of .tee-row:not([data-tee-past])) .tee-name {
+    color: var(--green);
+  }
+}
+.tee-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-weight: 500;
+}
+.tee-fee {
+  margin-top: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--red);
+}
+.tee-resid {
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.2;
+  color: var(--score);
+}
+.tee-resid > svg {
+  width: 18px;
+  height: 13px;
+  flex: none;
+}
+.tee-ros {
+  flex: none;
+  width: 22px;
+  height: 31px;
+  margin: -4px 0;
+  transform: rotate(5deg);
+}
+.tee-p {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 0;
+  background: var(--tint);
+  border-left: 1px solid var(--rule2);
+}
+.tee-price {
+  position: relative;
+  font-family: var(--font-num), Georgia, serif;
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--red);
+  font-variant-numeric: tabular-nums;
+  transform: rotate(-2deg);
+  white-space: nowrap;
+}
+.tee-price.tee-price-sm {
+  font-size: 18px;
+}
+.tee-price.tee-cloud {
+  display: grid;
+  place-items: center;
+  width: 82px;
+  height: 42px;
+  transform: rotate(-3deg);
+}
+.tee-price.tee-cloud > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.tee-price.tee-cloud > em {
+  position: relative;
+  font-style: normal;
+}
+.tee-pab {
+  width: 72px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.tee-book {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  min-height: 44px;
+  border-radius: 8px;
+  border-bottom: 2px solid #06301f;
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+}
+.tee-book:hover {
+  background: #0a4530;
+}
+.tee-book:active {
+  border-bottom-width: 0;
+  transform: translateY(2px);
+}
+/* A row that cannot seat two: greyed lettering, hatched, outline button. */
+.tee-row.tee-thin {
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(120, 126, 136, 0.1) 0 6px,
+    transparent 6px 12px
+  );
+}
+.tee-row.tee-thin :is(.tee-name, .tee-t > b, .tee-price),
+.tee-row.tee-thin .tee-name > :is(a, span)::first-letter {
+  color: #555a63;
+}
+.tee-row.tee-thin .tee-book {
+  background: var(--paper);
+  color: var(--green);
+  border: 1.5px solid var(--green);
+}
+
+/* ---- marks and tags ---- */
+.mark-hl {
+  display: inline-block;
+  padding: 4px 8px 3px;
+  background: var(--hilite);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: rotate(-1.5deg);
+}
+.tag {
+  display: inline-block;
+  padding: 3px 7px 2px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  background: var(--paper);
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tag-blue {
+  color: var(--score);
+  transform: rotate(-1deg);
+}
+.tag-green {
+  color: var(--green);
+}
+.tag-red {
+  color: var(--red);
+}
+.tag-dash {
+  color: #555a63;
+  border-style: dashed;
+}
+.pill-2 {
+  display: inline-grid;
+  place-items: center;
+  min-width: 30px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 11px;
+  background: var(--green);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1;
+}
+.upd {
+  padding: 13px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: 0.04em;
+  color: var(--soft);
+}
+.upd::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 7px;
+  border-radius: 50%;
+  background: var(--green);
+}
+
+@media (min-width: 768px) {
+  .tee-colhead,
+  .tee-row {
+    grid-template-columns: 96px minmax(0, 1fr) 180px;
+  }
+  .tee-t > b {
+    font-size: 26px;
+  }
+  .tee-c {
+    padding: 10px 10px 10px 16px;
+  }
+  .tee-name {
+    font-size: 24px;
+  }
+  .tee-p {
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .tee-price {
+    font-size: 27px;
+  }
+  .tee-price.tee-price-sm {
+    font-size: 21px;
+  }
+  .tee-price:not(.tee-cloud) {
+    min-width: 72px;
+    text-align: center;
+  }
+  .tee-ros {
+    width: 26px;
+    height: 36px;
+  }
+  /* The column is centred with cork either side: keep strips inside it. */
+  .strip {
+    margin: 0;
+    padding-left: 0;
+    padding-right: 4px;
+  }
+  .cork-label > :is(h1, h2, h3, span) {
+    font-size: 32px;
+  }
+  .cork-label-sm {
+    letter-spacing: 0.2em;
+  }
+}
+
+/* ---- text blocks on paper ---- */
+.sheet-pad {
+  padding: 14px 12px 16px;
+}
+.sheet-pad.sheet-pinned {
+  padding-top: 28px;
+}
+.sheet-yellow {
+  background-color: #fff4d6;
+  background-image:
+    linear-gradient(rgba(150, 110, 20, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(150, 110, 20, 0.13) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.crumb {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a5e66;
+}
+.crumb a {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+}
+.crumb a:hover {
+  color: var(--green);
+}
+.crumb a::after,
+.paper-link.hit::after {
+  /* larger tap area without moving the text */
+  content: "";
+  position: absolute;
+  inset: -14px -6px;
+}
+.crumb > :last-child {
+  color: #26292e;
+}
+.paper-h1 {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 37px;
+  line-height: 0.98;
+  letter-spacing: -0.005em;
+  text-transform: uppercase;
+  color: var(--green);
+  text-wrap: balance;
+}
+.paper-h2 {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 23px;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: #000;
+  text-wrap: balance;
+}
+.paper-h3 {
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #3d4149;
+}
+.paper-p {
+  max-width: 62ch;
+  font-size: 15px;
+  line-height: 1.62;
+  color: var(--soft);
+}
+.paper-p strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+.paper-note {
+  max-width: 68ch;
+  font-weight: 500;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #4a4f57;
+}
+.paper-link {
+  font-weight: 700;
+  color: var(--green);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.paper-link.hit {
+  position: relative;
+}
+.paper-link:hover {
+  color: #0a4530;
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  text-align: center;
+}
+.tile {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+  padding: 10px 3px 9px;
+  border: 2px solid #000;
+  border-radius: 2px;
+  background: #fff;
+}
+.tile > dt,
+.tile > .tile-k {
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.25;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #5a5e66;
+}
+.tile > :is(dt, .tile-k) > small {
+  display: block;
+  font-weight: 500;
+  font-size: 13px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.tile > dd,
+.tile > .tile-v {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #000;
+  overflow-wrap: anywhere;
+}
+.tile > .g {
+  color: var(--green);
+}
+@media (max-width: 379px) {
+  .tile > dd,
+  .tile > .tile-v {
+    font-size: 21px;
+  }
+}
+.sq-list {
+  display: grid;
+  gap: 11px;
+}
+.sq-list > li {
+  position: relative;
+  padding-left: 20px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #26292e;
+}
+.sq-list > li::before {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 0.52em;
+  width: 8px;
+  height: 8px;
+  background: var(--red);
+  border: 1.5px solid #000;
+}
+.white-box {
+  border: 2px solid #000;
+  border-radius: 2px;
+  background: #fff;
+  color: #26292e;
+}
+.brand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 8px 16px 6px;
+  border: 2px solid #000;
+  border-radius: 2px;
+  background: var(--green);
+  color: #f5efe0;
+  box-shadow: 3px 3px 0 0 #000;
+  font-family: var(--font-display), Impact, sans-serif;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: center;
+  text-decoration: none;
+}
+.brand-btn:hover {
+  background: #0a4530;
+}
+.brand-btn:active {
+  box-shadow: 1px 1px 0 0 #000;
+  transform: translate(2px, 2px);
+}
+
+/* ---- day-grouped tee sheet (course pages and the list pages) ---- */
+.tee-sheet {
+  padding: 30px 8px 6px;
+}
+.tee-sheet > [role="status"] {
+  margin: 0 3px 16px;
+}
+.tee-day + .tee-day {
+  margin-top: 24px;
+}
+.day-hd {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 3px 8px;
+}
+.day-hd > h2 {
+  font-family: var(--font-display), Impact, sans-serif;
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  text-transform: uppercase;
+  color: #000;
+}
+/* A day whose times have all passed hides its list; hide the strip too. */
+.tee-colhead:has(+ [data-tee-empty]) {
+  display: none;
+}
+/* Single-course rows: no name, so the spots count leads the middle cell. */
+.tee-row.tee-solo {
+  min-height: 80px;
+}
+.tee-row.tee-solo .tee-meta > :first-child:not(.tag) {
+  font-weight: 800;
+  font-size: 17px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+.tee-row.tee-solo.tee-thin .tee-meta > :first-child {
+  color: #555a63;
+}
+
+@media (min-width: 640px) {
+  .sheet-pad {
+    padding: 20px 22px 22px;
+  }
+  .sheet-pad.sheet-pinned {
+    padding-top: 32px;
+  }
+  .paper-h1 {
+    font-size: 50px;
+  }
+  .paper-h2 {
+    font-size: 26px;
+  }
+  .paper-p,
+  .sq-list > li {
+    font-size: 16px;
+  }
+  .tiles {
+    gap: 12px;
+  }
+  .tile {
+    padding: 13px 8px 11px;
+  }
+  .tile > dt,
+  .tile > .tile-k {
+    letter-spacing: 0.07em;
+  }
+  .tile > dd,
+  .tile > .tile-v {
+    font-size: 30px;
+  }
+  .tee-sheet {
+    padding: 36px 18px 8px;
+  }
+  .day-hd > h2 {
+    font-size: 30px;
+  }
+}
+@media (min-width: 768px) {
+  .tee-row.tee-solo {
+    min-height: 72px;
+  }
+  .tee-row.tee-solo .tee-meta > :first-child:not(.tag) {
+    font-size: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+@tailwind utilities;
 
 /* Scraper down (see StaleNotice in app/Freshness.tsx): dim every Book
    button so stale times don't look as trustworthy as fresh ones. */

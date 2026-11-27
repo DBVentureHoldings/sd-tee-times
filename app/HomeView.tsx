@@ -19,7 +19,7 @@ import { DayPickerScroll } from "./DayPickerScroll";
 import { TodaysDrops, DropCard, type Drop } from "./TodaysDrops";
 import { AlertCaptureForm } from "./AlertCaptureForm";
 import { SecondaryFilters } from "./SecondaryFilters";
-import { TeeTimeRowItem } from "./TeeTimeRowItem";
+import { TeeColHead, TeeTimeRowItem } from "./TeeTimeRowItem";
 import { DayLabel, Freshness, UpdatedAgo, StaleNotice } from "./Freshness";
 import { fetchSDForecast, type DayWeather } from "@/lib/weather";
 import { buildDealBaselines, getDealInfo } from "@/lib/deals";
@@ -247,12 +247,12 @@ export async function HomeView({
 
   if (rows.length === 0) {
     const emptyBox = (
-      <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
+      <div className="sheet p-8 text-center text-sm text-soft">
         <div className="mb-2 text-2xl">🏌️</div>
-        <p className="font-display text-2xl uppercase tracking-wider">
+        <p className="font-display text-2xl uppercase tracking-wider text-black">
           The Tee Sheet Is Empty
         </p>
-        <p className="mt-1 text-xs text-neutral-500">
+        <p className="mt-1 text-sm text-soft">
           Nothing open at our last check. Check back shortly.
         </p>
       </div>
@@ -261,7 +261,7 @@ export async function HomeView({
     // A data outage must not leave the homepage with no heading, no text and
     // no links to the course pages.
     return (
-      <div className="space-y-5">
+      <div className="space-y-6">
         <h1 className="sr-only">{HOME_H1}</h1>
         <HomeIntro />
         {emptyBox}
@@ -517,7 +517,7 @@ export async function HomeView({
                   ? "prime weekend-morning times"
                   : "tee times";
     return (
-      <div className="space-y-5">
+      <div className="space-y-5" data-wide>
         <ViewTabs
           view={view}
           selectedDay={requestedDay}
@@ -537,11 +537,11 @@ export async function HomeView({
           selected={course}
           preserveQuery={coursePickerQuery}
         />
-        <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-          <p className="font-display text-2xl uppercase tracking-wider">
+        <div className="sheet p-8 text-center text-sm text-soft">
+          <p className="font-display text-2xl uppercase tracking-wider text-black">
             No {label} open
           </p>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-sm text-soft">
             {course
               ? "No upcoming tee times for this course."
               : "Nothing matches in this filter right now."}{" "}
@@ -566,15 +566,15 @@ export async function HomeView({
   // Compact day summary shown in the (collapsed) secondary-filter row, e.g.
   // "SAT MAY 23 · 78 open". Replaces the big day header to reclaim space.
   const daySummary = (
-    <div className="flex items-baseline gap-2 truncate">
-      <span className="font-display text-xl uppercase leading-none tracking-tight text-black">
+    <div className="min-w-0">
+      <span className="block truncate font-display text-[32px] uppercase leading-none tracking-[0.01em] text-black md:text-[38px]">
         <DayLabel day={selectedDay} initial={formatDayChip(selectedDay)} />
       </span>
-      <span className="text-[11px] uppercase tracking-[0.12em] text-neutral-600">
-        <span className="font-bold text-brand">{viableToday}</span> open
+      <span className="mt-1 block text-sm font-medium uppercase leading-none tracking-[0.18em] text-[#3d4149]">
+        <span className="font-extrabold text-brand">{viableToday}</span> open
         {dayKeyChargesBookingFee(selectedDay) && (
           <>
-            <span className="mx-1 text-neutral-400">·</span>
+            <span className="mx-1 text-[#6c717a]">·</span>
             <span className="font-bold text-magred">+fee</span>
           </>
         )}
@@ -595,7 +595,8 @@ export async function HomeView({
 
   return (
     <>
-    <div className="space-y-5">
+    {/* data-wide: widens the page column for the tee sheet (globals.css). */}
+    <div className="space-y-6" data-wide>
       <Freshness generatedAt={generatedAt} staleAfterSec={STALE_AFTER_SEC} />
       <StaleNotice
         lastScrapeIso={lastScrape ? lastScrape.toISOString() : null}
@@ -619,18 +620,19 @@ export async function HomeView({
         <AlertCaptureForm
           compact
           source="homepage-inline"
-          title="🔥 The best SD tee times, in your inbox"
+          title="The best SD tee times, in your inbox"
           blurb="Once a week, before the weekend: the best weekend tee times and real deals across San Diego. Free."
           cta="Email me"
         />
       )}
 
       {/*
-        Sticky filter bar — condensed for mobile: region tabs + day chips stay
-        visible; the course picker + time pills collapse behind a Filters
-        toggle, with a compact day summary always shown.
+        Sticky filter bar: region tabs + day tiles stay in reach on the cork
+        (each tile is its own paper or solid fill). The course picker + time
+        pills sit behind the Filters toggle at the head of the tee sheet,
+        next to the day summary.
       */}
-      <div className="sticky top-0 z-20 -mx-4 space-y-3 border-b-2 border-black bg-cream px-4 pb-3 pt-4 shadow-[0_3px_0_0_rgba(0,0,0,0.04)]">
+      <div className="cork sticky top-0 z-20 -mx-4 space-y-1 px-4 pt-3">
         <ViewTabs
           view={view}
           selectedDay={requestedDay ?? hrefDay}
@@ -654,6 +656,13 @@ export async function HomeView({
           timeFilter={timeFilter}
           weather={weather}
         />
+      </div>
+
+      {/* The tee sheet: one pinned graph-paper sheet. Not overflow-hidden,
+          or the course picker's menu would be clipped. */}
+      <section className="sheet pt-7">
+        <i className="pin" aria-hidden="true" />
+        <i className="pin pin-r" aria-hidden="true" />
         <SecondaryFilters summary={daySummary}>
           <CoursePicker
             groups={courseGroups}
@@ -668,16 +677,13 @@ export async function HomeView({
             counts={timeCounts}
           />
         </SecondaryFilters>
-      </div>
-
-      <section>
         {dayRows.length > 0 && view === "prime" ? (
-          // 🔥 Prime is the showcase — render the rare slots as the big
+          // Prime is the showcase — render the rare slots as the big
           // shareable tiles instead of a compact list. 1 col on phones,
           // 2 on wider screens.
           <div
             data-tee-group
-            className="peer grid grid-cols-1 gap-3 data-[tee-empty]:hidden sm:grid-cols-2"
+            className="peer grid grid-cols-1 gap-4 border-t-2 border-ink px-3 pb-2 pr-4 pt-4 data-[tee-empty]:hidden sm:grid-cols-2"
           >
             {shownRows.map((r) => (
               <DropCard
@@ -687,27 +693,27 @@ export async function HomeView({
             ))}
           </div>
         ) : dayRows.length > 0 ? (
-          <ul
-            data-tee-group
-            className="peer overflow-hidden rounded-sm border-2 border-black bg-white divide-y divide-neutral-200 data-[tee-empty]:hidden"
-          >
-            {shownRows.map((r) => (
-              <TeeTimeRowItem
-                key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
-                row={r}
-                baselines={dealBaselines}
-              />
-            ))}
-          </ul>
+          <>
+            <TeeColHead />
+            <ul data-tee-group className="tee-list peer data-[tee-empty]:hidden">
+              {shownRows.map((r) => (
+                <TeeTimeRowItem
+                  key={`${r.courses?.slug ?? "x"}-${r.tee_time_at}-${r.holes}`}
+                  row={r}
+                  baselines={dealBaselines}
+                />
+              ))}
+            </ul>
+          </>
         ) : (
           // The day has tee times, just none in the selected time-of-day
           // window. (allDayRows is non-empty here — a fully empty day routes
           // to the empty-state branch above instead.)
-          <div className="rounded-sm border-2 border-black bg-white p-8 text-center text-sm text-neutral-600">
-            <p className="font-display text-2xl uppercase tracking-wider">
+          <div className="border-t-2 border-ink p-8 text-center text-sm text-soft">
+            <p className="font-display text-2xl uppercase tracking-wider text-black">
               No {timeFilter} tee times
             </p>
-            <p className="mt-1 text-xs text-neutral-500">
+            <p className="mt-1 text-sm text-soft">
               This day has {allDayRows.length} other{" "}
               {allDayRows.length === 1 ? "time" : "times"} — try a different
               time of day above.
@@ -715,12 +721,12 @@ export async function HomeView({
           </div>
         )}
         {/* Revealed by Freshness once every row above has teed off. */}
-        <p className="hidden rounded-sm border-2 border-black bg-white p-6 text-center text-sm text-neutral-600 peer-data-[tee-empty]:block">
+        <p className="hidden border-b-2 border-ink p-6 text-center text-sm text-soft peer-data-[tee-empty]:block">
           Those times have passed — pick a later day above.
         </p>
         {clippedCount > 0 && (
-          <div className="mt-3 space-y-2 text-center">
-            <p className="text-xs text-neutral-500">
+          <div className="space-y-2 px-3 pt-4 text-center">
+            <p className="text-sm text-soft">
               + {clippedCount} more {clippedCount === 1 ? "time" : "times"}{" "}
               this day.
             </p>
@@ -729,53 +735,53 @@ export async function HomeView({
               prefetch={false}
               rel="nofollow"
               scroll={false}
-              className="inline-flex items-center rounded-sm border-2 border-black bg-white px-4 py-2 font-display text-sm uppercase tracking-wider text-black shadow-[2px_2px_0_0_rgba(0,0,0,1)] transition-all hover:-translate-y-0.5 hover:bg-cream-dark"
+              className="paper-btn transition-transform hover:-translate-y-0.5"
             >
               Show all {dayRows.length} times
             </Link>
           </div>
         )}
-      </section>
 
-      {/* When the data was last scraped, directly under the list it dates. */}
-      <div className="space-y-1 pt-2 text-center text-[10px] uppercase tracking-[0.2em] text-neutral-400">
-        <div>
-          {lastScrape ? (
-            <UpdatedAgo
-              iso={lastScrape.toISOString()}
-              initial={`Updated ${formatStamp(lastScrape)} PT`}
-            />
-          ) : (
-            "No data yet"
-          )}
+        {/* When the data was last scraped, directly under the list it dates. */}
+        <div className="space-y-1 px-3 pb-3 text-center text-[13px] font-semibold tracking-[0.04em] text-soft">
+          <div className="upd !pb-1">
+            {lastScrape ? (
+              <UpdatedAgo
+                iso={lastScrape.toISOString()}
+                initial={`Updated ${formatStamp(lastScrape)} PT`}
+              />
+            ) : (
+              "No data yet"
+            )}
+          </div>
+          {/* The other ways into the sheet. Region pages and every course are
+              in the site-wide footer (app/SiteFooter.tsx). */}
+          <div className="flex flex-wrap justify-center gap-x-4 [&_a:hover]:text-brand [&_a]:inline-flex [&_a]:min-h-[44px] [&_a]:items-center [&_a]:underline [&_a]:underline-offset-2">
+            <Link href="/deals" prefetch={false}>
+              Deals
+            </Link>
+            <Link href="/twilight" prefetch={false}>
+              Twilight
+            </Link>
+            <Link href="/this-weekend" prefetch={false}>
+              This Weekend
+            </Link>
+            <Link href="/courses" prefetch={false}>
+              All courses
+            </Link>
+          </div>
+          {/* The feedback link, where it has always been on the tee sheet. */}
+          <div>
+            <FeedbackLink className="inline-flex min-h-[44px] items-center underline underline-offset-2 transition-colors hover:text-brand" />
+          </div>
         </div>
-        {/* The other ways into the sheet. Region pages and every course are
-            in the site-wide footer (app/SiteFooter.tsx). */}
-        <div className="flex flex-wrap justify-center gap-x-3 gap-y-1">
-          <Link href="/deals" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            Deals
-          </Link>
-          <Link href="/twilight" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            Twilight
-          </Link>
-          <Link href="/this-weekend" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            This Weekend
-          </Link>
-          <Link href="/courses" prefetch={false} className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand">
-            All courses
-          </Link>
-        </div>
-        {/* The feedback link, where it has always been on the tee sheet. */}
-        <div>
-          <FeedbackLink className="underline decoration-neutral-300 underline-offset-2 transition-colors hover:text-brand hover:decoration-brand" />
-        </div>
-      </div>
+      </section>
 
       {!home && (
         // Filtered views: a short strip of the most-searched courses (the
         // site footer links the rest).
-        <section className="space-y-2 border-t-2 border-black pt-4">
-          <h2 className="font-display text-lg uppercase tracking-tight text-black">
+        <section className="sheet space-y-3 p-4">
+          <h2 className="font-display text-2xl uppercase leading-none tracking-[0.01em] text-black">
             Popular courses
           </h2>
           <ul className="flex flex-wrap gap-2">
@@ -784,7 +790,7 @@ export async function HomeView({
                 <Link
                   href={`/course/${p.slug}`}
                   prefetch={false}
-                  className="inline-block rounded-sm border-2 border-black bg-white px-3 py-1.5 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
+                  className="inline-flex min-h-[44px] items-center border-2 border-black bg-white px-3 text-sm font-semibold text-black transition-colors hover:bg-cream-dark"
                 >
                   {p.label}
                 </Link>
@@ -799,7 +805,7 @@ export async function HomeView({
       // FAQ. Below the tee sheet so the times still lead, and outside the
       // sheet's wrapper so the sticky filter bar (which sticks for as long as
       // its parent is on screen) scrolls away instead of covering this text.
-      <div className="mt-5 space-y-5">
+      <div className="mt-6 space-y-6">
         <HomeCourseDirectory />
         <HomeFaq />
       </div>
@@ -848,7 +854,7 @@ function ViewTabs({
   // sits right beside it as a deliberate toggle, not the landing view.
   const tabs: Array<{ key: View; label: string; count: number }> = [
     { key: "all", label: "All courses", count: totalAll },
-    { key: "prime", label: "🔥 Prime", count: totalPrime },
+    { key: "prime", label: "Prime", count: totalPrime },
     { key: "muni", label: "SD munis", count: totalMuni },
     { key: "nc", label: "North County", count: totalNc },
     { key: "ec", label: "East County", count: totalEast },
@@ -861,7 +867,7 @@ function ViewTabs({
     // without overflowing the page (same pattern as the day chip row).
     <div
       className={
-        "-mx-4 flex gap-2 overflow-x-auto px-4 " + (dimmed ? "opacity-60" : "")
+        "strip " + (dimmed ? "opacity-60" : "")
       }
     >
       {tabs.map((t) => {
@@ -879,21 +885,12 @@ function ViewTabs({
             rel={relFor(href)}
             scroll={false}
             className={
-              "flex shrink-0 items-center gap-1.5 rounded-sm border-2 border-black px-3 py-1.5 font-display text-sm uppercase tracking-wider transition-all " +
-              (active
-                ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-                : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
+              "chip transition-transform " +
+              (active ? "chip-on" : "hover:-translate-y-0.5")
             }
           >
             <span>{t.label}</span>
-            <span
-              className={
-                "text-[10px] tabular-nums " +
-                (active ? "text-cream/70" : "text-neutral-500")
-              }
-            >
-              {t.count}
-            </span>
+            <span className="chip-n">{t.count.toLocaleString("en-US")}</span>
           </Link>
         );
       })}
@@ -941,31 +938,31 @@ function DayPicker({
               scroll={false}
               data-selected={isSelected || undefined}
               className={
-                "relative shrink-0 rounded-sm border-2 border-black px-3 py-2 text-center transition-all " +
+                "relative grid min-h-[66px] min-w-[118px] shrink-0 content-center justify-items-center gap-[5px] border-2 border-black px-3 pb-[7px] pt-[9px] text-center transition-transform " +
                 (isSelected
-                  ? "bg-brand text-cream shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
-                  : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5")
+                  ? "bg-brand text-cream shadow-[4px_4px_0_0_#000]"
+                  : "paper text-black hover:-translate-y-0.5")
               }
             >
-              <div className="flex items-center justify-center gap-1.5 font-display text-base uppercase leading-none tracking-wider whitespace-nowrap">
+              <div className="flex items-center justify-center gap-1.5 whitespace-nowrap font-display text-[19px] uppercase leading-none tracking-[0.07em]">
                 <span>
                   <DayLabel day={d} initial={formatDayChip(d)} />
                 </span>
                 {wx && <WeatherGlyph wx={wx} />}
               </div>
-              <div className="mt-1 flex items-baseline justify-center gap-1">
+              <div className="flex items-baseline justify-center gap-[5px] whitespace-nowrap">
                 <span
                   className={
-                    "font-display text-xl leading-none tabular-nums " +
-                    (isSelected ? "text-white" : "text-brand")
+                    "font-display text-[27px] leading-none tracking-[0.01em] tabular-nums " +
+                    (isSelected ? "text-cream" : "text-brand")
                   }
                 >
                   {viable}
                 </span>
                 <span
                   className={
-                    "text-[10px] tabular-nums " +
-                    (isSelected ? "text-cream/80" : "text-neutral-400")
+                    "text-[13px] font-medium leading-none tracking-[0.04em] tabular-nums " +
+                    (isSelected ? "text-cream" : "text-[#3d4149]")
                   }
                 >
                   /{total}
@@ -973,7 +970,7 @@ function DayPicker({
               </div>
               {fee && (
                 <span
-                  className="absolute -right-1.5 -top-1.5 rounded-full border border-black bg-magred px-1.5 py-0.5 text-[9px] font-bold leading-none text-cream"
+                  className="absolute right-0.5 top-0.5 grid h-[18px] w-[18px] place-items-center rounded-full border border-black bg-magred text-[13px] font-bold leading-none text-cream"
                   title="Booking fee applies"
                 >
                   $
@@ -1013,7 +1010,7 @@ function TimeOfDayPicker({
     { key: "evening", label: "Evening", count: counts.evening },
   ];
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-2 pr-1">
       {opts.map((o) => {
         const active = timeFilter === o.key;
         const parts: string[] = [];
@@ -1031,22 +1028,13 @@ function TimeOfDayPicker({
             rel={relFor(href)}
             scroll={false}
             className={
-              "flex flex-1 items-center justify-center gap-1 rounded-sm border-2 border-black px-2 py-1.5 font-display text-xs uppercase tracking-wider transition-all " +
-              (active
-                ? "bg-brand text-cream shadow-[2px_2px_0_0_rgba(0,0,0,1)]"
-                : "bg-white text-black hover:bg-cream-dark hover:-translate-y-0.5") +
+              "chip min-w-0 flex-1 flex-col justify-center gap-1 px-1 py-1.5 text-[16px] transition-transform " +
+              (active ? "chip-on" : "hover:-translate-y-0.5") +
               (empty ? " opacity-45" : "")
             }
           >
             <span>{o.label}</span>
-            <span
-              className={
-                "text-[10px] tabular-nums " +
-                (active ? "text-cream/70" : "text-neutral-500")
-              }
-            >
-              {o.count}
-            </span>
+            <span className="chip-n">{o.count}</span>
           </Link>
         );
       })}
@@ -1083,8 +1071,8 @@ function WeatherGlyph({ wx }: { wx: DayWeather }) {
       title={title}
       aria-label={title}
       className={
-        "inline-block text-xs leading-none " +
-        (wet ? "animate-pulse" : "")
+        "inline-block text-[15px] leading-none " +
+        (wet ? "motion-safe:animate-pulse" : "")
       }
     >
       {icon}

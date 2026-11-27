@@ -174,7 +174,7 @@ export function StaleNotice({
   return (
     <div
       role="status"
-      className="rounded-sm border-2 border-black bg-[#FFF4D6] px-3 py-2 text-xs leading-snug text-black"
+      className="border-2 border-black bg-[#FFF4D6] px-3 py-2 text-sm leading-snug text-black shadow-[3px_3px_0_0_#000]"
     >
       <strong className="font-display uppercase tracking-wider text-magred">
         Heads up:

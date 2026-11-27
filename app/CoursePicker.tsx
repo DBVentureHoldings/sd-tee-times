@@ -65,7 +65,7 @@ export function CoursePicker({
         aria-expanded={open}
         aria-haspopup="listbox"
         className={
-          "flex w-full items-center gap-2 rounded-sm border-2 border-black bg-white px-3 py-2 text-left font-display text-sm uppercase tracking-wider transition-all hover:bg-cream-dark " +
+          "flex min-h-[44px] w-full items-center gap-2 border-2 border-black bg-white px-3 pt-0.5 text-left font-display text-lg uppercase leading-none tracking-wider transition-all hover:bg-cream-dark " +
           (open ? "shadow-[3px_3px_0_0_rgba(0,0,0,1)]" : "")
         }
       >
@@ -76,13 +76,13 @@ export function CoursePicker({
           />
         )}
         <span className="flex-1 truncate">{selectedName}</span>
-        <span className="text-xs text-neutral-500">▾</span>
+        <span className="font-sans text-[13px] text-soft">▾</span>
       </button>
 
       {open && (
         <div
           role="listbox"
-          className="absolute left-0 right-0 z-20 mt-2 max-h-[70vh] overflow-y-auto rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
+          className="absolute -left-3 -right-3 z-20 mt-2 max-h-[70vh] overflow-y-auto rounded-sm border-2 border-black bg-white shadow-[3px_3px_0_0_rgba(0,0,0,1)]"
         >
           {/* Reset row */}
           <Link
@@ -95,19 +95,19 @@ export function CoursePicker({
             rel={resetHref.includes("?") ? "nofollow" : undefined}
             scroll={false}
             className={
-              "flex items-center justify-between border-b-2 border-black px-3 py-2 font-display text-sm uppercase tracking-wider transition-colors " +
+              "flex min-h-[44px] items-center justify-between border-b-2 border-black px-3 font-display text-lg uppercase leading-none tracking-wider transition-colors " +
               (!selected
                 ? "bg-brand text-cream"
                 : "bg-cream hover:bg-cream-dark text-black")
             }
           >
             <span>All courses</span>
-            {!selected && <span className="text-[10px]">✓</span>}
+            {!selected && <span className="font-sans text-[13px]">✓</span>}
           </Link>
 
           {groups.map((group) => (
             <div key={group.label}>
-              <div className="bg-neutral-100 px-3 py-1.5 font-display text-[11px] uppercase tracking-[0.18em] text-neutral-600">
+              <div className="bg-neutral-100 px-3 py-1.5 font-display text-[15px] uppercase tracking-[0.14em] text-neutral-700">
                 {group.label}
               </div>
               {group.courses.map((c) => {
@@ -122,7 +122,7 @@ export function CoursePicker({
                     rel="nofollow"
                     scroll={false}
                     className={
-                      "flex items-center gap-2 border-b border-neutral-200 px-3 py-2.5 text-sm transition-colors " +
+                      "flex min-h-[44px] items-center gap-2 border-b border-neutral-200 px-3 py-2 text-sm transition-colors " +
                       (active
                         ? "bg-brand/10 text-black font-semibold"
                         : "hover:bg-cream/60 text-neutral-800")
@@ -133,11 +133,11 @@ export function CoursePicker({
                       aria-hidden
                     />
                     <span className="flex-1 truncate">{c.name}</span>
-                    <span className="text-[11px] tabular-nums text-neutral-500">
+                    <span className="text-[13px] tabular-nums text-neutral-600">
                       {c.count}
                     </span>
                     {active && (
-                      <span className="text-[10px] text-brand">✓</span>
+                      <span className="text-[13px] text-brand">✓</span>
                     )}
                   </Link>
                 );

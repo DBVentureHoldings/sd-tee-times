@@ -43,9 +43,9 @@ export const metadata: Metadata = {
 const H1 = "North County San Diego Golf Courses";
 const CRUMB = "North County Golf Courses";
 
-const h2 = "font-display text-xl uppercase tracking-tight text-black";
-const p = "text-sm leading-relaxed text-neutral-700";
-const link = "font-bold text-brand underline";
+const h2 = "paper-h2";
+const p = "paper-p";
+const link = "paper-link";
 
 const CHECKED_FMT = new Intl.DateTimeFormat("en-US", {
   month: "long",
@@ -69,7 +69,7 @@ function CourseCard({ course: c }: { course: CourseMeta }) {
           {courseDisplayName(c)}
         </Link>
       </h3>
-      {spec && <p className="text-xs text-neutral-500">{spec}</p>}
+      {spec && <p className="paper-note">{spec}</p>}
       {blurb && <p>{blurb}</p>}
       {(f?.address || f?.phone) && (
         <p>
@@ -157,12 +157,14 @@ export default function NorthCountyDirectoryPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="sheet sheet-pad sheet-pinned space-y-6">
+      <i className="pin" aria-hidden="true" />
+      <i className="pin pin-r" aria-hidden="true" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav className="flex items-center gap-1 text-[11px] uppercase tracking-wider text-neutral-500">
+      <nav className="crumb">
         <Link href="/" prefetch={false} className="hover:text-brand">
           Home
         </Link>
@@ -171,7 +173,7 @@ export default function NorthCountyDirectoryPage() {
       </nav>
 
       <header className="space-y-2">
-        <h1 className="font-display text-4xl uppercase leading-none tracking-tight text-brand sm:text-5xl">
+        <h1 className="paper-h1">
           {H1}
         </h1>
         <p className={p}>
@@ -206,7 +208,7 @@ export default function NorthCountyDirectoryPage() {
               <a href={`#${g.id}`} className={link}>
                 {g.label}
               </a>{" "}
-              <span className="text-xs text-neutral-500">
+              <span className="paper-note">
                 ({g.courses.length})
               </span>
             </li>
@@ -216,7 +218,7 @@ export default function NorthCountyDirectoryPage() {
               <a href="#temecula-murrieta" className={link}>
                 Temecula and Murrieta
               </a>{" "}
-              <span className="text-xs text-neutral-500">({tv.length})</span>
+              <span className="paper-note">({tv.length})</span>
             </li>
           )}
         </ul>
@@ -242,7 +244,7 @@ export default function NorthCountyDirectoryPage() {
             These play shorter than a regulation 18 and are quicker to get
             around.
           </p>
-          <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-neutral-700">
+          <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
             {short.map((c) => (
               <li key={c.slug}>
                 <Link href={`/course/${c.slug}`} prefetch={false} className={link}>
@@ -277,7 +279,7 @@ export default function NorthCountyDirectoryPage() {
           </p>
           {tvCities.map((g) => (
             <div key={g.id} id={g.id} className="scroll-mt-4 space-y-2">
-              <h3 className="text-[11px] font-bold uppercase tracking-widest text-neutral-500">
+              <h3 className="text-[13px] font-bold uppercase tracking-widest text-neutral-600">
                 {g.label}
               </h3>
               <ul className={cardList}>
@@ -292,7 +294,7 @@ export default function NorthCountyDirectoryPage() {
 
       <section className="space-y-2">
         <h2 className={h2}>What is not listed</h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-neutral-700">
+        <ul className="list-disc space-y-1.5 pl-5 text-[15px] leading-relaxed text-soft sm:text-base">
           <li>
             Private clubs where only members and their guests can book.
           </li>
@@ -305,7 +307,7 @@ export default function NorthCountyDirectoryPage() {
             own site, and the tee-time pages show the prices we last saw.
           </li>
         </ul>
-        <p className="text-xs leading-relaxed text-neutral-500">
+        <p className="paper-note">
           Source: each course&apos;s official website, linked above
           {checkedOn
             ? `. The most recent check was ${CHECKED_FMT.format(new Date(`${checkedOn}T00:00:00Z`))}, and each course page shows its own date`
@@ -314,7 +316,7 @@ export default function NorthCountyDirectoryPage() {
         </p>
       </section>
 
-      <div className="flex flex-wrap gap-3 pt-2 text-sm">
+      <div className="flex flex-wrap gap-x-5 gap-y-4 border-t-2 border-black pt-4 text-[15px]">
         <Link href="/tee-times/north-county" prefetch={false} className={link}>
           North County tee times
         </Link>
